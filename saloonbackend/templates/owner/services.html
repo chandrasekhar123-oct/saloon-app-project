@@ -1,0 +1,583 @@
+{% extends "owner/layout.html" %}
+{% set active_page = 'services' %}
+
+{% block title %}Manage Services{% endblock %}
+
+{% block content %}
+<!-- Premium Header with Mini Stats -->
+<div class="fade-in" style="margin-bottom: 2.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+            <h2 style="font-weight: 800; font-size: 1.75rem; color: var(--text-main); margin: 0;">{{ shop.name }} Menus
+            </h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Design and manage the service inventory for your
+                shop.
+            </p>
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <button class="btn"
+                onclick="document.getElementById('bulkAddForm').style.display='block'; window.scrollTo({top: 0, behavior: 'smooth'});"
+                style="padding: 0.75rem 1.5rem; border-radius: 50px; background: white; color: var(--primary); border: 2px solid var(--primary); font-weight: 700; transition: all 0.2s;"
+                onmouseover="this.style.background='var(--primary)'; this.style.color='white';"
+                onmouseout="this.style.background='white'; this.style.color='var(--primary)';">
+                <i class="fas fa-tasks"></i> Bulk Setup
+            </button>
+            <button class="btn btn-primary" onclick="document.getElementById('addServiceForm').style.display='block'"
+                style="padding: 0.75rem 1.5rem; border-radius: 50px; box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);">
+                <i class="fas fa-magic"></i> New Service
+            </button>
+        </div>
+    </div>
+
+    <!-- Mini Stats bar -->
+    <div style="display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: none;">
+        <div
+            style="background: white; padding: 0.75rem 1.25rem; border-radius: 15px; border: 1px solid #f1f5f9; display: flex; align-items: center; gap: 0.75rem; min-width: 160px;">
+            <div
+                style="width: 35px; height: 35px; border-radius: 10px; background: rgba(99, 102, 241, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-list-ul"></i>
+            </div>
+            <div>
+                <p
+                    style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin: 0;">
+                    Total items</p>
+                <p style="font-size: 1rem; font-weight: 800; margin: 0;">{{ services|length }}</p>
+            </div>
+        </div>
+        <div
+            style="background: white; padding: 0.75rem 1.25rem; border-radius: 15px; border: 1px solid #f1f5f9; display: flex; align-items: center; gap: 0.75rem; min-width: 160px;">
+            <div
+                style="width: 35px; height: 35px; border-radius: 10px; background: rgba(16, 185, 129, 0.1); color: var(--success); display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-star"></i>
+            </div>
+            <div>
+                <p
+                    style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin: 0;">
+                    Live Menu</p>
+                <p style="font-size: 1rem; font-weight: 800; margin: 0;">Active</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Service Form (Enhanced UI) -->
+<div id="addServiceForm" class="card fade-in"
+    style="display: none; border: none; background: white; margin-bottom: 2.5rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); border-radius: 24px; position: relative; overflow: hidden;">
+    <div
+        style="height: 6px; background: linear-gradient(90deg, var(--primary), var(--secondary)); position: absolute; top: 0; left: 0; width: 100%;">
+    </div>
+    <div class="card-header" style="border-bottom: 1px solid #f1f5f9; padding: 1.5rem 2rem;">
+        <h3 style="font-weight: 800; margin: 0; display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fas fa-sparkles" style="color: var(--accent);"></i> Add Master Service
+        </h3>
+        <button class="btn" onclick="document.getElementById('addServiceForm').style.display='none'"
+            style="color: var(--text-muted); background: #f8fafc; border-radius: 50%; width: 35px; height: 35px; padding: 0; display: flex; align-items: center; justify-content: center; transition: all 0.3s;"
+            onmouseover="this.style.background='#f1f5f9'; this.style.color='var(--danger)';"
+            onmouseout="this.style.background='#f8fafc'; this.style.color='var(--text-muted)';">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <!-- Quick Templates Section -->
+    <div style="padding: 1.5rem 2rem 0 2rem;">
+        <p
+            style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">
+            <i class="fas fa-bolt" style="color: #fbbf24; margin-right: 5px;"></i> Quick Add Templates
+        </p>
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;" id="quickTemplates">
+            {% if shop.category == 'Barber Shop' %}
+            <button type="button" class="btn-template"
+                onclick="applyTemplate('Classic Haircut', 199, 30, 'Standard grooming for men', 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500&q=80')">Haircut</button>
+            <button type="button" class="btn-template"
+                onclick="applyTemplate('Beard Style', 149, 20, 'Hot towel shave & styling', 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=500&q=80')">Beard</button>
+            {% elif shop.category == 'Spa & Wellness' %}
+            <button type="button" class="btn-template"
+                onclick="applyTemplate('Aroma Massage', 1499, 60, 'Relaxing massage with essential oils', 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=500&q=80')">Massage</button>
+            <button type="button" class="btn-template"
+                onclick="applyTemplate('Body Scrub', 999, 45, 'Detox and skin polishing', 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=500&q=80')">Scrub</button>
+            {% elif shop.category == 'Beauty Parlor' %}
+            <button type="button" class="btn-template"
+                onclick="applyTemplate('Bridal Makeup', 4999, 120, 'Full bridal package', 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=500&q=80')">Makeup</button>
+            <button type="button" class="btn-template"
+                onclick="applyTemplate('Facial Cleanse', 799, 45, 'Skin brightening & cleaning', 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=500&q=80')">Facial</button>
+            {% elif shop.category == 'Nail Art' %}
+            <button type="button" class="btn-template"
+                onclick="applyTemplate('Gel Extensions', 1499, 60, 'Premium long-lasting nails', 'https://images.unsplash.com/photo-1519014816548-bf5fe059e98b?w=500&q=80')">Nails</button>
+            {% elif shop.category == 'Tattoo Studio' %}
+            <button type="button" class="btn-template"
+                onclick="applyTemplate('Initial Tattoo', 999, 60, 'Fine line small tattoo', 'https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?w=500&q=80')">Tattoo</button>
+            {% else %}
+            <button type="button" class="btn-template"
+                onclick="applyTemplate('General Service', 299, 30, 'All-in-one care', 'https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=500&q=80')">General</button>
+            {% endif %}
+        </div>
+    </div>
+
+    <form action="{{ url_for('owner.manage_services') }}" method="POST" style="padding: 1.5rem 2rem 2rem 2rem;">
+        <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 2rem;">
+            <!-- Left Side: Basic Info -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: 700; color: var(--text-main);">Service Name</label>
+                    <div style="position: relative;">
+                        <span
+                            style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"><i
+                                class="fas fa-heading"></i></span>
+                        <input type="text" id="serviceName" name="name" class="form-control"
+                            list="comprehensive-services"
+                            style="background: #f8fafc; border: 1.5px solid #edf2f7; padding: 1rem 1rem 1rem 2.8rem; border-radius: 14px; font-weight: 600;"
+                            placeholder="Search from 20+ preset services..." required autocomplete="off">
+                        <datalist id="comprehensive-services">
+                            {% if 'Barber' in (shop.category or '') or 'General' in (shop.category or '') or not
+                            shop.category %}
+                            <option value="Classic Haircut">
+                            <option value="Premium Grooming">
+                            <option value="Beard Trim & Styling">
+                            <option value="Royal Shave">
+                            <option value="Hair Spa">
+                            <option value="Hair Coloring">
+                                {% endif %}
+
+                                {% if 'Spa' in (shop.category or '') %}
+                            <option value="Full Body Massage">
+                            <option value="Aroma Therapy">
+                            <option value="Body Scrub">
+                            <option value="Steam & Sauna">
+                            <option value="Deep Tissue Massage">
+                                {% endif %}
+
+                                {% if 'Parlor' in (shop.category or '') or 'Beauty' in (shop.category or '') %}
+                            <option value="Bridal Makeup">
+                            <option value="Party Makeup">
+                            <option value="Facial & Glow">
+                            <option value="Threading">
+                            <option value="Full Body Waxing">
+                                {% endif %}
+
+                                {% if 'Nail' in (shop.category or '') %}
+                            <option value="Nail Extensions">
+                            <option value="Gel Nails">
+                            <option value="Manicure">
+                            <option value="Pedicure">
+                                {% endif %}
+
+                                {% if 'Tattoo' in (shop.category or '') %}
+                            <option value="Potrait Tattoo">
+                            <option value="Minimalist Tattoo">
+                            <option value="Tattoo Piercing">
+                                {% endif %}
+                        </datalist>
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem; padding-left: 0.5rem;">
+                        <i class="fas fa-magic"></i> Select any preset from the dropdown and we'll auto-fill the rest!
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label"
+                        style="font-weight: 700; color: var(--text-main); display: flex; justify-content: space-between;">
+                        Service Description <span id="charCount"
+                            style="font-size: 0.8rem; font-weight: 400; color: var(--text-muted);">0/150</span>
+                    </label>
+                    <textarea id="serviceDesc" name="description" class="form-control" rows="4" maxlength="150"
+                        style="background: #f8fafc; border: 1.5px solid #edf2f7; padding: 1rem; border-radius: 14px; resize: none;"
+                        placeholder="Describe the luxury details of this service..." required></textarea>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight: 700; color: var(--text-main);">Price (₹)</label>
+                        <div style="position: relative;">
+                            <span
+                                style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-weight: 700; color: #10b981;">₹</span>
+                            <input type="number" id="servicePrice" name="price" class="form-control"
+                                style="background: #f8fafc; border: 1.5px solid #edf2f7; padding: 1rem 1rem 1rem 2.2rem; border-radius: 14px; font-weight: 700; font-size: 1.1rem; color: var(--text-main);"
+                                placeholder="299" min="0" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight: 700; color: var(--text-main);">Duration
+                            (Mins)</label>
+                        <div style="position: relative;">
+                            <span
+                                style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--primary);"><i
+                                    class="far fa-clock"></i></span>
+                            <input type="number" id="serviceMins" name="duration" class="form-control"
+                                style="background: #f8fafc; border: 1.5px solid #edf2f7; padding: 1rem 1rem 1rem 2.8rem; border-radius: 14px; font-weight: 700;"
+                                placeholder="45" min="5" step="5" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Imagery & Review -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: 700; color: var(--text-main);">Service Image
+                        URL</label>
+                    <div style="position: relative;">
+                        <span
+                            style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"><i
+                                class="fas fa-link"></i></span>
+                        <input type="url" id="serviceImageInput" name="image_url" class="form-control"
+                            style="background: #f8fafc; border: 1.5px solid #edf2f7; padding: 1rem 1rem 1rem 2.8rem; border-radius: 14px;"
+                            placeholder="https://example.com/image.jpg">
+                    </div>
+                </div>
+
+                <!-- Live Preview Card -->
+                <div
+                    style="flex: 1; border: 2px dashed #edf2f7; border-radius: 16px; overflow: hidden; position: relative; background: #f8fafc; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 180px;">
+                    <img id="imagePreview"
+                        src="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=400"
+                        style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; opacity: 0.5; transition: all 0.3s; filter: grayscale(50%);">
+
+                    <div id="previewOverlay"
+                        style="position: relative; z-index: 10; text-align: center; background: rgba(255,255,255,0.85); padding: 0.75rem 1.5rem; border-radius: 50px; backdrop-filter: blur(4px); box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <i class="fas fa-image" style="color: var(--primary); margin-right: 0.5rem;"></i>
+                        <span style="font-weight: 700; font-size: 0.9rem; color: var(--text-main);">Live Preview</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary"
+                    style="width: 100%; padding: 1.2rem; border-radius: 14px; font-weight: 800; font-size: 1.1rem; box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4); transition: transform 0.2s; margin-top: auto;">
+                    <i class="fas fa-paper-plane" style="margin-right: 8px;"></i> Publish Service
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Bulk Add Form Modal -->
+<div id="bulkAddForm" class="card fade-in"
+    style="display: none; border: none; background: white; margin-bottom: 2.5rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); border-radius: 24px; position: relative; overflow: hidden;">
+    <div
+        style="height: 6px; background: linear-gradient(90deg, #10b981, #34d399); position: absolute; top: 0; left: 0; width: 100%;">
+    </div>
+
+    <div class="card-header"
+        style="border-bottom: 1px solid #f1f5f9; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-weight: 800; margin: 0; display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fas fa-list-check" style="color: #10b981;"></i> Bulk Menu Setup
+        </h3>
+        <button class="btn" type="button" onclick="document.getElementById('bulkAddForm').style.display='none'"
+            style="color: var(--text-muted); background: #f8fafc; border-radius: 50%; width: 35px; height: 35px; padding: 0; display: flex; align-items: center; justify-content: center; transition: all 0.3s;"
+            onmouseover="this.style.background='#f1f5f9'; this.style.color='var(--danger)';"
+            onmouseout="this.style.background='#f8fafc'; this.style.color='var(--text-muted)';">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <div style="padding: 1rem 2rem; background: #f8fafc; border-bottom: 1px solid #edf2f7;">
+        <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">
+            Quickly build your menu! Check the services your salon provides and adjust the pricing. Unchecked items are
+            ignored.
+        </p>
+    </div>
+
+    <form action="{{ url_for('owner.bulk_add_services') }}" method="POST">
+        <div style="max-height: 400px; overflow-y: auto; padding: 0 2rem;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead style="position: sticky; top: 0; background: white; z-index: 10;">
+                    <tr style="border-bottom: 2px solid #edf2f7;">
+                        <th style="padding: 1rem 0; text-align: left; width: 60px;">Select</th>
+                        <th style="padding: 1rem 0; text-align: left;">Service Name</th>
+                        <th style="padding: 1rem 0; text-align: left; width: 140px;">Price (₹)</th>
+                        <th style="padding: 1rem 0; text-align: left; width: 140px;">Mins</th>
+                    </tr>
+                </thead>
+                <tbody id="bulkServicesList">
+                    <!-- Populated dynamically via JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <div
+            style="padding: 1.5rem 2rem; background: white; border-top: 1px solid #edf2f7; display: flex; justify-content: flex-end;">
+            <button type="submit" class="btn btn-primary"
+                style="background: #10b981; border: none; padding: 0.75rem 2rem; border-radius: 50px; font-weight: 700; box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4);">
+                <i class="fas fa-check-circle"></i> Save Selected Services
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Modern Services List -->
+<div class="fade-in" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+    {% for service in services %}
+    {% set service_img = service.image_url or
+    'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600' %}
+    <div class="card"
+        style="padding: 0; overflow: hidden; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: transform 0.3s ease, box-shadow 0.3s ease; border-radius: 20px; display: flex; flex-direction: column;">
+        <div style="height: 180px; position: relative;">
+            <img src="{{ service_img }}" style="width: 100%; height: 100%; object-fit: cover;">
+            <div
+                style="position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.9); padding: 0.5rem 1rem; border-radius: 50px; font-weight: 800; color: var(--primary); box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 1.1rem;">
+                ₹{{ service.price }}
+            </div>
+            <div
+                style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 30px; background: linear-gradient(to bottom, transparent, white);">
+            </div>
+        </div>
+        <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column;">
+            <div
+                style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                <h3 style="font-weight: 800; font-size: 1.15rem; color: var(--text-main); margin: 0;">{{ service.name }}
+                </h3>
+                <div
+                    style="background: rgba(99, 102, 241, 0.1); padding: 0.25rem 0.6rem; border-radius: 8px; color: var(--primary); font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; gap: 0.4rem;">
+                    <i class="far fa-clock"></i> {{ service.duration }}m
+                </div>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; margin-bottom: 1.5rem; flex: 1;">
+                {{ service.description or 'Exquisite salon experience tailored for the modern individual.' }}
+            </p>
+            <div style="display: flex; gap: 0.75rem; border-top: 1px solid #f1f5f9; padding-top: 1rem;">
+                <button class="btn"
+                    style="flex: 1; justify-content: center; background: #f8fafc; color: var(--text-muted); font-size: 0.85rem; border-radius: 10px;">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <form action="{{ url_for('owner.delete_service', id=service.id) }}" method="POST" style="margin: 0;"
+                    onsubmit="return confirm('Are you sure you want to delete this service?');">
+                    <button type="submit" class="btn"
+                        style="width: 45px; height: 45px; justify-content: center; background: #fff1f2; color: var(--danger); border-radius: 10px; padding: 0;">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div style="grid-column: 1 / -1; text-align: center; padding: 6rem 2rem;">
+        <div
+            style="width: 100px; height: 100px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem;">
+            <i class="fas fa-concierge-bell" style="font-size: 3rem; color: #cbd5e1;"></i>
+        </div>
+        <h2 style="font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">Your menu is empty</h2>
+        <p style="color: var(--text-muted); margin-bottom: 2rem;">Start adding your first service to show up on the
+            customer app.</p>
+        <button class="btn btn-primary" onclick="document.getElementById('addServiceForm').style.display='block'"
+            style="padding: 1rem 2.5rem; border-radius: 50px;">
+            <i class="fas fa-plus"></i> Create First Service
+        </button>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Scripts for image and interactions -->
+{% block scripts %}
+<script>
+    // Extensive Auto-fill Presets
+    const allPresets = {
+        "Barber Shop": {
+            "Classic Haircut": { price: 199, mins: 30, desc: "Standard grooming for men including wash.", img: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500&q=80" },
+            "Premium Grooming": { price: 499, mins: 60, desc: "Complete haircut, beard styling, and washing.", img: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=500&q=80" },
+            "Beard Trim & Styling": { price: 149, mins: 20, desc: "Professional beard shaping and trimming.", img: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=500&q=80" },
+            "Hair Spa": { price: 999, mins: 60, desc: "Deep conditioning and massage.", img: "https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=500&q=80" },
+            "Global Coloring": { price: 1299, mins: 90, desc: "Full hair color with premium brands.", img: "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=500&q=80" },
+            "Facial Cleanup": { price: 299, mins: 30, desc: "Basic skin cleaning for men.", img: "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=500&q=80" },
+            "Head Massage": { price: 199, mins: 20, desc: "Relaxing head massage with oil.", img: "https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=500&q=80" },
+            "Royal Shave": { price: 199, mins: 30, desc: "Hot towel luxe shave experience.", img: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=500&q=80" }
+        },
+        "Spa & Wellness": {
+            "Full Body Massage": { price: 1999, mins: 60, desc: "Relaxing deep tissue experience.", img: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=500&q=80" },
+            "Aroma Therapy": { price: 2499, mins: 60, desc: "Relief with essential oils.", img: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=500&q=80" },
+            "Body Scrub": { price: 1599, mins: 45, desc: "Exfoliation for radiant skin.", img: "https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=500&q=80" },
+            "Swedish Massage": { price: 1800, mins: 60, desc: "Gentle rhythmic relaxation massage.", img: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=500&q=80" },
+            "Foot Reflexology": { price: 699, mins: 30, desc: "Targeted foot pressure point therapy.", img: "https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=500&q=80" },
+            "Steam & Sauna": { price: 499, mins: 30, desc: "Detoxify with steam therapy.", img: "https://images.unsplash.com/photo-1554057009-6798cb3d4a04?w=500&q=80" },
+            "Potli Massage": { price: 2199, mins: 75, desc: "Ayurvedic herbal pouch massage.", img: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=500&q=80" }
+        },
+        "Beauty Parlor": {
+            "Bridal Makeup": { price: 4999, mins: 120, desc: "Full bridal makeover.", img: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=500&q=80" },
+            "Facial & Glow": { price: 999, mins: 45, desc: "Deep skin cleaning.", img: "https://images.unsplash.com/photo-1570172619644-defd03631525?w=500&q=80" },
+            "Full Body Waxing": { price: 1499, mins: 90, desc: "Smooth finish waxing.", img: "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=500&q=80" },
+            "Threading (Eyebrows)": { price: 50, mins: 10, desc: "Precision eyebrow shaping.", img: "https://images.unsplash.com/photo-1570172619644-defd03631525?w=500&q=80" },
+            "Bleach & De-Tan": { price: 399, mins: 30, desc: "Remove tan and brighten skin.", img: "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=500&q=80" },
+            "Hair Smoothening": { price: 3500, mins: 180, desc: "Temporary straight hair treatment.", img: "https://images.unsplash.com/photo-1560869713-7d0a29430803?w=500&q=80" },
+            "Party Makeup": { price: 1999, mins: 60, desc: "Glamorous look for any event.", img: "https://images.unsplash.com/photo-1516975080661-46bce028b185?w=500&q=80" }
+        },
+        "Nail Art": {
+            "Gel extensions": { price: 1499, mins: 60, desc: "Premium extensions.", img: "https://images.unsplash.com/photo-1519014816548-bf5fe059e98b?w=500&q=80" },
+            "Manicure": { price: 499, mins: 30, desc: "Standard hand care.", img: "https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=500&q=80" },
+            "Pedicure": { price: 599, mins: 45, desc: "Foot spa and care.", img: "https://images.unsplash.com/photo-1519415510236-8555b231d46d?w=500&q=80" },
+            "Nail Piercing": { price: 299, mins: 15, desc: "Trendy nail piercing with jewelry.", img: "https://images.unsplash.com/photo-1519014816548-bf5fe059e98b?w=500&q=80" },
+            "Acrylic Extensions": { price: 1800, mins: 90, desc: "Strong and long-lasting acrylic nails.", img: "https://images.unsplash.com/photo-1519014816548-bf5fe059e98b?w=500&q=80" }
+        },
+        "Tattoo Studio": {
+            "Portrait Tattoo": { price: 4999, mins: 180, desc: "Realistic art.", img: "https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?w=500&q=80" },
+            "Minimalist Tattoo": { price: 999, mins: 60, desc: "Simple fine line art.", img: "https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?w=500&q=80" },
+            "Tribal Tattoo": { price: 2999, mins: 120, desc: "Traditional bold patterns.", img: "https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?w=500&q=80" },
+            "Tattoo Removal": { price: 1500, mins: 45, desc: "Laser session for fading tattoos.", img: "https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?w=500&q=80" },
+            "Body Piercing": { price: 499, mins: 20, desc: "Safe and hygienic piercing.", img: "https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?w=500&q=80" }
+        }
+    };
+
+    const currentCatRaw = `{{ shop.category|safe or 'Barber Shop' }}`;
+    // Handle HTML entities that might still slip through or different naming conventions
+    const currentCat = currentCatRaw.replace('&amp;', '&');
+
+    console.log("Detecting menu for category:", currentCat);
+
+    // Normalize matching
+    let servicePresets = allPresets["Barber Shop"];
+    for (let key in allPresets) {
+        if (key.toLowerCase() === currentCat.toLowerCase() ||
+            currentCat.toLowerCase().includes(key.toLowerCase()) ||
+            key.toLowerCase().includes(currentCat.toLowerCase())) {
+            servicePresets = allPresets[key];
+            break;
+        }
+    }
+
+
+    // Bulk Form Filler
+    const bulkContainer = document.getElementById('bulkServicesList');
+    if (bulkContainer) {
+        let bulkHTML = '';
+        for (const [name, data] of Object.entries(servicePresets)) {
+            const idSafe = name.replace(/[^a-zA-Z0-9]/g, '');
+            bulkHTML += `
+                <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                    <td style="padding: 1rem 0;">
+                        <input type="checkbox" name="selected_services" value="${name}" id="cb_${idSafe}" onchange="toggleBulkRow('${idSafe}', '${name}')" style="width: 20px; height: 20px; cursor: pointer; accent-color: #10b981;">
+                    </td>
+                    <td style="padding: 1rem 0; font-weight: 600; color: var(--text-main);">
+                        <label for="cb_${idSafe}" style="cursor: pointer; margin: 0; display: block;">${name}</label>
+                    </td>
+                    <td style="padding: 1rem 0; padding-right: 1rem;">
+                        <input type="number" name="price_${name}" id="price_${idSafe}" value="${data.price}" disabled required min="0"
+                            style="width: 100%; padding: 0.5rem; border: 1.5px solid #e2e8f0; border-radius: 8px; background: #f8fafc; color: var(--text-muted); font-weight: 700; transition: all 0.2s;">
+                    </td>
+                    <td style="padding: 1rem 0;">
+                        <input type="number" name="duration_${name}" id="dur_${idSafe}" value="${data.mins}" disabled required min="5" step="5"
+                            style="width: 100%; padding: 0.5rem; border: 1.5px solid #e2e8f0; border-radius: 8px; background: #f8fafc; color: var(--text-muted); font-weight: 700; transition: all 0.2s;">
+                    </td>
+                </tr>
+            `;
+        }
+        bulkContainer.innerHTML = bulkHTML;
+    }
+
+    function toggleBulkRow(idSafe, name) {
+        const cb = document.getElementById(`cb_${idSafe}`);
+        const priceInput = document.getElementById(`price_${idSafe}`);
+        const durInput = document.getElementById(`dur_${idSafe}`);
+
+        if (cb.checked) {
+            priceInput.disabled = false;
+            priceInput.style.background = 'white';
+            priceInput.style.borderColor = '#10b981';
+            priceInput.style.color = 'var(--text-main)';
+
+            durInput.disabled = false;
+            durInput.style.background = 'white';
+            durInput.style.borderColor = '#10b981';
+            durInput.style.color = 'var(--text-main)';
+        } else {
+            priceInput.disabled = true;
+            priceInput.style.background = '#f8fafc';
+            priceInput.style.borderColor = '#e2e8f0';
+            priceInput.style.color = 'var(--text-muted)';
+
+            durInput.disabled = true;
+            durInput.style.background = '#f8fafc';
+            durInput.style.borderColor = '#e2e8f0';
+            durInput.style.color = 'var(--text-muted)';
+        }
+    }
+
+    // Quick template applicator
+    function applyTemplate(name, price, mins, desc, img) {
+        document.getElementById('serviceName').value = name;
+        document.getElementById('servicePrice').value = price;
+        document.getElementById('serviceMins').value = mins;
+        document.getElementById('serviceDesc').value = desc;
+        document.getElementById('serviceImageInput').value = img;
+        updateImagePreview(img);
+        updateCharCount();
+    }
+
+    // Auto-fill trigger when typing in datalist
+    const serviceNameInput = document.getElementById('serviceName');
+    if (serviceNameInput) {
+        serviceNameInput.addEventListener('input', (e) => {
+            const val = e.target.value;
+            if (servicePresets[val]) {
+                const p = servicePresets[val];
+                applyTemplate(val, p.price, p.mins, p.desc, p.img);
+            }
+        });
+    }
+
+    // Live image preview
+    const imgInput = document.getElementById('serviceImageInput');
+    const imgPreview = document.getElementById('imagePreview');
+
+    function updateImagePreview(url) {
+        if (url && url.match(/^https?:\/\/.+/)) {
+            imgPreview.src = url;
+            imgPreview.style.opacity = '1';
+            imgPreview.style.filter = 'grayscale(0%)';
+        } else {
+            imgPreview.src = 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=400';
+            imgPreview.style.opacity = '0.5';
+            imgPreview.style.filter = 'grayscale(50%)';
+        }
+    }
+
+    if (imgInput) {
+        imgInput.addEventListener('input', (e) => updateImagePreview(e.target.value));
+    }
+
+    // Description char count
+    const descInput = document.getElementById('serviceDesc');
+    const charCount = document.getElementById('charCount');
+
+    function updateCharCount() {
+        if (!descInput || !charCount) return;
+        const len = descInput.value.length;
+        charCount.innerText = `${len}/150`;
+        if (len >= 140) charCount.style.color = 'var(--danger)';
+        else charCount.style.color = 'var(--text-muted)';
+    }
+
+    if (descInput) {
+        descInput.addEventListener('input', updateCharCount);
+    }
+</script>
+<style>
+    .card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+    }
+
+    .btn-template {
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-main);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-template:hover {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(99, 102, 241, 0.2);
+    }
+
+    .form-control:focus {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1) !important;
+        background: white !important;
+        outline: none;
+    }
+</style>
+{% endblock %}
+{% endblock %}

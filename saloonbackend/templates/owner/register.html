@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salon Owner Registration</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@21.0.8/build/css/intlTelInput.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='owner/css/style.css') }}">
+    <style>
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .mobile-container {
+            width: 100%;
+            max-width: 600px;
+            min-height: 100vh;
+            background: var(--bg-main);
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .reg-header {
+            padding: 2.5rem 2rem 1.5rem;
+            background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+            color: white;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.3);
+        }
+
+        .reg-content {
+            padding: 0 1.5rem 3rem;
+            flex: 1;
+        }
+
+        .step-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin: 0 0 1.5rem 0.5rem;
+            color: var(--text-main);
+        }
+
+        .step-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .icon-blue {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .icon-green {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .reg-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: none;
+        }
+
+        .input-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #f1f5f9;
+            border-radius: 14px;
+            background: #f8fafc;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .auth-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .iti {
+            width: 100%;
+            display: block;
+        }
+
+        .iti input {
+            padding-left: 95px !important;
+        }
+
+
+        .iti__country-list {
+            border-radius: 14px;
+            border: 2px solid #f1f5f9;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+        }
+
+        .iti__flag {
+            border-radius: 2px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .btn-auth {
+            width: 100%;
+            padding: 1.25rem;
+            border-radius: 20px;
+            background: #10b981;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 800;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.4);
+            transition: transform 0.2s ease;
+        }
+
+        .btn-auth:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="mobile-container fade-in">
+
+        <div class="reg-header">
+            <h1 style="font-weight: 800; font-size: 2rem; margin: 0 0 0.5rem;">Join SalonHub</h1>
+            <p style="margin: 0; opacity: 0.9; font-size: 0.95rem;">Become a verified partner and grow your business.
+            </p>
+        </div>
+
+        <div class="reg-content">
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            {% set is_success = category == 'success' %}
+            <div class="fade-in" style="background: {{ '#f0fdf4' if is_success else '#fef2f2' }}; 
+                       border-radius: 15px; 
+                       padding: 1rem; 
+                       margin-bottom: 1.5rem; 
+                       color: {{ '#065f46' if is_success else '#b91c1c' }}; 
+                       font-size: 0.875rem; font-weight: 600;">
+                <i class="fas {{ 'fa-check-circle' if is_success else 'fa-exclamation-circle' }}"></i> {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form action="{{ url_for('owner.register') }}" method="POST">
+
+                <!-- Owner Details Section -->
+                <div class="step-title">
+                    <div class="step-icon icon-blue"><i class="fas fa-user"></i></div>
+                    Personal Details
+                </div>
+                <div class="reg-card">
+                    <div class="input-group">
+                        <label class="input-label">Full Name</label>
+                        <input type="text" name="name" class="auth-input" placeholder="John Doe" required>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Email Address</label>
+                        <input type="email" name="email" class="auth-input" placeholder="john@example.com" required>
+                    </div>
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label class="input-label">Phone</label>
+                            <input type="tel" id="phone" name="raw_phone" class="auth-input"
+                                placeholder="Enter mobile number" required>
+                            <input type="hidden" name="phone" id="full_phone">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Gender</label>
+                            <select name="gender" class="auth-input" required>
+                                <option value="" disabled selected>Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Password</label>
+                        <input type="password" name="password" class="auth-input" placeholder="••••••••" required>
+                    </div>
+                </div>
+
+                <!-- Shop Details Section -->
+                <div class="step-title">
+                    <div class="step-icon icon-green"><i class="fas fa-store"></i></div>
+                    Business Identity
+                </div>
+                <div class="reg-card">
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label class="input-label">Salon Name</label>
+                            <input type="text" name="shop_name" class="auth-input" placeholder="The Royal Lounge"
+                                required>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Category</label>
+                            <select name="category" class="auth-input" required>
+                                <option value="Barber Shop" selected>Barber Shop</option>
+                                <option value="Beauty Parlor">Beauty Parlor</option>
+                                <option value="Spa & Wellness">Spa & Wellness</option>
+                                <option value="Tattoo Studio">Tattoo Studio</option>
+                                <option value="Nail Art">Nail Art</option>
+                                <option value="Other">Other Category</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label class="input-label">State/Province</label>
+                            <select id="stateSelect" name="state" class="auth-input" required>
+                                <option value="" disabled selected>Select country first</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">City</label>
+                            <select id="citySelect" name="city" class="auth-input" required>
+                                <option value="" disabled selected>Select state first</option>
+                            </select>
+                            <input type="text" id="customCityInput" class="auth-input"
+                                placeholder="Enter your town/city" style="display: none; margin-top: 0.5rem;" disabled>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Full Address</label>
+                        <textarea name="shop_address" class="auth-input" rows="2" placeholder="Street, City..."
+                            required></textarea>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label class="input-label">Opens At</label>
+                            <input type="time" name="opening_time" class="auth-input" required>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Closes At</label>
+                            <input type="time" name="closing_time" class="auth-input" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Map Embed Link (Optional)</label>
+                        <input type="text" name="map_url" class="auth-input" placeholder="Google Maps iframe src...">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-auth">
+                    Complete Registration
+                </button>
+
+                <div style="text-align: center; margin-top: 1.5rem;">
+                    <p style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500;">
+                        Already registered?
+                        <a href="{{ url_for('owner.login') }}"
+                            style="color: #3b82f6; font-weight: 800; text-decoration: none;">Sign In</a>
+                    </p>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@21.0.8/build/js/intlTelInput.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const input = document.querySelector("#phone");
+            const hiddenInput = document.querySelector("#full_phone");
+
+            const iti = window.intlTelInput(input, {
+                initialCountry: "auto",
+                geoIpLookup: callback => {
+                    fetch("https://ipapi.co/json")
+                        .then(res => res.json())
+                        .then(data => callback(data.country_code))
+                        .catch(() => callback("in"));
+                },
+                utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@21.0.8/build/js/utils.js",
+                separateDialCode: true,
+            });
+
+            const form = document.querySelector("form");
+            form.addEventListener("submit", function (e) {
+                hiddenInput.value = iti.getNumber();
+            });
+
+            const stateSelect = document.getElementById('stateSelect');
+            const citySelect = document.getElementById('citySelect');
+
+            function fetchStates(countryName) {
+                stateSelect.innerHTML = '<option value="" disabled selected>Loading states...</option>';
+                citySelect.innerHTML = '<option value="" disabled selected>Select state first</option>';
+
+                fetch("https://countriesnow.space/api/v0.1/countries/states", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ country: countryName })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        stateSelect.innerHTML = '<option value="" disabled selected>Select State</option>';
+                        if (!data.error && data.data && data.data.states && data.data.states.length > 0) {
+                            data.data.states.forEach(state => {
+                                const option = document.createElement('option');
+                                option.value = state.name;
+                                option.textContent = state.name;
+                                stateSelect.appendChild(option);
+                            });
+                            stateSelect.dataset.country = countryName;
+                        } else {
+                            // Fallback
+                            const fallbackStates = ['Andhra Pradesh', 'Telangana', 'Karnataka', 'Maharashtra', 'Tamil Nadu', 'Delhi', 'Other'];
+                            fallbackStates.forEach(state => {
+                                const option = document.createElement('option');
+                                option.value = state;
+                                option.textContent = state;
+                                stateSelect.appendChild(option);
+                            });
+                            stateSelect.dataset.country = 'India';
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error fetching states:', err);
+                        stateSelect.innerHTML = '<option value="" disabled selected>Select State</option><option value="Other">Other</option>';
+                    });
+            }
+
+            input.addEventListener("countrychange", function () {
+                const countryData = iti.getSelectedCountryData();
+                if (countryData && countryData.name) {
+                    const countryName = countryData.name.split(" (")[0];
+                    fetchStates(countryName);
+                }
+            });
+
+            // Initial load for auto-detected country
+            setTimeout(() => {
+                const initialCountryData = iti.getSelectedCountryData();
+                if (initialCountryData && initialCountryData.name) {
+                    const countryName = initialCountryData.name.split(" (")[0];
+                    fetchStates(countryName);
+                }
+            }, 1000);
+
+            // Fetch cities on state change
+            stateSelect.addEventListener('change', function () {
+                const stateName = this.value;
+                const countryName = this.dataset.country || 'India';
+
+                if (!stateName || stateName === 'Other') {
+                    citySelect.innerHTML = '<option value="" disabled selected>Select City</option><option value="Other">Other</option>';
+                    return;
+                }
+
+                citySelect.innerHTML = '<option value="" disabled selected>Loading cities...</option>';
+
+                fetch("https://countriesnow.space/api/v0.1/countries/state/cities", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ country: countryName, state: stateName })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        citySelect.innerHTML = '<option value="" disabled selected>Select City</option>';
+                        if (!data.error && data.data && data.data.length > 0) {
+                            data.data.forEach(city => {
+                                let cleanCity = city.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                                const option = document.createElement('option');
+                                option.value = cleanCity;
+                                option.textContent = cleanCity;
+                                citySelect.appendChild(option);
+                            });
+                        }
+                        const optionOther = document.createElement('option');
+                        optionOther.value = 'Other';
+                        optionOther.textContent = 'Other (Type Manually)';
+                        citySelect.appendChild(optionOther);
+                    })
+                    .catch(err => {
+                        console.error('Error fetching cities:', err);
+                        citySelect.innerHTML = '<option value="" disabled selected>Select City</option><option value="Other">Other (Type Manually)</option>';
+                    });
+            });
+
+            const customCityInput = document.getElementById('customCityInput');
+            citySelect.addEventListener('change', function () {
+                if (this.value === 'Other') {
+                    customCityInput.style.display = 'block';
+                    customCityInput.disabled = false;
+                    customCityInput.setAttribute('name', 'city');
+                    customCityInput.required = true;
+                    this.removeAttribute('name');
+                } else {
+                    customCityInput.style.display = 'none';
+                    customCityInput.disabled = true;
+                    customCityInput.removeAttribute('name');
+                    customCityInput.required = false;
+                    this.setAttribute('name', 'city');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

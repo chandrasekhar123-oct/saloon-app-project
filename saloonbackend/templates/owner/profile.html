@@ -1,0 +1,127 @@
+{% extends "owner/layout.html" %}
+{% set active_page = 'profile' %}
+
+{% block title %}Shop Profile{% endblock %}
+
+{% block content %}
+<div class="fade-in" style="max-width: 600px; margin: 0 auto; padding-bottom: 5rem;">
+    <!-- Digital Business Card -->
+    <div class="card"
+        style="border: none; border-radius: 30px; background: white; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);">
+        <!-- Shop Banner -->
+        <div style="height: 15rem; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); position: relative;">
+            <div
+                style="position: absolute; width: 100%; height: 100%; background: url('https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&q=80&w=800'); background-size: cover; background-position: center; opacity: 0.3;">
+            </div>
+            <div
+                style="position: absolute; bottom: -2.5rem; left: 2rem; display: flex; align-items: flex-end; gap: 1rem;">
+                <div
+                    style="width: 100px; height: 100px; border-radius: 20px; background: white; padding: 0.5rem; box-shadow: 0 10px 20px rgba(0,0,0,0.2);">
+                    <div
+                        style="width: 100%; height: 100%; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: white;">
+                        <i class="fas fa-scissors"></i>
+                    </div>
+                </div>
+                <div style="padding-bottom: 0.5rem;">
+                    <h2
+                        style="font-weight: 800; color: white; margin: 0; font-size: 1.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                        {{ shop.name }}</h2>
+                    <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 0.85rem; font-weight: 600;">Premium
+                        Salon Partner</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Content -->
+        <div style="padding: 4rem 2rem 2rem;">
+            <div style="display: flex; gap: 1.5rem; margin-bottom: 2rem;">
+                <div style="text-align: center; flex: 1; padding: 1rem; background: #f8fafc; border-radius: 15px;">
+                    <h4 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--primary);">4.9</h4>
+                    <p
+                        style="margin: 0; font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">
+                        Rating</p>
+                </div>
+                <div style="text-align: center; flex: 1; padding: 1rem; background: #f8fafc; border-radius: 15px;">
+                    <h4 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--primary);">250+</h4>
+                    <p
+                        style="margin: 0; font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">
+                        Clients</p>
+                </div>
+                <div style="text-align: center; flex: 1; padding: 1rem; background: #f8fafc; border-radius: 15px;">
+                    <h4 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--primary);">12</h4>
+                    <p
+                        style="margin: 0; font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">
+                        Services</p>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                    <div
+                        style="width: 40px; height: 40px; border-radius: 12px; background: rgba(99, 102, 241, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i class="fas fa-location-dot"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800;">Business Location</h4>
+                        <p style="margin: 0.2rem 0 0; font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+                            {{ shop.address }}</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                    <div
+                        style="width: 40px; height: 40px; border-radius: 12px; background: rgba(16, 185, 129, 0.1); color: #10b981; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800;">Operating Hours</h4>
+                        <p style="margin: 0.2rem 0 0; font-size: 0.85rem; color: var(--text-muted);">Open: {{
+                            shop.opening_time }} AM — Close: {{ shop.closing_time }} PM</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                    <div
+                        style="width: 40px; height: 40px; border-radius: 12px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i class="fas fa-phone-flip"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800;">Contact Details</h4>
+                        <p style="margin: 0.2rem 0 0; font-size: 0.85rem; color: var(--text-muted);">{{
+                            current_user.phone }} • {{ current_user.email }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 3rem; display: flex; gap: 1rem;">
+                <a href="{{ url_for('owner.settings') }}" class="btn btn-primary"
+                    style="flex: 1; padding: 1rem; border-radius: 15px; justify-content: center; font-weight: 700;">
+                    <i class="fas fa-edit"></i> Edit Profile
+                </a>
+                <button class="btn"
+                    style="background: #f1f5f9; color: var(--text-main); padding: 1rem; border-radius: 15px; flex: 1; justify-content: center; font-weight: 700;">
+                    <i class="fas fa-share-nodes"></i> Share Shop
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map Preview -->
+    <div class="card"
+        style="margin-top: 2rem; border: none; border-radius: 24px; padding: 1rem; background: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+        <h3 style="font-weight: 800; font-size: 1rem; margin: 0.5rem 0 1rem 1rem;">Live Location Preview</h3>
+        <div style="height: 200px; background: #f1f5f9; border-radius: 15px; overflow: hidden;">
+            {% if shop.map_url %}
+            <iframe src="{{ shop.map_url }}" width="100%" height="100%" style="border:0;" allowfullscreen=""
+                loading="lazy"></iframe>
+            {% else %}
+            <div
+                style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted);">
+                <i class="fas fa-map-marked-alt" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                <p style="font-size: 0.8rem;">Map not configured</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,393 @@
+{% extends "worker/layout.html" %}
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<!-- Profile Card -->
+<div style="position: relative; text-align: center; margin-bottom: 1.5rem;">
+    <!-- Edit Button -->
+    <button onclick="document.getElementById('editProfileModal').style.display='block'"
+        style="position: absolute; right: 0; top: 0; background: rgba(16, 185, 129, 0.1); color: #10b981; border: none; padding: 0.5rem 0.8rem; border-radius: 50px; font-weight: 700; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.4rem;">
+        <i class="fas fa-edit"></i> Edit
+    </button>
+    <div
+        style="width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #3b82f6); margin: 0 auto 1rem auto; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: white; font-weight: 900; overflow: hidden;">
+        {% if worker.image_url and 'ui-avatars' not in worker.image_url %}
+        <img src="{{ worker.image_url }}" alt="Profile Photo" style="width: 100%; height: 100%; object-fit: cover;">
+        {% else %}
+        {{ worker.name[0].upper() }}
+        {% endif %}
+    </div>
+    <h2 style="font-weight: 800; font-size: 1.3rem; color: var(--text-main); margin: 0;">{{ worker.name }}</h2>
+    <p style="color: var(--text-muted); font-size: 0.85rem; margin: 4px 0 0 0;"><i class="fas fa-phone"
+            style="margin-right: 4px;"></i>{{ worker.phone }}</p>
+    {% if salon %}
+    <p style="color: var(--primary); font-size: 0.85rem; font-weight: 700; margin: 4px 0 0 0;"><i class="fas fa-store"
+            style="margin-right: 4px;"></i>{{ salon.name }} ({{ salon.category }})</p>
+    <p style="color: var(--text-muted); font-size: 0.75rem; margin: 4px 0 0 0;"><i class="fas fa-location-dot"
+            style="margin-right: 4px;"></i>{{ worker.city }}, {{ worker.state }}</p>
+    {% endif %}
+</div>
+
+<!-- Info Cards -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.5rem;">
+    <div
+        style="background: white; border-radius: 16px; padding: 1rem; text-align: center; border: 1px solid var(--glass-border);">
+        <p style="font-size: 1.5rem; font-weight: 900; color: var(--primary); margin: 0;">{{ worker.experience or 0 }}
+        </p>
+        <p style="font-size: 0.72rem; color: var(--text-muted); margin: 2px 0 0 0; font-weight: 700;">Years Experience
+        </p>
+    </div>
+    <div
+        style="background: white; border-radius: 16px; padding: 1rem; text-align: center; border: 1px solid var(--glass-border);">
+        <p style="font-size: 1.5rem; font-weight: 900; color: #10b981; margin: 0;">{{ total_jobs }}</p>
+        <p style="font-size: 0.72rem; color: var(--text-muted); margin: 2px 0 0 0; font-weight: 700;">Total Jobs</p>
+    </div>
+</div>
+
+<!-- Skills -->
+<div
+    style="background: white; border-radius: 20px; padding: 1.25rem; margin-bottom: 1rem; border: 1px solid var(--glass-border);">
+    <h3 style="font-weight: 800; font-size: 0.9rem; color: var(--text-main); margin: 0 0 0.75rem 0;"><i
+            class="fas fa-star" style="color: #f59e0b; margin-right: 6px;"></i>Skills</h3>
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+        {% if worker.skill %}
+        {% for skill in worker.skill.split(',') %}
+        <span
+            style="background: rgba(16,185,129,0.1); color: #059669; padding: 0.3rem 0.85rem; border-radius: 50px; font-size: 0.78rem; font-weight: 700;">{{
+            skill.strip() }}</span>
+        {% endfor %}
+        {% else %}
+        <p style="color: var(--text-muted); font-size: 0.85rem;">No skills listed</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Shop Info -->
+{% if salon %}
+<div
+    style="background: white; border-radius: 20px; padding: 1.25rem; margin-bottom: 1rem; border: 1px solid var(--glass-border);">
+    <h3 style="font-weight: 800; font-size: 0.9rem; color: var(--text-main); margin: 0 0 0.75rem 0;">
+        <i class="fas fa-store" style="color: var(--primary); margin-right: 6px;"></i>
+        {% if salon.category == 'Spa & Wellness' %}
+        My Spa
+        {% elif salon.category == 'Beauty Parlor' %}
+        My Parlor
+        {% elif salon.category in ['Tattoo Studio', 'Nail Art'] %}
+        My Studio
+        {% else %}
+        My Salon
+        {% endif %}
+    </h3>
+    <p style="font-weight: 700; color: var(--text-main); margin: 0;">{{ salon.name }}</p>
+    <p style="font-size: 0.82rem; color: var(--text-muted); margin: 4px 0 0 0;"><i class="fas fa-map-marker-alt"
+            style="margin-right: 4px;"></i>{{ salon.address or salon.location or 'N/A' }}</p>
+    <p style="font-size: 0.82rem; color: var(--text-muted); margin: 4px 0 0 0;"><i class="fas fa-clock"
+            style="margin-right: 4px;"></i>{{ salon.opening_time or '09:00' }} – {{ salon.closing_time or '20:00' }}</p>
+</div>
+{% endif %}
+
+<!-- Logout -->
+<a href="{{ url_for('worker_panel.logout') }}"
+    style="display: block; text-align: center; background: rgba(239,68,68,0.1); color: #ef4444; padding: 0.85rem; border-radius: 16px; font-weight: 800; text-decoration: none; font-size: 0.9rem; margin-bottom: 2rem;">
+    <i class="fas fa-sign-out-alt" style="margin-right: 6px;"></i>Logout
+</a>
+
+<!-- Edit Profile Modal -->
+<div id="editProfileModal" class="fade-in"
+    style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; padding: 1rem; overflow-y: auto;">
+    <div
+        style="background: white; border-radius: 24px; padding: 1.5rem; max-width: 500px; margin: 2rem auto; position: relative;">
+        <button onclick="document.getElementById('editProfileModal').style.display='none'"
+            style="position: absolute; right: 1.5rem; top: 1.5rem; background: none; border: none; font-size: 1.25rem; color: var(--text-muted); cursor: pointer;">
+            <i class="fas fa-times"></i>
+        </button>
+        <h3 style="margin: 0 0 1.5rem 0; font-weight: 800; font-size: 1.25rem;">Edit Profile</h3>
+
+        <form action="{{ url_for('worker_panel.settings') }}" method="POST" enctype="multipart/form-data"
+            style="display: flex; flex-direction: column; gap: 1rem;">
+            <!-- Photo Upload Area inside Form -->
+            <div style="text-align: center; margin-bottom: 0.5rem;">
+                <label for="photoUpload" style="cursor: pointer; display: inline-block; position: relative;">
+                    <div
+                        style="width: 80px; height: 80px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid #10b981;">
+                        {% if worker.image_url %}
+                        <img src="{{ worker.image_url }}" alt="Upload Preview"
+                            style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                        <i class="fas fa-camera" style="font-size: 1.5rem; color: #94a3b8;"></i>
+                        {% endif %}
+                    </div>
+                    <div
+                        style="position: absolute; bottom: 0; right: 0; background: #10b981; color: white; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; border: 2px solid white;">
+                        <i class="fas fa-upload"></i>
+                    </div>
+                </label>
+                <input type="file" id="photoUpload" name="photo" accept="image/*" style="display: none;" onchange="
+                    const file = this.files[0];
+                    if(file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const imgContainer = document.querySelector('label[for=\'photoUpload\'] div');
+                            imgContainer.innerHTML = '<img src=\'' + e.target.result + '\' style=\'width: 100%; height: 100%; object-fit: cover;\'>';
+                        }
+                        reader.readAsDataURL(file);
+                    }
+                ">
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Tap to change photo</p>
+            </div>
+
+            <div>
+                <label
+                    style="display: block; font-weight: 700; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-main);">Full
+                    Name</label>
+                <input type="text" name="name" value="{{ worker.name }}" required
+                    style="width: 100%; padding: 0.85rem; border-radius: 12px; border: 1px solid var(--glass-border); background: #f8fafc; font-size: 0.95rem; box-sizing: border-box;">
+            </div>
+            <div>
+                <label
+                    style="display: block; font-weight: 700; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-main);">Phone
+                    Number</label>
+                <input type="text" name="phone" value="{{ worker.phone }}" required
+                    style="width: 100%; padding: 0.85rem; border-radius: 12px; border: 1px solid var(--glass-border); background: #f8fafc; font-size: 0.95rem; box-sizing: border-box;">
+            </div>
+
+            <div>
+                <label
+                    style="display: block; font-weight: 700; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-main);">Assigned
+                    Salon / Shop</label>
+                <select name="salon_id"
+                    style="width: 100%; padding: 0.85rem; border-radius: 12px; border: 1px solid var(--glass-border); background: #f8fafc; font-size: 0.95rem; box-sizing: border-box;">
+                    <option value="">-- Change My Shop --</option>
+                    {% for s in salons %}
+                    <option value="{{ s.id }}" data-category="{{ s.category }}" {% if worker.salon_id==s.id %}selected{%
+                        endif %}>
+                        {{ s.name }} — {{ s.category }} ({{ s.location }})
+                    </option>
+                    {% endfor %}
+                </select>
+                <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; display: block;">If you
+                    change shop, you must be approved by the new owner.</small>
+            </div>
+            <div>
+                <label
+                    style="display: block; font-weight: 700; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-main);">State
+                    & City</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; align-items: start;">
+                    <select id="stateSelect" name="state" required
+                        style="width: 100%; padding: 0.85rem; border-radius: 12px; border: 1px solid var(--glass-border); background: #f8fafc; font-size: 0.85rem; box-sizing: border-box;">
+                        <option value="" disabled>Select state</option>
+                        {% if worker.state %}
+                        <option value="{{ worker.state }}" selected>{{ worker.state }}</option>
+                        {% endif %}
+                    </select>
+                    <div style="width: 100%;">
+                        <select id="citySelect" name="city" required
+                            style="width: 100%; padding: 0.85rem; border-radius: 12px; border: 1px solid var(--glass-border); background: #f8fafc; font-size: 0.85rem; box-sizing: border-box;">
+                            <option value="" disabled>Select city</option>
+                            {% if worker.city %}
+                            <option value="{{ worker.city }}" selected>{{ worker.city }}</option>
+                            {% endif %}
+                        </select>
+                        <input type="text" id="customCityInput" placeholder="Enter custom town/city"
+                            style="display: none; width: 100%; padding: 0.85rem; border-radius: 12px; border: 1px solid var(--glass-border); background: #f8fafc; font-size: 0.85rem; box-sizing: border-box; margin-top: 0.5rem;"
+                            disabled>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <label
+                    style="display: block; font-weight: 700; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-main);">Experience
+                    (Years)</label>
+                <input type="number" name="experience" value="{{ worker.experience or 0 }}" required
+                    style="width: 100%; padding: 0.85rem; border-radius: 12px; border: 1px solid var(--glass-border); background: #f8fafc; font-size: 0.95rem; box-sizing: border-box;">
+            </div>
+            <div>
+                <label
+                    style="display: block; font-weight: 700; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-main);">Select
+                    Skills</label>
+                <div id="dynamicSkillsGrid"
+                    style="display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.5rem; background: #f8fafc; border-radius: 12px; border: 1px solid var(--glass-border);">
+                    <!-- Skills will be injected here via JS -->
+                </div>
+                <input type="hidden" name="skill" id="profileSkillInput"
+                    value="{{ worker.skill if worker.skill else '' }}">
+            </div>
+
+            <button type="submit"
+                style="margin-top: 1rem; width: 100%; padding: 1rem; border-radius: 12px; background: #10b981; color: white; border: none; font-weight: 800; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);">
+                Save Changes
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const skillPatterns = {
+        'Barber Shop': ['Haircut', 'Beard Trim', 'Shaving', 'Hair Color', 'Head Massage', 'Hair Wash'],
+        'Beauty Parlor': ['Facial', 'Threading', 'Waxing', 'Makeup', 'Hair Styling', 'Manicure', 'Pedicure'],
+        'Spa & Wellness': ['Thai Massage', 'Aroma Therapy', 'Body Scrub', 'Reflexology', 'Facial', 'Deep Tissue'],
+        'Tattoo Studio': ['Line Work', 'Shading', 'Color Pack', 'Piercing', 'Tribal', 'Portrait'],
+        'Nail Art': ['Gel Polish', 'Acrylics', 'Nail Extensions', 'Pedicure', 'Manicure', 'UV Design'],
+        'General': ['Haircut', 'Beard Trim', 'Facial', 'Hair Color', 'Head Massage', 'Shaving', 'Hair Wash', 'Threading', 'Waxing']
+    };
+
+    let selectedSkills = "{{ worker.skill or '' }}".split(',').map(s => s.trim()).filter(s => s !== "");
+
+    function updateSkillsGrid(category) {
+        const grid = document.getElementById('dynamicSkillsGrid');
+        const skills = skillPatterns[category] || skillPatterns['General'];
+
+        grid.innerHTML = '';
+        skills.forEach(skill => {
+            const isSelected = selectedSkills.includes(skill);
+            const label = document.createElement('label');
+            label.style = `display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; background: ${isSelected ? 'rgba(16, 185, 129, 0.1)' : 'white'}; color: ${isSelected ? '#10b981' : 'var(--text-main)'}; border: 1px solid ${isSelected ? '#10b981' : '#e2e8f0'}; border-radius: 50px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.2s; user-select: none;`;
+
+            const input = document.createElement('input');
+            input.type = 'checkbox';
+            input.name = 'skill_list';
+            input.value = skill;
+            input.style.display = 'none';
+            if (isSelected) input.checked = true;
+
+            input.onchange = function () {
+                label.style.background = this.checked ? 'rgba(16, 185, 129, 0.1)' : 'white';
+                label.style.color = this.checked ? '#10b981' : 'var(--text-main)';
+                label.style.borderColor = this.checked ? '#10b981' : '#e2e8f0';
+
+                if (this.checked) {
+                    if (!selectedSkills.includes(skill)) selectedSkills.push(skill);
+                } else {
+                    selectedSkills = selectedSkills.filter(s => s !== skill);
+                }
+                document.getElementById('profileSkillInput').value = selectedSkills.join(', ');
+            };
+
+            label.appendChild(input);
+            label.append(skill);
+            grid.appendChild(label);
+        });
+    }
+
+    document.querySelector('select[name="salon_id"]').addEventListener('change', function () {
+        const selectedOption = this.options[this.selectedIndex];
+        const category = selectedOption.getAttribute('data-category') || 'Barber Shop';
+        updateSkillsGrid(category);
+    });
+
+    // Initial load
+    window.addEventListener('load', () => {
+        const initialCategory = "{{ salon.category if salon else 'General' }}";
+        updateSkillsGrid(initialCategory);
+
+        // Fetch States & Cities
+        const savedState = "{{ worker.state or '' }}";
+        const savedCity = "{{ worker.city or '' }}";
+        const stateSelect = document.getElementById('stateSelect');
+        const citySelect = document.getElementById('citySelect');
+
+        function loadStates(countryName) {
+            fetch("https://countriesnow.space/api/v0.1/countries/states", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ country: countryName })
+            })
+                .then(r => r.json())
+                .then(d => {
+                    stateSelect.innerHTML = '<option value="" disabled>Select State</option>';
+                    if (!d.error && d.data && d.data.states && d.data.states.length > 0) {
+                        d.data.states.forEach(s => {
+                            const opt = document.createElement('option');
+                            opt.value = s.name;
+                            opt.textContent = s.name;
+                            if (s.name === savedState) opt.selected = true;
+                            stateSelect.appendChild(opt);
+                        });
+                    } else {
+                        const fallbackStates = ['Andhra Pradesh', 'Telangana', 'Karnataka', 'Maharashtra', 'Tamil Nadu', 'Delhi', 'Other'];
+                        if (savedState && !fallbackStates.includes(savedState)) fallbackStates.unshift(savedState);
+                        fallbackStates.forEach(s => {
+                            const opt = document.createElement('option');
+                            opt.value = s;
+                            opt.textContent = s;
+                            if (s === savedState) opt.selected = true;
+                            stateSelect.appendChild(opt);
+                        });
+                    }
+
+                    if (stateSelect.value) {
+                        loadCities(countryName, stateSelect.value, savedCity);
+                    }
+                })
+                .catch(err => console.error(err));
+        }
+
+        function loadCities(countryName, stateName, selectedCity) {
+            if (!stateName || stateName === 'Other') return;
+            citySelect.innerHTML = '<option value="" disabled>Loading cities...</option>';
+            fetch("https://countriesnow.space/api/v0.1/countries/state/cities", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ country: countryName, state: stateName })
+            })
+                .then(r => r.json())
+                .then(d => {
+                    citySelect.innerHTML = '<option value="" disabled>Select City</option>';
+                    if (!d.error && d.data && d.data.length > 0) {
+                        let found = false;
+                        d.data.forEach(c => {
+                            let clean = c.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                            const opt = document.createElement('option');
+                            opt.value = clean;
+                            opt.textContent = clean;
+                            if (clean === selectedCity) { opt.selected = true; found = true; }
+                            citySelect.appendChild(opt);
+                        });
+                        if (selectedCity && !found && selectedCity !== 'Other') {
+                            const opt = document.createElement('option');
+                            opt.value = selectedCity;
+                            opt.textContent = selectedCity;
+                            opt.selected = true;
+                            citySelect.appendChild(opt);
+                        }
+                    } else {
+                        const opt = document.createElement('option');
+                        opt.value = selectedCity || 'Other';
+                        opt.textContent = selectedCity || 'Other';
+                        opt.selected = true;
+                        citySelect.appendChild(opt);
+                    }
+                    const optOther = document.createElement('option');
+                    optOther.value = 'Other';
+                    optOther.textContent = 'Other (Type Manually)';
+                    citySelect.appendChild(optOther);
+                })
+                .catch(err => console.error(err));
+        }
+
+        const customCityInput = document.getElementById('customCityInput');
+        citySelect.addEventListener('change', function () {
+            if (this.value === 'Other') {
+                customCityInput.style.display = 'block';
+                customCityInput.disabled = false;
+                customCityInput.setAttribute('name', 'city');
+                customCityInput.required = true;
+                this.removeAttribute('name');
+            } else {
+                customCityInput.style.display = 'none';
+                customCityInput.disabled = true;
+                customCityInput.removeAttribute('name');
+                customCityInput.required = false;
+                this.setAttribute('name', 'city');
+            }
+        });
+
+        stateSelect.addEventListener('change', function () {
+            loadCities('India', this.value, '');
+        });
+
+        // Initialize with default country India
+        loadStates('India');
+    });
+</script>
+{% endblock %}

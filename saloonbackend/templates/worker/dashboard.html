@@ -1,0 +1,367 @@
+{% extends "worker/layout.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block styles %}
+<style>
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes pulse-ring {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        100% {
+            transform: scale(1.6);
+            opacity: 0;
+        }
+    }
+
+    .approval-banner {
+        animation: slideDown 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{% if show_approval_notif %}
+<!-- ✅ Approval Notification Banner -->
+<div class="approval-banner" id="approvalBanner"
+    style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 24px; padding: 1.5rem; margin-bottom: 1.5rem; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(16,185,129,0.35);">
+
+    <!-- Decorative blobs -->
+    <div
+        style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.08); border-radius: 50%;">
+    </div>
+    <div
+        style="position: absolute; bottom: -30px; left: 30px; width: 80px; height: 80px; background: rgba(255,255,255,0.06); border-radius: 50%;">
+    </div>
+
+    <!-- Close Button -->
+    <button onclick="document.getElementById('approvalBanner').style.display='none'"
+        style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(255,255,255,0.2); border: none; color: white; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; line-height: 1;">✕</button>
+
+    <div style="display: flex; align-items: center; gap: 1rem; position: relative; z-index: 1;">
+        <!-- Animated Check Circle -->
+        <div style="position: relative; flex-shrink: 0;">
+            <div
+                style="position: absolute; inset: 0; background: rgba(255,255,255,0.3); border-radius: 50%; animation: pulse-ring 1.5s ease-out infinite;">
+            </div>
+            <div
+                style="width: 56px; height: 56px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; position: relative; z-index: 1; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                ✅
+            </div>
+        </div>
+        <!-- Text -->
+        <div>
+            <p
+                style="color: rgba(255,255,255,0.85); font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 3px 0;">
+                Account Approved</p>
+            <h3 style="color: white; font-weight: 900; font-size: 1.15rem; margin: 0 0 4px 0;">You're officially part of
+                the team! 🎉</h3>
+            <p style="color: rgba(255,255,255,0.8); font-size: 0.8rem; margin: 0;">
+                {% if salon %}The owner of <strong>{{ salon.name }}</strong> has approved your account.{% else %}Your
+                account has been approved by the salon owner.{% endif %}
+                Start accepting jobs from the Jobs tab below.
+            </p>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <a href="{{ url_for('worker_panel.my_bookings') }}"
+        style="display: block; margin-top: 1rem; background: white; color: #059669; text-align: center; padding: 0.65rem; border-radius: 14px; font-weight: 800; font-size: 0.85rem; text-decoration: none; position: relative; z-index: 1; transition: transform 0.2s;"
+        onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+        <i class="fas fa-briefcase" style="margin-right: 6px;"></i>View My Jobs
+    </a>
+</div>
+{% endif %}
+
+
+<div class="fade-in"
+    style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-start;">
+    <div>
+        <p
+            style="color: var(--primary); font-weight: 800; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.25rem;">
+            WORKER PORTAL</p>
+        <h2 id="greeting" style="font-weight: 800; font-size: 1.6rem; color: var(--text-main); margin: 0;">Good Evening
+            👋
+        </h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">{{ worker.name }} · {{ salon.name if
+            salon else 'Awaiting Assignment' }}</p>
+    </div>
+</div>
+
+<!-- 🔔 NEW JOB ALERT (Visible only if there are pending requests) -->
+{% if pending_count > 0 %}
+<div class="fade-in" style="margin-bottom: 1.5rem;">
+    <div
+        style="background: #fffbeb; border: 2px solid #fcd34d; border-radius: 20px; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; position: relative;">
+        <div
+            style="width: 50px; height: 50px; background: #fbbf24; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; animation: bounce 1s infinite; box-shadow: 0 4px 10px rgba(251,191,36,0.2);">
+            🔔
+        </div>
+        <div style="flex: 1;">
+            <h4 style="margin: 0; font-size: 1rem; font-weight: 850; color: #92400e;">New Job Request!</h4>
+            <p style="margin: 3px 0 0 0; font-size: 0.8rem; font-weight: 600; color: #b45309;">You have {{ pending_count
+                }} pending booking request(s) waiting for your approval.</p>
+        </div>
+        <a href="{{ url_for('worker_panel.my_bookings', status='pending') }}"
+            style="background: #fbbf24; color: #92400e; padding: 0.6rem 1rem; border-radius: 12px; font-weight: 800; font-size: 0.75rem; text-decoration: none;">
+            Accept Now
+        </a>
+    </div>
+</div>
+
+<style>
+    @keyframes bounce {
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-5px);
+        }
+    }
+</style>
+{% endif %}
+
+<!-- Flipkart Style Ad for Workers -->
+<div class="fade-in" style="margin-bottom: 2rem;">
+    <div
+        style="background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); border-radius: 20px; padding: 1.25rem; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden; box-shadow: 0 10px 25px rgba(16,185,129,0.25);">
+        <div
+            style="position: absolute; right: -15px; top: -15px; width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%;">
+        </div>
+        <div style="position: relative; z-index: 1;">
+            <span
+                style="background: #ffffff; color: #059669; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.6rem; font-weight: 900; text-transform: uppercase;">SKILL
+                UP</span>
+            <h3 style="color: #ffffff; font-weight: 900; font-size: 1.15rem; margin: 8px 0 4px 0;">Master Class: Hair
+                Coloring</h3>
+            <p style="color: rgba(255,255,255,0.9); font-size: 0.8rem; margin: 0; font-weight: 600;">Get certified by
+                top artists. Join now!</p>
+            <button
+                style="margin-top: 12px; background: #ffffff; color: #059669; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 800; font-size: 0.75rem; cursor: pointer;">Learn
+                More</button>
+        </div>
+        <div
+            style="font-size: 4rem; position: relative; z-index: 1; transform: rotate(-10deg); filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1));">
+            🎓
+        </div>
+    </div>
+</div>
+
+{% set default_img = 'https://ui-avatars.com/api/?name=' + worker.name + '&background=10b981&color=fff&size=150' %}
+<img src="{{ worker.image_url if worker.image_url and 'ui-avatars' not in worker.image_url else default_img }}"
+    alt="Profile Photo"
+    style="width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+</div>
+
+<!-- Availability Toggle -->
+<div
+    style="background: var(--bg-card); border-radius: 20px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--glass-border); box-shadow: var(--shadow-sm);">
+    <div>
+        <p
+            style="color: var(--text-muted); font-size: 0.72rem; font-weight: 700; margin: 0; text-transform: uppercase; letter-spacing: 1px;">
+            Availability Status</p>
+        <p id="statusLabel"
+            style="color: {{ '#10b981' if worker.is_active else '#ef4444' }}; font-weight: 800; font-size: 1.2rem; margin: 2px 0 0 0;">
+            {{ '● Online' if worker.is_active else '○ Offline' }}
+        </p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">{{ 'Avilable' if worker.is_active
+            else 'Away' }}</span>
+        <label class="switch">
+            <input type="checkbox" id="statusToggle" {{ 'checked' if worker.is_active else '' }}
+                onchange="toggleStatus()">
+            <span class="slider round"></span>
+        </label>
+    </div>
+</div>
+
+<style>
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 26px;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+    }
+
+    input:checked+.slider {
+        background-color: var(--primary);
+    }
+
+    input:checked+.slider:before {
+        transform: translateX(24px);
+    }
+
+    .slider.round {
+        border-radius: 34px;
+    }
+
+    .slider.round:before {
+        border-radius: 50%;
+    }
+</style>
+
+<script>
+    function toggleStatus() {
+        const statusLabel = document.getElementById('statusLabel');
+        const toggler = document.getElementById('statusToggle');
+
+        fetch("{{ url_for('worker_panel.toggle_status') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    statusLabel.innerText = data.is_active ? '● Online' : '○ Offline';
+                    statusLabel.style.color = data.is_active ? '#10b981' : '#ef4444';
+                }
+            })
+            .catch(err => {
+                console.error('Error toggling status:', err);
+                toggler.checked = !toggler.checked;
+            });
+    }
+</script>
+
+<!-- Quick Stats -->
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.5rem;">
+    <a href="{{ url_for('worker_panel.my_bookings', status='pending') }}" style="text-decoration: none;">
+        <div style="background: var(--bg-card); border-radius: 16px; padding: 1rem; text-align: center; border: 1px solid var(--glass-border); transition: transform 0.2s;"
+            onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+            <p style="font-size: 1.6rem; font-weight: 900; color: #f59e0b; margin: 0;">{{ pending_count }}</p>
+            <p style="font-size: 0.68rem; color: var(--text-muted); margin: 2px 0 0 0; font-weight: 700;">Pending</p>
+        </div>
+    </a>
+    <a href="{{ url_for('worker_panel.my_bookings', status='completed') }}" style="text-decoration: none;">
+        <div style="background: var(--bg-card); border-radius: 16px; padding: 1rem; text-align: center; border: 1px solid var(--glass-border); transition: transform 0.2s;"
+            onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+            <p style="font-size: 1.6rem; font-weight: 900; color: #10b981; margin: 0;">{{ completed_count }}</p>
+            <p style="font-size: 0.68rem; color: var(--text-muted); margin: 2px 0 0 0; font-weight: 700;">Completed</p>
+        </div>
+    </a>
+    <a href="{{ url_for('worker_panel.insights') }}" style="text-decoration: none;">
+        <div style="background: var(--bg-card); border-radius: 16px; padding: 1rem; text-align: center; border: 1px solid var(--glass-border); transition: transform 0.2s;"
+            onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+            <p style="font-size: 1.4rem; font-weight: 900; color: #6366f1; margin: 0;">₹{{ "%.0f"|format(today_earnings)
+                }}</p>
+            <p style="font-size: 0.68rem; color: var(--text-muted); margin: 2px 0 0 0; font-weight: 700;">Earnings</p>
+        </div>
+    </a>
+</div>
+
+<!-- Worker Skills Card -->
+<div
+    style="background: var(--bg-card); border-radius: 20px; padding: 1.25rem; margin-bottom: 1.5rem; border: 1px solid var(--glass-border);">
+    <h3 style="font-weight: 800; font-size: 0.9rem; color: var(--text-main); margin: 0 0 0.75rem 0;"><i
+            class="fas fa-star" style="color: #f59e0b; margin-right: 6px;"></i>My Skills</h3>
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+        {% if worker.skill %}
+        {% for skill in worker.skill.split(',') %}
+        <span
+            style="background: rgba(99,102,241,0.1); color: var(--primary); padding: 0.3rem 0.85rem; border-radius: 50px; font-size: 0.75rem; font-weight: 700;">{{
+            skill.strip() }}</span>
+        {% endfor %}
+        {% else %}
+        <span style="color: var(--text-muted); font-size: 0.85rem;">No skills listed yet</span>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Upcoming Bookings -->
+<div
+    style="background: var(--bg-card); border-radius: 20px; border: 1px solid var(--glass-border); overflow: hidden; margin-bottom: 2rem;">
+    <div
+        style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-weight: 800; font-size: 0.95rem; margin: 0; color: var(--text-main);">Upcoming Jobs</h3>
+        <a href="{{ url_for('worker_panel.my_bookings') }}"
+            style="color: var(--primary); font-size: 0.75rem; font-weight: 700; text-decoration: none;">View All</a>
+    </div>
+    {% if upcoming_bookings %}
+    {% for b in upcoming_bookings[:4] %}
+    <div
+        style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <p style="font-weight: 700; color: var(--text-main); margin: 0; font-size: 0.9rem;">{{ b.service.name }}</p>
+            <p style="font-size: 0.78rem; color: var(--text-muted); margin: 3px 0 0 0;">
+                <i class="fas fa-user" style="margin-right: 3px; color: var(--primary);"></i>{{ b.user.name }}
+                &nbsp;·&nbsp;
+                {% set days_diff = (b.slot_time.date() - now.date()).days %}
+                {% if days_diff == 0 %}
+                <span style="color: #ef4444; font-weight: 850;">TODAY</span> at {{ b.slot_time.strftime('%I:%M %p') }}
+                {% elif days_diff == 1 %}
+                <span style="color: #f59e0b; font-weight: 850;">TOMORROW</span> at {{ b.slot_time.strftime('%I:%M %p')
+                }}
+                {% else %}
+                {{ b.slot_time.strftime('%d %b, %I:%M %p') }}
+                {% endif %}
+            </p>
+        </div>
+        {% if b.status == 'pending' %}
+        <span
+            style="background: rgba(245,158,11,0.1); color: #f59e0b; padding: 0.25rem 0.6rem; border-radius: 50px; font-size: 0.68rem; font-weight: 800;">Pending</span>
+        {% elif b.status == 'accepted' %}
+        <span
+            style="background: rgba(99,102,241,0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 50px; font-size: 0.68rem; font-weight: 800;">Accepted</span>
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <div style="text-align: center; padding: 2rem;">
+        <p style="font-size: 2rem; margin-bottom: 0.5rem;">📋</p>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">No upcoming jobs right now.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    const hour = new Date().getHours();
+    const greet = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
+    document.getElementById('greeting').innerText = `${greet} 👋`;
+</script>
+{% endblock %}

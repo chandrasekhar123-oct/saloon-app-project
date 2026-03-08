@@ -1,0 +1,347 @@
+{% extends "owner/layout.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Premium Welcome & Shop Status Header -->
+<div class="fade-in" style="margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+            <p id="greetingTime"
+                style="color: var(--primary); font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem;">
+                Welcome Back,</p>
+            <h2 id="customGreeting" style="font-weight: 800; font-size: 1.75rem; color: var(--text-main); margin: 0;">
+                {{ shop.name }}
+            </h2>
+            <div style="display: flex; align-items: center; gap: 8px; margin-top: 6px;">
+                <span
+                    style="background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.2rem 0.6rem; border-radius: 50px; font-size: 0.7rem; font-weight: 850; letter-spacing: 0.5px; text-transform: uppercase;">
+                    <i class="fas fa-tag" style="margin-right: 4px;"></i>{{ shop.category or 'Barber Shop' }}
+                </span>
+                <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">
+                    <i class="fas fa-map-marker-alt" style="margin-right: 4px;"></i>{{ shop.location or 'Location not
+                    set' }}
+                </span>
+            </div>
+        </div>
+        <!-- Interactive Shop Status Toggle -->
+        <div onclick="fastToggleStatus()" id="dashboardStatusToggle"
+            style="background: var(--bg-card); padding: 0.6rem 1rem; border-radius: 50px; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--glass-border); cursor: pointer; transition: 0.3s;"
+            data-active="{{ 'true' if shop.is_active else 'false' }}">
+            <div id="statusDot"
+                style="width: 10px; height: 10px; border-radius: 50%; transition: 0.3s;
+                background: {{ '#10b981' if shop.is_active else '#ef4444' }}; box-shadow: 0 0 10px {{ '#10b981' if shop.is_active else '#ef4444' }};">
+            </div>
+            <span id="statusLabel" style="font-weight: 700; font-size: 0.8rem; color: var(--text-main);">Shop is {{
+                'Open' if shop.is_active else 'Closed' }}</span>
+            <div id="statusTrack" style="width: 36px; height: 20px; border-radius: 20px; position: relative; transition: 0.3s;
+                background: {{ '#10b981' if shop.is_active else '#e2e8f0' }};">
+                <div id="statusThumb" style="width: 16px; height: 16px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s;
+                    transform: {{ 'translateX(16px)' if shop.is_active else 'translateX(0)' }};">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if pending_staff_count > 0 %}
+<!-- 🚨 Pending Staff Action Alert -->
+<div class="fade-in" style="margin-bottom: 2rem;">
+    <a href="{{ url_for('owner.notifications') }}" style="text-decoration: none;">
+        <div
+            style="background: #eff6ff; border: 2px solid #3b82f6; border-radius: 20px; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; position: relative; overflow: hidden; animation: pulse-border 2s infinite;">
+            <div
+                style="width: 50px; height: 50px; background: #3b82f6; color: white; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                <i class="fas fa-user-clock"></i>
+            </div>
+            <div style="flex: 1;">
+                <h4 style="margin: 0; font-size: 1rem; font-weight: 800; color: #1e40af;">New Join Request</h4>
+                <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: #3b82f6; font-weight: 600;">
+                    You have {{ pending_staff_count }} staff member(s) waiting for your approval.
+                </p>
+            </div>
+            <i class="fas fa-chevron-right" style="color: #3b82f6; opacity: 0.5;"></i>
+
+            <!-- Animated background element -->
+            <div
+                style="position: absolute; right: -10px; top: -10px; width: 60px; height: 60px; background: rgba(59, 130, 246, 0.05); border-radius: 50%;">
+            </div>
+        </div>
+    </a>
+</div>
+
+<style>
+    @keyframes pulse-border {
+        0% {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+        }
+
+        70% {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+        }
+
+        100% {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+        }
+    }
+</style>
+{% endif %}
+
+<!-- Quick Actions Hub -->
+<div class="card fade-in"
+    style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); border: none; padding: 1.5rem; border-radius: 24px; position: relative; overflow: hidden; margin-bottom: 2rem;">
+    <div style="position: absolute; right: -20px; bottom: -20px; opacity: 0.1; font-size: 8rem; color: white;">
+        <i class="fas fa-scissors"></i>
+    </div>
+    <div
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; position: relative; z-index: 1;">
+        <h3 style="color: white; font-weight: 800; font-size: 1.1rem; margin: 0;">Quick Control Center</h3>
+        <span
+            style="font-size: 0.65rem; background: rgba(255,255,255,0.2); color: white; padding: 0.3rem 0.6rem; border-radius: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Fast
+            Access</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; position: relative; z-index: 1;">
+        <a href="{{ url_for('owner.manage_services') }}"
+            style="background: rgba(255,255,255,0.1); padding: 1.25rem 0.5rem; border-radius: 20px; text-decoration: none; text-align: center; backdrop-filter: blur(10px); transition: all 0.2s; border: 1px solid rgba(255,255,255,0.1);">
+            <i class="fas fa-plus-circle"
+                style="color: white; font-size: 1.5rem; display: block; margin-bottom: 0.6rem;"></i>
+            <span style="color: white; font-size: 0.75rem; font-weight: 700;">Add Service</span>
+        </a>
+        <a href="{{ url_for('owner.manage_workers') }}"
+            style="background: rgba(255,255,255,0.1); padding: 1.25rem 0.5rem; border-radius: 20px; text-decoration: none; text-align: center; backdrop-filter: blur(10px); transition: all 0.2s; border: 1px solid rgba(255,255,255,0.1);">
+            <i class="fas fa-user-plus"
+                style="color: white; font-size: 1.5rem; display: block; margin-bottom: 0.6rem;"></i>
+            <span style="color: white; font-size: 0.75rem; font-weight: 700;">Add Expert</span>
+        </a>
+        <a href="{{ url_for('owner.settings') }}"
+            style="background: rgba(255,255,255,0.1); padding: 1.25rem 0.5rem; border-radius: 20px; text-decoration: none; text-align: center; backdrop-filter: blur(10px); transition: all 0.2s; border: 1px solid rgba(255,255,255,0.1);">
+            <i class="fas fa-qrcode"
+                style="color: white; font-size: 1.5rem; display: block; margin-bottom: 0.6rem;"></i>
+            <span style="color: white; font-size: 0.75rem; font-weight: 700;">QR Codes</span>
+        </a>
+    </div>
+</div>
+
+<!-- Premium Stats Grid -->
+<div class="stats-grid fade-in" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+    <a href="{{ url_for('owner.bookings') }}" style="text-decoration: none;">
+        <div class="stat-card"
+            style="background: var(--bg-card); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"
+            onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 20px rgba(217,119,6,0.15)';"
+            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+            <div>
+                <h3
+                    style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; margin: 0;">
+                    Pending</h3>
+                <p style="color: #d97706; font-size: 1.5rem; font-weight: 800; margin: 5px 0 0 0;">{{
+                    stats.pending_bookings
+                    }}</p>
+            </div>
+            <div
+                style="background: #fffbeb; color: #d97706; width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-clock"></i>
+            </div>
+        </div>
+    </a>
+    <a href="{{ url_for('owner.bookings') }}" style="text-decoration: none;">
+        <div class="stat-card"
+            style="background: var(--bg-card); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"
+            onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 20px rgba(5,150,105,0.15)';"
+            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+            <div>
+                <h3
+                    style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; margin: 0;">
+                    Success</h3>
+                <p style="color: #059669; font-size: 1.5rem; font-weight: 800; margin: 5px 0 0 0;">{{
+                    stats.completed_services }}</p>
+            </div>
+            <div
+                style="background: #f0fdf4; color: #059669; width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+    </a>
+    <a href="{{ url_for('owner.manage_workers') }}" style="text-decoration: none;">
+        <div class="stat-card"
+            style="background: var(--bg-card); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"
+            onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 20px rgba(37,99,235,0.15)';"
+            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+            <div>
+                <h3
+                    style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; margin: 0;">
+                    Team</h3>
+                <p style="color: #2563eb; font-size: 1.5rem; font-weight: 800; margin: 5px 0 0 0;">{{
+                    stats.active_workers
+                    }}</p>
+            </div>
+            <div
+                style="background: #eff6ff; color: #2563eb; width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+    </a>
+    <a href="{{ url_for('owner.earnings') }}" style="text-decoration: none;">
+        <div class="stat-card"
+            style="background: var(--bg-card); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"
+            onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 20px rgba(190,24,93,0.15)';"
+            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+            <div>
+                <h3
+                    style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; margin: 0;">
+                    Revenue</h3>
+                <p style="color: #be185d; font-size: 1.5rem; font-weight: 800; margin: 5px 0 0 0;">₹{{
+                    stats.today_earnings
+                    }}</p>
+            </div>
+            <div
+                style="background: #fdf2f8; color: #be185d; width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-wallet"></i>
+            </div>
+        </div>
+    </a>
+</div>
+
+<!-- Flipkart Style Ad Carousel/Banner -->
+<div class="fade-in" style="margin-bottom: 2rem;">
+    <div
+        style="background: linear-gradient(135deg, #FF9900 0%, #FFCC00 100%); border-radius: 20px; padding: 1.25rem; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden; box-shadow: 0 10px 25px rgba(255,153,0,0.25);">
+        <div
+            style="position: absolute; left: -20px; top: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.2); border-radius: 50%;">
+        </div>
+        <div style="position: relative; z-index: 1;">
+            <span
+                style="background: white; color: #FF9900; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.6rem; font-weight: 900; text-transform: uppercase;">SPONSORED</span>
+            <h3 style="color: #442200; font-weight: 900; font-size: 1.15rem; margin: 8px 0 4px 0;">Premium Barber Kits
+            </h3>
+            <p style="color: #664400; font-size: 0.8rem; margin: 0; font-weight: 600;">Flat 40% OFF on professional
+                shears & trimmers!</p>
+            <button
+                style="margin-top: 12px; background: #442200; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 800; font-size: 0.75rem; cursor: pointer;">Shop
+                Now</button>
+        </div>
+        <div
+            style="font-size: 4rem; position: relative; z-index: 1; transform: rotate(15deg); filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1));">
+            ✂️
+        </div>
+    </div>
+</div>
+
+<div class="fade-in" style="margin-top: 2rem; margin-bottom: 6rem;">
+    <!-- Recent Bookings -->
+    <div class="card"
+        style="border: none; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background: var(--bg-card); border: 1px solid var(--glass-border);">
+        <div
+            style="border-bottom: 1px solid var(--glass-border); padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="font-weight: 800; font-size: 1rem; margin: 0; color: var(--text-main);">Recent Bookings</h3>
+            <a href="{{ url_for('owner.bookings') }}"
+                style="color: var(--primary); font-size: 0.75rem; font-weight: 700; text-decoration: none;">View All</a>
+        </div>
+        <div style="padding: 1.25rem;">
+            {% for apt in appointments[:5] %}
+            <div
+                style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--glass-border);">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div
+                        style="width: 40px; height: 40px; border-radius: 12px; background: var(--bg-main); display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--text-muted); font-size: 0.9rem; border: 1px solid var(--glass-border);">
+                        {{ apt.user_name[0]|upper if apt.user_name else 'C' }}
+                    </div>
+                    <div>
+                        <h4 style="font-size: 0.85rem; font-weight: 700; margin: 0; color: var(--text-main);">{{
+                            apt.user_name or 'Walk-in' }}</h4>
+                        <p style="font-size: 0.7rem; color: var(--text-muted); margin: 0;">
+                            {{ apt.service.name if apt.service else 'Deleted Service' }} • {{
+                            apt.slot_time.strftime('%I:%M %p') }}
+                        </p>
+                    </div>
+                </div>
+                <span
+                    style="font-size: 0.65rem; font-weight: 800; padding: 4px 10px; border-radius: 50px; background: rgba(99, 102, 241, 0.1); color: var(--primary); text-transform: uppercase;">
+                    {{ apt.status }}
+                </span>
+            </div>
+            {% else %}
+            <p style="text-align: center; color: var(--text-muted); font-size: 0.8rem; padding: 1rem;">No recent
+                bookings.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // Quotes System
+    const quotes = [
+        "Success is not just about what you accomplish, it's about what you inspire others to do.",
+        "Your passion is the fuel for your salon's success.",
+        "Quality is remembered long after the price is forgotten.",
+        "The best way to predict the future is to create it.",
+        "Excellence is not a skill. It is an attitude.",
+        "Great things are done by a series of small things brought together."
+    ];
+
+    function updateGreeting() {
+        const hour = new Date().getHours();
+        const greetingTime = document.getElementById('greetingTime');
+        const customGreeting = document.getElementById('customGreeting');
+        const dailyQuote = document.getElementById('dailyQuote');
+
+        let timeGreet = "";
+        if (hour < 12) timeGreet = "Good Morning";
+        else if (hour < 17) timeGreet = "Good Afternoon";
+        else timeGreet = "Good Evening";
+
+        greetingTime.innerText = `Welcome Back,`;
+        customGreeting.innerText = `${timeGreet} 👋`;
+
+        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        dailyQuote.innerText = `"${randomQuote}"`;
+    }
+
+    updateGreeting();
+
+    function fastToggleStatus() {
+        const toggle = document.getElementById('dashboardStatusToggle');
+        const dot = document.getElementById('statusDot');
+        const label = document.getElementById('statusLabel');
+        const track = document.getElementById('statusTrack');
+        const thumb = document.getElementById('statusThumb');
+
+        if (toggle.style.pointerEvents === 'none') return;
+        toggle.style.pointerEvents = 'none';
+        toggle.style.opacity = '0.7';
+
+        fetch("{{ url_for('owner.toggle_status') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const isActive = data.is_active;
+                    toggle.setAttribute('data-active', isActive);
+
+                    if (isActive) {
+                        dot.style.background = '#10b981';
+                        dot.style.boxShadow = '0 0 10px #10b981';
+                        label.innerText = 'Shop is Open';
+                        track.style.background = '#10b981';
+                        thumb.style.transform = 'translateX(16px)';
+                    } else {
+                        dot.style.background = '#ef4444';
+                        dot.style.boxShadow = '0 0 10px #ef4444';
+                        label.innerText = 'Shop is Closed';
+                        track.style.background = '#e2e8f0';
+                        thumb.style.transform = 'translateX(0px)';
+                    }
+                }
+            })
+            .catch(err => console.error('Error toggling status:', err))
+            .finally(() => {
+                toggle.style.pointerEvents = 'auto';
+                toggle.style.opacity = '1';
+            });
+    }
+</script>
+{% endblock %}

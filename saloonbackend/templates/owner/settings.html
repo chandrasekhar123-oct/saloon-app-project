@@ -1,0 +1,625 @@
+{% extends "owner/layout.html" %}
+{% set active_page = 'settings' %}
+
+{% block title %}Account Settings{% endblock %}
+
+{% block styles %}
+{% endblock %}
+
+{% block content %}
+<div class="fade-in" style="max-width: 800px; margin: 0 auto; padding-bottom: 5rem;">
+    <form action="{{ url_for('owner.settings') }}" method="POST" enctype="multipart/form-data">
+        <!-- Profile Header Card -->
+        <div class="card"
+            style="border: none; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); padding: 2rem; border-radius: 30px; margin-bottom: 2rem; color: white; position: relative; overflow: hidden;">
+            <div
+                style="position: absolute; top: -10%; right: -10%; width: 200px; height: 200px; background: rgba(255,255,255,0.1); border-radius: 50%;">
+            </div>
+            <div style="display: flex; align-items: center; gap: 1.5rem; position: relative; z-index: 1;">
+                <label for="profile_image_file"
+                    style="margin: 0; cursor: pointer; position: relative; display: inline-block;">
+                    <!-- Container wrapper -->
+                    <div style="position: relative; width: 100px; height: 100px;">
+                        <!-- Profile preview image & Fallback container -->
+                        <div
+                            style="width: 100%; height: 100%; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #cbd5e1; box-shadow: 0 10px 20px rgba(0,0,0,0.1); overflow: hidden; border: 4px solid white;">
+
+                            {% if current_user.profile_image %}
+                            <img id="profileImagePreview" src="{{ current_user.profile_image }}"
+                                style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                            <i id="profilePlaceholderIcon" class="fas fa-user" style="display: none;"></i>
+                            {% else %}
+                            <img id="profileImagePreview" src=""
+                                style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                            <i id="profilePlaceholderIcon" class="fas fa-user" style="display: block;"></i>
+                            {% endif %}
+                        </div>
+
+                        <!-- Edit overlay floating badge (Instagram style) -->
+                        <div
+                            style="position: absolute; bottom: 0; right: 0; width: 34px; height: 34px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 3px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            <i class="fas fa-camera" style="font-size: 0.9rem; color: white;"></i>
+                        </div>
+                    </div>
+                </label>
+                <input type="file" id="profile_image_file" name="profile_image_file" accept="image/*"
+                    style="display: none;" onchange="previewProfileImage(event)">
+                <div>
+                    <h2 style="font-weight: 800; margin: 0; font-size: 1.5rem;">{{ current_user.name }}</h2>
+                    <p style="margin: 0.2rem 0 0; opacity: 0.9; font-size: 0.9rem;">{{ shop.name }} Owner</p>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+                        <span
+                            style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.7rem; font-weight: 700; backdrop-filter: blur(5px);">
+                            <i class="fas fa-shield-check"></i> Verified Partner
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Toggle Section -->
+        <input type="checkbox" name="is_active" id="shopStatusInput" {% if shop.is_active %}checked{% endif %}
+            style="display: none;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+            <!-- Shop Status Toggle -->
+            <div class="card" onclick="toggleShopStatus()" id="shopStatusCard"
+                data-active="{{ 'true' if shop.is_active else 'false' }}"
+                style="padding: 1.25rem; border-radius: 20px; border: none; background: white; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div id="shopIconBg"
+                        style="width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: 0.3s;
+                        {% if shop.is_active %}background: rgba(16, 185, 129, 0.1); color: #10b981;{% else %}background: #f1f5f9; color: #94a3b8;{% endif %}">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; font-size: 0.9rem; font-weight: 700;">Shop Status</h4>
+                        <p id="shopStatusText"
+                            style="margin: 0; font-size: 0.75rem; color: var(--text-muted); transition: 0.3s;">
+                            {% if shop.is_active %}Currently Accepting{% else %}Closed / Offline{% endif %}
+                        </p>
+                    </div>
+                </div>
+                <div id="shopToggleTrack" style="width: 45px; height: 24px; border-radius: 20px; position: relative; transition: all 0.3s ease;
+                    {% if shop.is_active %}background: #10b981;{% else %}background: #e2e8f0;{% endif %}">
+                    <div id="shopToggleThumb"
+                        style="width: 20px; height: 20px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        {% if shop.is_active %}transform: translateX(21px);{% else %}transform: translateX(0);{% endif %}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Theme Toggle -->
+            <div class="card" onclick="toggleTheme()" id="themeCard" data-theme="light"
+                style="padding: 1.25rem; border-radius: 20px; border: none; background: white; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div id="themeIconBg"
+                        style="width: 40px; height: 40px; border-radius: 12px; background: rgba(99, 102, 241, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; transition: 0.3s;">
+                        <i class="fas fa-moon"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; font-size: 0.9rem; font-weight: 700;">Theme</h4>
+                        <p id="themeStatusText" style="margin: 0; font-size: 0.75rem; color: var(--text-muted);">Light
+                            Mode</p>
+                    </div>
+                </div>
+                <div id="themeToggleTrack"
+                    style="width: 45px; height: 24px; background: #e2e8f0; border-radius: 20px; position: relative; transition: 0.3s;">
+                    <div id="themeToggleThumb"
+                        style="width: 20px; height: 20px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s; transform: translateX(0);">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Business Details -->
+        <h3
+            style="font-weight: 800; font-size: 1.1rem; margin-bottom: 1rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-briefcase" style="color: var(--primary);"></i> Business Identity
+        </h3>
+        <div class="card"
+            style="padding: 2rem; border-radius: 24px; border: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background: white; margin-bottom: 2rem;">
+
+            <!-- Salon Logo & Branding -->
+            <div
+                style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid #f1f5f9;">
+                <label for="shop_logo_file" style="cursor: pointer; position: relative;">
+                    <div
+                        style="width: 70px; height: 70px; border-radius: 18px; background: #f8fafc; border: 2px dashed #cbd5e1; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                        {% if shop.logo_url %}
+                        <img id="shopLogoPreview" src="{{ shop.logo_url }}"
+                            style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                        <i id="shopLogoIcon" class="fas fa-store" style="font-size: 1.5rem; color: #94a3b8;"></i>
+                        <img id="shopLogoPreview" src=""
+                            style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                        {% endif %}
+                    </div>
+                    <div
+                        style="position: absolute; bottom: -5px; right: -5px; width: 24px; height: 24px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white;">
+                        <i class="fas fa-pencil-alt" style="color: white; font-size: 0.6rem;"></i>
+                    </div>
+                </label>
+                <input type="file" id="shop_logo_file" name="shop_logo_file" accept="image/*" style="display: none;"
+                    onchange="previewShopLogo(event)">
+                <div>
+                    <h4 style="margin: 0; font-size: 1rem; font-weight: 800;">Shop Logo</h4>
+                    <p style="margin: 0.2rem 0 0; font-size: 0.75rem; color: var(--text-muted);">This logo appears on
+                        your bills and customer app.</p>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div class="form-group">
+                    <label class="form-label">Salon Name</label>
+                    <input type="text" name="shop_name" value="{{ shop.name }}" class="form-control"
+                        style="background: #f8fafc; border-radius: 12px; padding: 0.8rem 1rem;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Payment ID (UPI)</label>
+                    <input type="text" name="upi_id" value="{{ shop.upi_id or '' }}" class="form-control"
+                        placeholder="yourname@upi"
+                        style="background: #f8fafc; border-radius: 12px; padding: 0.8rem 1rem;">
+                    {% if shop.qr_code_url %}
+                    <div
+                        style="margin-top: 1rem; text-align: center; padding: 1rem; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                        <p
+                            style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem;">
+                            Your Payment QR Code:</p>
+                        <img src="{{ shop.qr_code_url }}" alt="UPI QR"
+                            style="width: 120px; height: 120px; border-radius: 8px; border: 1px solid #eee;">
+                        <p style="font-size: 0.65rem; color: #10b981; font-weight: 700; margin-top: 0.5rem;"><i
+                                class="fas fa-check-circle"></i> Auto-generated from UPI ID</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Salon Gallery -->
+            <div class="form-group" style="margin-top: 1.5rem;">
+                <label class="form-label">Salon Gallery (Add Photos)</label>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                    {% if shop.shop_photos %}
+                    {% for photo in shop.shop_photos.split(',') %}
+                    <div style="width: 60px; height: 60px; border-radius: 12px; overflow: hidden; position: relative;">
+                        <img src="{{ photo }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                    <label for="shop_photos_list"
+                        style="width: 60px; height: 60px; border-radius: 12px; background: #f8fafc; border: 2px dashed #cbd5e1; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                        <i class="fas fa-plus" style="color: #94a3b8;"></i>
+                    </label>
+                </div>
+                <input type="file" id="shop_photos_list" name="shop_photos_list" accept="image/*" multiple
+                    style="display: none;" onchange="previewShopGallery(event)">
+                <p id="galleryStatus"
+                    style="font-size: 0.7rem; color: var(--primary); font-weight: 700; margin: 0; display: none;">Photos
+                    selected for upload</p>
+            </div>
+
+            <div
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem; align-items: start;">
+                <div class="form-group">
+                    <label class="form-label">State/Province</label>
+                    <select id="stateSelect" name="state" class="form-control" data-selected="{{ shop.state }}"
+                        style="background: #f8fafc; border-radius: 12px; padding: 0.8rem 1rem;">
+                        <option value="" disabled selected>Select country first</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">City</label>
+                    <div style="width: 100%;">
+                        <select id="citySelect" name="city" class="form-control" data-selected="{{ shop.location }}"
+                            style="background: #f8fafc; border-radius: 12px; padding: 0.8rem 1rem; width: 100%;">
+                            <option value="" disabled selected>Select state first</option>
+                        </select>
+                        <input type="text" id="customCityInput" placeholder="Enter custom town/city"
+                            style="display: none; width: 100%; padding: 0.8rem 1rem; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; margin-top: 0.5rem;"
+                            disabled>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 1.5rem;">
+                <label class="form-label">Business Address</label>
+                <textarea name="shop_address" class="form-control" rows="2"
+                    style="background: #f8fafc; border-radius: 12px; padding: 0.8rem 1rem;">{{ shop.address }}</textarea>
+            </div>
+
+            <div class="form-group" style="margin-top: 1.5rem;">
+                <label class="form-label" style="display: flex; align-items: center; gap: 0.5rem;"><i
+                        class="fas fa-map-marker-alt" style="color: #ef4444;"></i> Google Maps URL (Location
+                    Link)</label>
+                <input type="url" name="map_url" class="form-control" placeholder="https://goo.gl/maps/..."
+                    value="{{ shop.map_url or '' }}"
+                    style="background: #f8fafc; border-radius: 12px; padding: 0.8rem 1rem;">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+                <div class="form-group">
+                    <label class="form-label">Opens At</label>
+                    <input type="time" name="opening_time" value="{{ shop.opening_time }}" class="form-control"
+                        style="background: #f8fafc; border-radius: 12px; padding: 0.8rem 1rem;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Closes At</label>
+                    <input type="time" name="closing_time" value="{{ shop.closing_time }}" class="form-control"
+                        style="background: #f8fafc; border-radius: 12px; padding: 0.8rem 1rem;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Personal Account -->
+        <h3
+            style="font-weight: 800; font-size: 1.1rem; margin-bottom: 1rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-user-cog" style="color: var(--primary);"></i> Personal Security
+        </h3>
+        <div class="card"
+            style="padding: 2rem; border-radius: 24px; border: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background: white; margin-bottom: 2rem;">
+            <div class="grid-2">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" name="name" value="{{ current_user.name }}" class="form-control"
+                        style="background: #f8fafc; border-radius: 12px; padding: 0.8rem 1rem;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" name="email" value="{{ current_user.email }}" class="form-control"
+                        style="background: #f8fafc; border-radius: 12px; padding: 0.8rem 1rem;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" id="phone" name="raw_phone" value="{{ current_user.phone }}" class="form-control"
+                        style="background: #f8fafc; border-radius: 12px; padding: 0.8rem 1rem;">
+                    <input type="hidden" name="phone" id="full_phone" value="{{ current_user.phone }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">New Password (Optional)</label>
+                    <input type="password" name="password" class="form-control" placeholder="••••••••"
+                        style="background: #f8fafc; border-radius: 12px; padding: 0.8rem 1rem;">
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary"
+            style="width: 100%; padding: 1.25rem; border-radius: 50px; font-weight: 800; font-size: 1.1rem; box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);">
+            <i class="fas fa-save"></i> Apply Changes
+        </button>
+    </form>
+
+    <!-- Logout Area -->
+    <div style="text-align: center; margin-top: 3rem;">
+        <a href="{{ url_for('owner.logout') }}"
+            style="color: var(--danger); text-decoration: none; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+            <i class="fas fa-sign-out-alt"></i> Sign Out of SalonHub
+        </a>
+        <p style="color: var(--text-muted); font-size: 0.7rem; margin-top: 1rem;">Version 2.0.4 Premium</p>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@21.0.8/build/css/intlTelInput.css">
+<style>
+    .iti {
+        width: 100%;
+        display: block;
+    }
+
+    .iti input {
+        padding-left: 95px !important;
+    }
+
+    .iti__country-list {
+        border-radius: 14px;
+        border: 2px solid #e5e7eb;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        background: white;
+    }
+
+    .iti__flag {
+        border-radius: 2px;
+    }
+</style>
+
+<script>
+    function previewProfileImage(event) {
+        var file = event.target.files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                // 1. Update Settings page main preview
+                const mainImg = document.getElementById('profileImagePreview');
+                const mainIcon = document.getElementById('profilePlaceholderIcon');
+                if (mainImg) {
+                    mainImg.style.display = 'block';
+                    mainImg.src = e.target.result;
+                }
+                if (mainIcon) {
+                    mainIcon.style.display = 'none';
+                }
+
+                // 2. Update Layout Header preview (Instagram style)
+                const headerContainer = document.getElementById('headerProfileContainer');
+                const headerBadge = document.getElementById('headerProfileBadge');
+
+                if (headerContainer) {
+                    headerContainer.innerHTML = `<img id="headerProfileImg" src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                }
+                if (headerBadge) {
+                    headerBadge.style.display = 'none';
+                }
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function previewShopLogo(event) {
+        var file = event.target.files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                const preview = document.getElementById('shopLogoPreview');
+                const icon = document.getElementById('shopLogoIcon');
+                if (preview) {
+                    preview.style.display = 'block';
+                    preview.src = e.target.result;
+                }
+                if (icon) {
+                    icon.style.display = 'none';
+                }
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function previewShopGallery(event) {
+        const status = document.getElementById('galleryStatus');
+        if (event.target.files.length > 0) {
+            status.style.display = 'block';
+            status.innerText = `${event.target.files.length} new photos selected for gallery`;
+        }
+    }
+
+    function toggleShopStatus() {
+        const input = document.getElementById('shopStatusInput');
+        const card = document.getElementById('shopStatusCard');
+        const track = document.getElementById('shopToggleTrack');
+        const thumb = document.getElementById('shopToggleThumb');
+        const text = document.getElementById('shopStatusText');
+        const iconBg = document.getElementById('shopIconBg');
+
+        const isActive = card.getAttribute('data-active') === 'true';
+        const newState = !isActive;
+
+        card.setAttribute('data-active', newState);
+        input.checked = newState;
+
+        if (newState) {
+            track.style.background = '#10b981';
+            thumb.style.transform = 'translateX(21px)';
+            text.innerText = 'Currently Accepting';
+            text.style.color = '#10b981';
+            iconBg.style.background = 'rgba(16, 185, 129, 0.1)';
+            iconBg.style.color = '#10b981';
+        } else {
+            track.style.background = '#e2e8f0';
+            thumb.style.transform = 'translateX(0px)';
+            text.innerText = 'Closed / Offline';
+            text.style.color = 'var(--text-muted)';
+            iconBg.style.background = '#f1f5f9';
+            iconBg.style.color = '#94a3b8';
+        }
+    }
+
+    function toggleTheme() {
+        const card = document.getElementById('themeCard');
+        const track = document.getElementById('themeToggleTrack');
+        const thumb = document.getElementById('themeToggleThumb');
+        const text = document.getElementById('themeStatusText');
+        const iconBg = document.getElementById('themeIconBg');
+
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+
+        // Apply globally to document
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        card.setAttribute('data-theme', newTheme);
+
+        if (newTheme === 'dark') {
+            track.style.background = '#6366f1';
+            thumb.style.transform = 'translateX(21px)';
+            text.innerText = 'Dark Mode';
+            iconBg.style.color = '#6366f1';
+        } else {
+            track.style.background = '#e2e8f0';
+            thumb.style.transform = 'translateX(0px)';
+            text.innerText = 'Light Mode';
+            iconBg.style.color = 'var(--primary)';
+        }
+    }
+
+    // Initialize toggle position based on current theme on settings page load
+    window.addEventListener('DOMContentLoaded', () => {
+        const theme = localStorage.getItem('theme') || 'light';
+        const track = document.getElementById('themeToggleTrack');
+        const thumb = document.getElementById('themeToggleThumb');
+        const text = document.getElementById('themeStatusText');
+        const card = document.getElementById('themeCard');
+
+        if (track && theme === 'dark') {
+            track.style.background = '#6366f1';
+            thumb.style.transform = 'translateX(21px)';
+            text.innerText = 'Dark Mode';
+            if (card) card.setAttribute('data-theme', 'dark');
+        }
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@21.0.8/build/js/intlTelInput.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const input = document.querySelector("#phone");
+        const hiddenInput = document.querySelector("#full_phone");
+
+        const iti = window.intlTelInput(input, {
+            initialCountry: "auto",
+            geoIpLookup: callback => {
+                fetch("https://ipapi.co/json")
+                    .then(res => res.json())
+                    .then(data => callback(data.country_code))
+                    .catch(() => callback("in"));
+            },
+            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@21.0.8/build/js/utils.js",
+            separateDialCode: true,
+        });
+
+        const form = document.querySelector("form");
+        form.addEventListener("submit", function (e) {
+            hiddenInput.value = iti.getNumber();
+        });
+
+        const stateSelect = document.getElementById('stateSelect');
+        const citySelect = document.getElementById('citySelect');
+        const customCityInput = document.getElementById('customCityInput');
+
+        function fetchStates(countryName, preselectedState = null) {
+            stateSelect.innerHTML = '<option value="" disabled selected>Loading states...</option>';
+            citySelect.innerHTML = '<option value="" disabled selected>Select state first</option>';
+
+            fetch("https://countriesnow.space/api/v0.1/countries/states", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ country: countryName })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    stateSelect.innerHTML = '<option value="" disabled selected>Select State</option>';
+                    if (!data.error && data.data && data.data.states && data.data.states.length > 0) {
+                        data.data.states.forEach(state => {
+                            const option = document.createElement('option');
+                            option.value = state.name;
+                            option.textContent = state.name;
+                            if (state.name === preselectedState) option.selected = true;
+                            stateSelect.appendChild(option);
+                        });
+                        stateSelect.dataset.country = countryName;
+                    } else {
+                        // Fallback
+                        const fallbackStates = ['Andhra Pradesh', 'Telangana', 'Karnataka', 'Maharashtra', 'Tamil Nadu', 'Delhi', 'Other'];
+                        if (preselectedState && !fallbackStates.includes(preselectedState)) fallbackStates.unshift(preselectedState);
+                        fallbackStates.forEach(state => {
+                            const option = document.createElement('option');
+                            option.value = state;
+                            option.textContent = state;
+                            if (state === preselectedState) option.selected = true;
+                            stateSelect.appendChild(option);
+                        });
+                        stateSelect.dataset.country = 'India';
+                    }
+
+                    if (stateSelect.value) {
+                        fetchCities(countryName, stateSelect.value, citySelect.dataset.selected);
+                    }
+                })
+                .catch(err => {
+                    console.error('Error fetching states:', err);
+                    stateSelect.innerHTML = '<option value="" disabled selected>Select State</option><option value="Other">Other</option>';
+                });
+        }
+
+        function fetchCities(countryName, stateName, preselectedCity = null) {
+            if (!stateName || stateName === 'Other') {
+                citySelect.innerHTML = '<option value="" disabled selected>Select City</option><option value="Other">Other (Type Manually)</option>';
+                return;
+            }
+
+            citySelect.innerHTML = '<option value="" disabled selected>Loading cities...</option>';
+
+            fetch("https://countriesnow.space/api/v0.1/countries/state/cities", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ country: countryName, state: stateName })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    citySelect.innerHTML = '<option value="" disabled selected>Select City</option>';
+                    if (!data.error && data.data && data.data.length > 0) {
+                        let found = false;
+                        data.data.forEach(city => {
+                            let cleanCity = city.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                            const option = document.createElement('option');
+                            option.value = cleanCity;
+                            option.textContent = cleanCity;
+                            if (cleanCity === preselectedCity) { option.selected = true; found = true; }
+                            citySelect.appendChild(option);
+                        });
+
+                        if (preselectedCity && !found && preselectedCity !== 'Other') {
+                            const option = document.createElement('option');
+                            option.value = preselectedCity;
+                            option.textContent = preselectedCity;
+                            option.selected = true;
+                            citySelect.appendChild(option);
+                        }
+                    } else {
+                        const option = document.createElement('option');
+                        option.value = preselectedCity || 'Other';
+                        option.textContent = preselectedCity || 'Other';
+                        option.selected = true;
+                        citySelect.appendChild(option);
+                    }
+
+                    const optionOther = document.createElement('option');
+                    optionOther.value = 'Other';
+                    optionOther.textContent = 'Other (Type Manually)';
+                    citySelect.appendChild(optionOther);
+                })
+                .catch(err => {
+                    console.error('Error fetching cities:', err);
+                    citySelect.innerHTML = '<option value="" disabled selected>Select City</option><option value="Other">Other (Type Manually)</option>';
+                });
+        }
+
+        input.addEventListener("countrychange", function () {
+            const countryData = iti.getSelectedCountryData();
+            if (countryData && countryData.name) {
+                const countryName = countryData.name.split(" (")[0];
+                fetchStates(countryName);
+            }
+        });
+
+        // Initial load for auto-detected country
+        setTimeout(() => {
+            const initialCountryData = iti.getSelectedCountryData();
+            if (initialCountryData && initialCountryData.name) {
+                const countryName = initialCountryData.name.split(" (")[0];
+                const preselectedState = stateSelect.dataset.selected;
+                fetchStates(countryName, preselectedState);
+            }
+        }, 1000);
+
+        // Fetch cities on state change
+        stateSelect.addEventListener('change', function () {
+            const stateName = this.value;
+            const countryName = this.dataset.country || 'India';
+            fetchCities(countryName, stateName, null);
+        });
+
+        citySelect.addEventListener('change', function () {
+            if (this.value === 'Other') {
+                customCityInput.style.display = 'block';
+                customCityInput.disabled = false;
+                customCityInput.setAttribute('name', 'city');
+                customCityInput.required = true;
+                this.removeAttribute('name');
+            } else {
+                customCityInput.style.display = 'none';
+                customCityInput.disabled = true;
+                customCityInput.removeAttribute('name');
+                customCityInput.required = false;
+                this.setAttribute('name', 'city');
+            }
+        });
+    });
+</script>
+{% endblock %}

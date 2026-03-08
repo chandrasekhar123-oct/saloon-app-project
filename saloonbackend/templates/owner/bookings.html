@@ -1,0 +1,187 @@
+{% extends "owner/layout.html" %}
+{% block title %}Orders & Bookings{% endblock %}
+
+{% block content %}
+<div class="fade-in" style="margin-bottom: 2rem;">
+    <p
+        style="color: var(--primary); font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem;">
+        MANAGE</p>
+    <h2 style="font-weight: 800; font-size: 1.75rem; color: var(--text-main); margin: 0;">Orders & Bookings</h2>
+    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 6px;">All appointments for {{ shop.name }}</p>
+</div>
+
+<!-- Stats Row -->
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 2rem;">
+    <div
+        style="background: var(--bg-card); border-radius: 16px; padding: 1rem; text-align: center; border: 1px solid var(--glass-border);">
+        <p style="font-size: 1.5rem; font-weight: 800; color: var(--primary); margin: 0;">{{ appointments|length }}</p>
+        <p style="font-size: 0.7rem; color: var(--text-muted); margin: 0;">Total</p>
+    </div>
+    <div
+        style="background: var(--bg-card); border-radius: 16px; padding: 1rem; text-align: center; border: 1px solid var(--glass-border);">
+        <p style="font-size: 1.5rem; font-weight: 800; color: #f59e0b; margin: 0;">{{ appointments|selectattr('status',
+            'equalto', 'pending')|list|length }}</p>
+        <p style="font-size: 0.7rem; color: var(--text-muted); margin: 0;">Pending</p>
+    </div>
+    <div
+        style="background: var(--bg-card); border-radius: 16px; padding: 1rem; text-align: center; border: 1px solid var(--glass-border);">
+        <p style="font-size: 1.5rem; font-weight: 800; color: #10b981; margin: 0;">{{ appointments|selectattr('status',
+            'equalto', 'completed')|list|length }}</p>
+        <p style="font-size: 0.7rem; color: var(--text-muted); margin: 0;">Done</p>
+    </div>
+</div>
+
+<!-- Filter Tabs -->
+<div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 0.5rem;">
+    {% for tab in ['All', 'Pending', 'Accepted', 'Completed', 'Rejected'] %}
+    <button onclick="filterBookings('{{ tab.lower() }}')" id="tab-{{ tab.lower() }}"
+        style="padding: 0.5rem 1.25rem; border-radius: 50px; border: 2px solid var(--glass-border); background: {% if loop.first %}var(--primary); color: white{% else %}var(--bg-card); color: var(--text-muted){% endif %}; font-size: 0.8rem; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all 0.2s;">
+        {{ tab }}
+    </button>
+    {% endfor %}
+</div>
+
+<!-- Bookings List -->
+<div id="bookings-container">
+    {% if appointments %}
+    {% for b in appointments %}
+    <div class="booking-card fade-in" data-status="{{ b.status }}"
+        style="background: var(--bg-card); border-radius: 20px; padding: 1.25rem; margin-bottom: 1rem; border: 1px solid var(--glass-border); box-shadow: 0 4px 12px rgba(0,0,0,0.04); transition: transform 0.2s;"
+        onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+            <div>
+                <p style="font-weight: 800; font-size: 1rem; color: var(--text-main); margin: 0;">
+                    {{ b.service.name if b.service else 'Deleted Service' }}
+                </p>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 4px 0 0 0;">
+                    <i class="fas fa-user" style="margin-right: 4px;"></i>{{ b.user.name if b.user else 'Walk-in' }}
+                </p>
+            </div>
+            <!-- Status Badge -->
+            {% if b.status == 'completed' %}
+            <span
+                style="background: rgba(16,185,129,0.12); color: #10b981; padding: 0.3rem 0.85rem; border-radius: 50px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">✓
+                Done</span>
+            {% elif b.status == 'pending' %}
+            <span
+                style="background: rgba(245,158,11,0.12); color: #f59e0b; padding: 0.3rem 0.85rem; border-radius: 50px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">⏳
+                Pending</span>
+            {% elif b.status == 'accepted' %}
+            <span
+                style="background: rgba(99,102,241,0.12); color: var(--primary); padding: 0.3rem 0.85rem; border-radius: 50px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">✅
+                Accepted</span>
+            {% elif b.status == 'rejected' %}
+            <span
+                style="background: rgba(239,68,68,0.12); color: #ef4444; padding: 0.3rem 0.85rem; border-radius: 50px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">✗
+                Rejected</span>
+            {% else %}
+            <span
+                style="background: rgba(100,116,139,0.12); color: #64748b; padding: 0.3rem 0.85rem; border-radius: 50px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">{{
+                b.status }}</span>
+            {% endif %}
+        </div>
+
+        <div
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+            <div>
+                <i class="fas fa-calendar-alt" style="color: var(--primary); margin-right: 4px;"></i>
+                {{ b.slot_time.strftime('%d %b %Y') }}
+            </div>
+            <div>
+                <i class="fas fa-clock" style="color: var(--primary); margin-right: 4px;"></i>
+                {{ b.slot_time.strftime('%I:%M %p') }}
+            </div>
+            <div>
+                <i class="fas fa-cut" style="color: var(--primary); margin-right: 4px;"></i>
+                {% if b.worker %}{{ b.worker.name }}{% else %}Unassigned{% endif %}
+            </div>
+            <div>
+                <i class="fas fa-rupee-sign" style="color: var(--primary); margin-right: 4px;"></i>
+                ₹{{ b.service.price if b.service else '0' }}
+            </div>
+        </div>
+
+        {% if b.status == 'pending' %}
+        <div style="display: flex; gap: 0.5rem; padding-top: 0.75rem; border-top: 1px solid var(--glass-border);">
+            <form action="{{ url_for('owner.accept_booking', id=b.id) }}" method="POST" style="margin: 0;">
+                <button type="submit"
+                    style="background: var(--primary); color: white; border: none; padding: 0.4rem 1rem; border-radius: 10px; font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: background 0.2s;"
+                    onmouseover="this.style.background='#4f46e5'" onmouseout="this.style.background='var(--primary)'">
+                    Accept Booking
+                </button>
+            </form>
+            <form action="{{ url_for('owner.reject_booking', id=b.id) }}" method="POST" style="margin: 0;"
+                onsubmit="return confirm('Are you sure you want to reject this booking?');">
+                <button type="submit"
+                    style="background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); padding: 0.4rem 1rem; border-radius: 10px; font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: background 0.2s;"
+                    onmouseover="this.style.background='rgba(239,68,68,0.2)'"
+                    onmouseout="this.style.background='rgba(239,68,68,0.1)'">
+                    Reject
+                </button>
+            </form>
+        </div>
+        {% elif b.status == 'accepted' and b.otp %}
+        <div style="padding-top: 0.75rem; border-top: 1px dashed var(--glass-border);">
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+                <span
+                    style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); color: #10b981; padding: 0.3rem 0.75rem; border-radius: 50px; font-size: 0.75rem; font-weight: 700;">
+                    <i class="fas fa-key" style="margin-right: 4px;"></i>Generated OTP: <strong
+                        style="letter-spacing: 1px; font-size: 0.8rem;">{{ b.otp }}</strong>
+                </span>
+            </div>
+            <form action="{{ url_for('owner.verify_otp', id=b.id) }}" method="POST"
+                style="display: flex; gap: 0.5rem; margin: 0; align-items: stretch;">
+                <input type="text" name="otp" placeholder="Enter user's OTP" required
+                    style="padding: 0.4rem 0.8rem; border-radius: 10px; border: 1px solid var(--glass-border); flex: 1; min-width: 0; font-size: 0.85rem; font-family: inherit;">
+                <button type="submit"
+                    style="background: #10b981; color: white; border: none; padding: 0.4rem 1rem; border-radius: 10px; font-weight: 800; font-size: 0.8rem; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 6px rgba(16,185,129,0.2);">
+                    <i class="fas fa-check-circle" style="margin-right: 4px;"></i> Complete
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <div
+        style="text-align: center; padding: 4rem 2rem; background: var(--bg-card); border-radius: 24px; border: 2px dashed var(--glass-border);">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+        <h3 style="font-weight: 800; color: var(--text-main); margin: 0 0 0.5rem 0;">No Bookings Yet</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">When customers book your services, they'll appear here.
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    let activeFilter = 'all';
+
+    function filterBookings(status) {
+        activeFilter = status;
+        const cards = document.querySelectorAll('.booking-card');
+
+        cards.forEach(card => {
+            const cardStatus = card.dataset.status;
+            if (status === 'all' || cardStatus === status) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Update tab styles
+        document.querySelectorAll('[id^="tab-"]').forEach(tab => {
+            tab.style.background = 'var(--bg-card)';
+            tab.style.color = 'var(--text-muted)';
+            tab.style.borderColor = 'var(--glass-border)';
+        });
+        const activeTab = document.getElementById(`tab-${status}`);
+        if (activeTab) {
+            activeTab.style.background = 'var(--primary)';
+            activeTab.style.color = 'white';
+            activeTab.style.borderColor = 'var(--primary)';
+        }
+    }
+</script>
+{% endblock %}

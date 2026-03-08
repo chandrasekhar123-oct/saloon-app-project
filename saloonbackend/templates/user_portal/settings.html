@@ -1,0 +1,249 @@
+{% extends "user_portal/layout.html" %}
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<div class="fade-in" style="padding-bottom: 2rem;">
+    <h2 style="font-weight: 900; font-size: 1.5rem; color: var(--text-main); margin-bottom: 1.5rem;">Settings</h2>
+
+    <form action="{{ url_for('user_portal.settings') }}" method="POST" enctype="multipart/form-data">
+        <!-- User Profile Photo Section -->
+        <div class="card"
+            style="padding: 1.5rem; display: flex; align-items: center; gap: 1.5rem; background: linear-gradient(135deg, white, #fff1f2); border: none; margin-bottom: 1.5rem; position: relative; overflow: hidden;">
+            <label for="profile_image_file" style="cursor: pointer; position: relative; display: inline-block;">
+                <div
+                    style="width: 80px; height: 80px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; font-weight: 900; box-shadow: 0 4px 12px rgba(244, 63, 94, 0.2); overflow: hidden; border: 3px solid white;">
+                    {% if user.profile_image %}
+                    <img id="profilePreview" src="{{ user.profile_image }}"
+                        style="width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                    <span id="profileInitial">{{ user.name[0].upper() }}</span>
+                    <img id="profilePreview" src=""
+                        style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                    {% endif %}
+                </div>
+                <div
+                    style="position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; color: white; font-size: 0.7rem;">
+                    <i class="fas fa-camera"></i>
+                </div>
+            </label>
+            <input type="file" id="profile_image_file" name="profile_image_file" accept="image/*" style="display: none;"
+                onchange="previewUserPhoto(event)">
+            <div>
+                <h3 style="margin: 0; font-weight: 800; font-size: 1.1rem; color: var(--text-main);">{{ user.name }}
+                </h3>
+                <p style="margin: 2px 0 0 0; color: var(--text-muted); font-size: 0.85rem;">Tap camera to change photo
+                </p>
+            </div>
+        </div>
+        <!-- Account Settings -->
+        <div style="margin-bottom: 1.5rem;">
+            <p
+                style="font-size: 0.75rem; font-weight: 800; color: var(--primary); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 0.75rem;">
+                Account Details</p>
+            <div class="card" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
+                <div class="form-group">
+                    <label
+                        style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem;">Full
+                        Name</label>
+                    <input type="text" name="name" value="{{ user.name }}" required
+                        style="width: 100%; padding: 0.85rem; border-radius: 14px; border: 1px solid #f1f5f9; background: #f8fafc; font-size: 0.95rem; font-family: inherit;">
+                </div>
+                <div class="form-group">
+                    <label
+                        style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem;">Phone
+                        Number</label>
+                    <input type="tel" id="phone" name="raw_phone" value="{{ user.phone }}" required
+                        style="width: 100%; padding: 0.85rem; border-radius: 14px; border: 1px solid #f1f5f9; background: #f8fafc; font-size: 0.95rem; font-family: inherit;">
+                    <input type="hidden" name="phone" id="full_phone" value="{{ user.phone }}">
+                </div>
+                <div class="form-group">
+                    <label
+                        style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem;">Change
+                        Password (Optional)</label>
+                    <input type="password" name="password" placeholder="Leave blank to keep current"
+                        style="width: 100%; padding: 0.85rem; border-radius: 14px; border: 1px solid #f1f5f9; background: #f8fafc; font-size: 0.95rem; font-family: inherit;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Preferences -->
+        <div style="margin-bottom: 2rem;">
+            <p
+                style="font-size: 0.75rem; font-weight: 800; color: var(--primary); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 0.75rem;">
+                Preferences</p>
+            <div class="card" style="overflow: hidden;">
+                <div
+                    style="padding: 1.25rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f8fafc;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <div
+                            style="width: 32px; height: 32px; background: rgba(244, 63, 94, 0.1); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-moon"></i>
+                        </div>
+                        <span style="font-weight: 600; font-size: 0.9rem;">Dark Mode</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="themeToggle" onchange="toggleUserTheme()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div style="padding: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <div
+                            style="width: 32px; height: 32px; background: rgba(16, 185, 129, 0.1); color: #10b981; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <span style="font-weight: 600; font-size: 0.9rem;">Push Notifications</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" checked>
+                        <span class="slider" style="background-color: #10b981;"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit"
+            style="width: 100%; background: var(--primary); color: white; border: none; padding: 1.1rem; border-radius: 50px; font-weight: 800; font-size: 1rem; box-shadow: 0 10px 20px rgba(244, 63, 94, 0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.6rem;">
+            <i class="fas fa-save"></i> Save All Changes
+        </button>
+    </form>
+
+    <div style="margin-top: 3rem; text-align: center;">
+        <a href="{{ url_for('user_portal.logout') }}"
+            style="color: #ef4444; text-decoration: none; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+        </a>
+        <p style="margin-top: 1rem; font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">Saloon Essy
+            v1.2.0-user</p>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@21.0.8/build/css/intlTelInput.css">
+<style>
+    .iti {
+        width: 100%;
+        display: block;
+    }
+    .iti input {
+        padding-left: 95px !important;
+    }
+
+    .iti__country-list {
+        border-radius: 14px;
+        border: 2px solid #e5e7eb;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        background: white;
+    }
+
+    .iti__flag {
+        border-radius: 2px;
+    }
+
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #e2e8f0;
+        transition: .4s;
+        border-radius: 34px;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    input:checked+.slider {
+        background-color: var(--primary);
+    }
+
+    input:checked+.slider:before {
+        transform: translateX(20px);
+    }
+</style>
+
+<script>
+    function previewUserPhoto(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const preview = document.getElementById('profilePreview');
+                const initial = document.getElementById('profileInitial');
+                if (preview) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                if (initial) {
+                    initial.style.display = 'none';
+                }
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function toggleUserTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const theme = localStorage.getItem('theme') || 'light';
+        const toggle = document.getElementById('themeToggle');
+        if (theme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            if (toggle) toggle.checked = true;
+        }
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@21.0.8/build/js/intlTelInput.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const input = document.querySelector("#phone");
+        const hiddenInput = document.querySelector("#full_phone");
+
+        const iti = window.intlTelInput(input, {
+            initialCountry: "auto",
+            geoIpLookup: callback => {
+                fetch("https://ipapi.co/json")
+                    .then(res => res.json())
+                    .then(data => callback(data.country_code))
+                    .catch(() => callback("in"));
+            },
+            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@21.0.8/build/js/utils.js",
+            separateDialCode: true,
+        });
+
+        const form = document.querySelector("form");
+        form.addEventListener("submit", function () {
+            hiddenInput.value = iti.getNumber();
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "user_portal/layout.html" %}
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 style="font-weight: 900; font-size: 1.5rem; color: var(--text-main);">Notifications</h2>
+        <span
+            style="background: rgba(244, 63, 94, 0.1); color: var(--primary); padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.7rem; font-weight: 800;">{{
+            notifications|length }} NEW</span>
+    </div>
+
+    {% if notifications %}
+    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        {% for b in notifications %}
+        <div class="card" style="padding: 1rem; position: relative; overflow: hidden;">
+            <!-- Status Indicator Strip -->
+            <div
+                style="position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: {{ '#6366f1' if b.status == 'accepted' else '#10b981' if b.status == 'completed' else '#ef4444' if b.status == 'rejected' else '#f59e0b' }};">
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                <h4 style="font-weight: 800; font-size: 0.95rem; color: var(--text-main);">{{ b.service.name }}</h4>
+                <span class="badge badge-{{ b.status }}">{{ b.status|title }}</span>
+            </div>
+
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                {% if b.status == 'pending' %}
+                Your request at <strong>{{ b.salon.name }}</strong> is pending approval.
+                {% elif b.status == 'accepted' %}
+                Good news! Your booking at <strong>{{ b.salon.name }}</strong> is confirmed.
+                <span style="display: block; margin-top: 4px; color: var(--primary); font-weight: 700;">OTP: {{ b.otp
+                    }}</span>
+                {% elif b.status == 'completed' %}
+                Service completed at <strong>{{ b.salon.name }}</strong>. Hope you loved it!
+                {% elif b.status == 'rejected' %}
+                Booking at <strong>{{ b.salon.name }}</strong> was cancelled or declined.
+                {% endif %}
+            </p>
+
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #f8fafc;">
+                <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">
+                    <i class="far fa-clock" style="margin-right: 3px;"></i> {{ b.slot_time.strftime('%I:%M %p, %d %b')
+                    }}
+                </span>
+                <a href="{{ url_for('user_portal.my_bookings') }}"
+                    style="font-size: 0.75rem; color: var(--primary); font-weight: 700; text-decoration: none;">View
+                    Detail <i class="fas fa-chevron-right" style="font-size: 0.6rem;"></i></a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div
+        style="text-align: center; padding: 4rem 2rem; background: white; border-radius: 24px; border: 2px dashed var(--glass-border);">
+        <div style="font-size: 3.5rem; margin-bottom: 1rem; opacity: 0.5;">🔔</div>
+        <h3 style="font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">No updates yet</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">You'll get notified about your bookings and offers here.
+        </p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

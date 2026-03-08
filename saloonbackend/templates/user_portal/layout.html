@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saloon Essy | {% block title %}{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #f43f5e;
+            --primary-dark: #e11d48;
+            --orange: #fb923c;
+            --bg-main: #fff5f7;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --glass-border: #fce7eb;
+            --shadow-sm: 0 2px 8px rgba(244, 63, 94, 0.07);
+        }
+
+        [data-theme='dark'] {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-border: #334155;
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+
+    <script>
+        // Theme Loader Script
+        (function () {
+            const theme = localStorage.getItem('theme') || 'light';
+            if (theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .mobile-container {
+            width: 100%;
+            max-width: 600px;
+            min-height: 100vh;
+            background: var(--bg-main);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--orange));
+            padding: 1.1rem 1.4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .header-brand i {
+            color: white;
+            font-size: 1.4rem;
+        }
+
+        .header-brand span {
+            color: white;
+            font-weight: 900;
+            font-size: 1.25rem;
+            letter-spacing: -0.5px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-avatar {
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1rem;
+        }
+
+        .header-notif {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2rem;
+            position: relative;
+        }
+
+        /* Main */
+        .main-content {
+            padding: 1.25rem;
+            padding-bottom: 90px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 600px;
+            height: 70px;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+            z-index: 2000;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 0.5rem 1.2rem;
+            border-radius: 12px;
+            transition: color 0.2s;
+        }
+
+        .nav-item i {
+            font-size: 1.3rem;
+        }
+
+        .nav-item.active i,
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 18px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Flash */
+        .flash-messages {
+            margin-bottom: 1rem;
+        }
+
+        .flash-msg {
+            padding: 0.8rem 1rem;
+            border-radius: 14px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .flash-msg.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .flash-msg.danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .flash-msg.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: #d97706;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Badges */
+        .badge {
+            padding: 0.25rem 0.65rem;
+            border-radius: 50px;
+            font-size: 0.68rem;
+            font-weight: 800;
+        }
+
+        .badge-pending {
+            background: rgba(245, 158, 11, 0.12);
+            color: #d97706;
+        }
+
+        .badge-accepted {
+            background: rgba(99, 102, 241, 0.12);
+            color: #6366f1;
+        }
+
+        .badge-completed {
+            background: rgba(16, 185, 129, 0.12);
+            color: #059669;
+        }
+
+        .badge-rejected {
+            background: rgba(239, 68, 68, 0.12);
+            color: #dc2626;
+        }
+    </style>
+    {% block styles %}{% endblock %}
+</head>
+
+<body>
+    <div class="mobile-container">
+
+        <!-- Header -->
+        <div class="header">
+            <div class="header-brand">
+                <i class="fas fa-cut"></i>
+                <span>Saloon Essy</span>
+                <a href="/"
+                    style="background: rgba(255,255,255,0.2); color: white; padding: 0.2rem 0.5rem; border-radius: 50px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; text-decoration: none; border: 1px solid rgba(255,255,255,0.3); margin-left: 8px;">
+                    <i class="fas fa-exchange-alt"></i>
+                </a>
+            </div>
+            <div class="header-right">
+                <a href="{{ url_for('user_portal.notifications') }}" class="header-notif">
+                    <i class="fas fa-bell"></i>
+                </a>
+                <a href="{{ url_for('user_portal.profile') }}" style="text-decoration: none;">
+                    <div class="header-avatar" style="overflow: hidden; border: 2px solid rgba(255,255,255,0.5);">
+                        {% if user and user.profile_image %}
+                        <img src="{{ user.profile_image }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                        {{ user.name[0].upper() if user else 'U' }}
+                        {% endif %}
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="main-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                <div class="flash-msg {{ category }}">{{ message|safe }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </div>
+
+        <!-- Bottom Nav -->
+        <nav class="bottom-nav">
+            <a href="{{ url_for('user_portal.home') }}"
+                class="nav-item {{ 'active' if active_page == 'home' else '' }}">
+                <i class="fas fa-compass"></i>
+                <span>Explore</span>
+            </a>
+            <a href="{{ url_for('user_portal.my_bookings') }}"
+                class="nav-item {{ 'active' if active_page == 'bookings' else '' }}">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Bookings</span>
+            </a>
+            <a href="{{ url_for('user_portal.profile') }}"
+                class="nav-item {{ 'active' if active_page == 'profile' else '' }}">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
+            <a href="{{ url_for('user_portal.settings') }}"
+                class="nav-item {{ 'active' if active_page == 'settings' else '' }}">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+    </div>
+</body>
+
+</html>

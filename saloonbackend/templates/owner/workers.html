@@ -1,0 +1,388 @@
+{% extends "owner/layout.html" %}
+{% block title %}Manage Staff{% endblock %}
+
+{% block content %}
+
+{# ══════════ PAGE HEADER ══════════ #}
+<div class="fade-in" style="margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+            <h2 style="font-weight: 800; font-size: 1.75rem; color: var(--text-main); margin: 0;">Our Experts</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0.3rem 0 0;">Manage your stylists and
+                professional salon team.</p>
+        </div>
+        <button class="btn btn-primary" onclick="document.getElementById('addWorkerForm').style.display='block'"
+            style="padding: 0.75rem 1.5rem; border-radius: 50px; box-shadow: 0 10px 15px -3px rgba(99,102,241,0.4);">
+            <i class="fas fa-user-plus"></i> Add Expert
+        </button>
+    </div>
+
+    {# ══════════ I'M ALSO A WORKER CARD ══════════ #}
+    <div
+        style="background: white; border-radius: 24px; padding: 1.5rem 2rem;
+                border: 1.5px solid #e0e7ff; box-shadow: 0 8px 24px rgba(99,102,241,0.08);
+                margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="width: 52px; height: 52px; background: #eef2ff; border-radius: 14px;
+                        display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <i class="fas fa-user-check" style="color: #6366f1; font-size: 1.3rem;"></i>
+            </div>
+            <div>
+                <p style="margin: 0; font-weight: 800; font-size: 1rem; color: var(--text-main);">I'm Also a Worker</p>
+                <p style="margin: 0.2rem 0 0; font-size: 0.82rem; color: var(--text-muted);">
+                    Your salon is registered as
+                    <strong style="color: #6366f1;">{{ salon.category or 'Salon' }}</strong> —
+                    join your own team and accept bookings personally.
+                </p>
+            </div>
+        </div>
+
+        {% if not is_owner_worker %}
+        <form action="{{ url_for('owner.add_self_worker') }}" method="POST" style="margin: 0;">
+            <button type="submit" class="btn"
+                style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; font-weight: 700;
+                       border: none; padding: 0.85rem 1.75rem; border-radius: 50px;
+                       box-shadow: 0 8px 20px rgba(99,102,241,0.35); display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
+                <i class="fas fa-user-plus"></i> Join as Worker
+            </button>
+        </form>
+        {% else %}
+        <span style="background: #f0fdf4; color: #16a34a; font-size: 0.82rem; font-weight: 800;
+                     padding: 0.65rem 1.25rem; border-radius: 50px; border: 1.5px solid #86efac;
+                     display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
+            <i class="fas fa-check-circle"></i> Joined as Worker ✓
+        </span>
+        {% endif %}
+
+    </div>
+
+</div>
+
+<script>
+    function selectSpecialty(el, skill) {
+        document.querySelectorAll('.specialty-card').forEach(c => {
+            c.style.border = '2px solid transparent';
+            c.style.transform = 'none';
+            c.style.boxShadow = 'none';
+        });
+        el.style.border = '2px solid #6366f1';
+        el.style.transform = 'translateY(-3px)';
+        el.style.boxShadow = '0 6px 16px rgba(99,102,241,0.2)';
+        document.getElementById('selectedSkill').value = skill;
+        document.getElementById('selectedSkillDisplay').textContent = skill;
+    }
+    window.addEventListener('DOMContentLoaded', function () {
+        const def = document.querySelector('.specialty-card[data-skill="All Services"]');
+        if (def) selectSpecialty(def, 'All Services');
+    });
+</script>
+
+{# ══════════ TODAY'S ACTIVITY ══════════ #}
+<div class="card fade-in" style="border: none; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+           background: var(--bg-card); border: 1px solid var(--glass-border); margin-bottom: 2.5rem; padding: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h3
+            style="font-weight: 800; font-size: 1.25rem; margin: 0; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-chart-line" style="color: #10b981;"></i> Today's Activity
+        </h3>
+        <span style="font-size: 0.75rem; font-weight: 800; padding: 4px 12px; border-radius: 50px;
+                     background: rgba(16,185,129,0.1); color: #10b981;">
+            {{ total_working_today }} members working today
+        </span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
+        {% for stat in worker_stats %}
+        <div
+            style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1rem; display: flex; align-items: center; gap: 1rem;">
+            <div style="position: relative;">
+                <img src="{{ stat.worker.image_url }}"
+                    style="width: 50px; height: 50px; border-radius: 12px; object-fit: cover;">
+                <div style="position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px;
+                            background: {{ '#10b981' if stat.worker.status == 'online' else '#94a3b8' }};
+                            border-radius: 50%; border: 2px solid white;"></div>
+            </div>
+            <div style="flex: 1;">
+                <h4 style="margin: 0; font-size: 0.9rem; font-weight: 700; color: var(--text-main);">{{ stat.worker.name
+                    }}</h4>
+                <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                    <div>
+                        <span
+                            style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; display: block;">Bookings</span>
+                        <span style="font-size: 0.9rem; font-weight: 800; color: #3b82f6;">{{ stat.completed }}<span
+                                style="font-size: 0.7rem; color: #94a3b8;">/{{ stat.total_today }}</span></span>
+                    </div>
+                    <div>
+                        <span
+                            style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; display: block;">Revenue</span>
+                        <span style="font-size: 0.9rem; font-weight: 800; color: #10b981;">₹{{ stat.revenue }}</span>
+                    </div>
+                </div>
+                {% if stat.service_breakdown %}
+                <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px dashed #cbd5e1;">
+                    <span
+                        style="font-size: 0.65rem; color: var(--text-muted); font-weight: 700; display: block; margin-bottom: 0.4rem;">SERVICE
+                        BREAKDOWN</span>
+                    {% for s_name, details in stat.service_breakdown.items() %}
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem;">
+                        <span style="font-size: 0.75rem; color: var(--text-main); font-weight: 600;">{{ s_name }} <span
+                                style="color: var(--text-muted); font-size: 0.7rem;">(x{{ details.count
+                                }})</span></span>
+                        <span style="font-size: 0.75rem; color: #3b82f6; font-weight: 700;">₹{{ details.amount }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+        {% if not worker_stats %}
+        <div
+            style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 1rem; font-size: 0.85rem; font-weight: 600;">
+            No worker data available for today.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{# ══════════ ADD EXPERT FORM (modal) ══════════ #}
+<div id="addWorkerForm" class="card fade-in" style="display: none; border: none; background: white; margin-bottom: 2.5rem;
+           box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border-radius: 24px; position: relative; overflow: hidden;">
+    <div
+        style="height: 6px; background: linear-gradient(90deg, #10b981, #3b82f6); position: absolute; top: 0; left: 0; width: 100%;">
+    </div>
+    <div class="card-header"
+        style="border-bottom: 1px solid #f1f5f9; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-weight: 700; margin: 0; display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fas fa-id-card" style="color: #10b981;"></i> New Team Member
+        </h3>
+        <button class="btn" onclick="document.getElementById('addWorkerForm').style.display='none'"
+            style="color: var(--text-muted); background: #f8fafc; border-radius: 50%; width: 35px; height: 35px; padding: 0; display: flex; align-items: center; justify-content: center;">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    <form action="{{ url_for('owner.manage_workers') }}" method="POST" style="padding: 2rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: 700;">Full Name</label>
+                    <input type="text" name="name" class="form-control" placeholder="Stylist name..."
+                        style="background: #f8fafc; padding: 1rem; border-radius: 14px;" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: 700;">Mobile Number</label>
+                    <input type="tel" id="phone" name="raw_phone" class="form-control" placeholder="Enter mobile number"
+                        style="background: #f8fafc; padding: 1rem; border-radius: 14px;" required>
+                    <input type="hidden" name="phone" id="full_phone">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: 700;">Experience (Years)</label>
+                    <input type="number" name="experience" class="form-control"
+                        style="background: #f8fafc; padding: 1rem; border-radius: 14px;" placeholder="5" required>
+                </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: 700;">Assign Services</label>
+                    <div
+                        style="display: flex; flex-wrap: wrap; gap: 0.5rem; background: #f1f5f9; padding: 1rem; border-radius: 14px; max-height: 150px; overflow-y: auto;">
+                        {% for svc in services %}
+                        <label
+                            style="background: white; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.8rem; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; border: 1px solid #e2e8f0;">
+                            <input type="checkbox" name="services_list" value="{{ svc.name }}"
+                                style="accent-color: #10b981;"> {{ svc.name }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: 700;">Additional Skills</label>
+                    <input type="text" name="skills" class="form-control" placeholder="e.g., Bridal Expert, Massage..."
+                        style="background: #f8fafc; padding: 1rem; border-radius: 14px;">
+                </div>
+                <button type="submit" class="btn btn-primary"
+                    style="width: 100%; padding: 1.1rem; border-radius: 14px; font-weight: 700; background: #10b981; border: none; margin-top: auto;">
+                    Save Profile
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+{# ══════════ JOIN REQUESTS ══════════ #}
+{% if pending_workers %}
+<div class="fade-in" style="margin-bottom: 3rem;">
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+        <span
+            style="background: #fef2f2; color: #ef4444; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Join
+            Requests</span>
+        <div style="flex: 1; height: 1px; background: #f1f5f9;"></div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;">
+        {% for worker in pending_workers %}
+        <div class="card"
+            style="padding: 1.5rem; border: 2px dashed #e2e8f0; border-radius: 24px; background: #fff; position: relative;">
+            <div
+                style="position: absolute; top: 1rem; right: 1rem; color: #d97706; background: #fffbeb; padding: 4px 8px; border-radius: 6px; font-size: 0.6rem; font-weight: 800;">
+                PENDING</div>
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem;">
+                {% set default_img = 'https://ui-avatars.com/api/?name=' + worker.name +
+                '&background=6366f1&color=fff&size=100' %}
+                <img src="{{ worker.image_url if worker.image_url and 'http' in worker.image_url else default_img }}"
+                    style="width: 50px; height: 50px; border-radius: 12px; object-fit: cover;">
+                <div>
+                    <h4 style="margin: 0; font-size: 1rem; font-weight: 800; color: var(--text-main);">{{ worker.name }}
+                    </h4>
+                    <p style="margin: 0.2rem 0; font-size: 0.8rem; font-weight: 700; color: var(--text-main);">
+                        <i class="fas fa-phone-alt" style="color: #3b82f6; font-size: 0.7rem; margin-right: 4px;"></i>{{
+                        worker.phone }}
+                    </p>
+                    <p style="margin: 0; font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">{{
+                        worker.experience }}+ Yrs Experience</p>
+                </div>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+                <form action="{{ url_for('owner.approve_worker', worker_id=worker.id) }}" method="POST"
+                    style="flex: 1;">
+                    <button type="submit" class="btn"
+                        style="width: 100%; border: none; background: #10b981; color: white; border-radius: 12px; font-weight: 700; padding: 0.65rem; font-size: 0.85rem;">Approve</button>
+                </form>
+                <form action="{{ url_for('owner.reject_worker', worker_id=worker.id) }}" method="POST" style="flex: 1;">
+                    <button type="submit" class="btn"
+                        style="width: 100%; border: 1px solid #ef4444; background: white; color: #ef4444; border-radius: 12px; font-weight: 700; padding: 0.65rem; font-size: 0.85rem;">Decline</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{# ══════════ ACTIVE TEAM GRID ══════════ #}
+<div style="margin-bottom: 1.5rem;">
+    <h3 style="font-weight: 800; font-size: 1.1rem; color: var(--text-main); margin-bottom: 1.5rem;">Active Team</h3>
+</div>
+<div class="fade-in" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;">
+    {% for worker in workers %}
+    <div class="card worker-card"
+        style="padding: 1.5rem; border: none; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background: white; transition: all 0.3s ease;">
+        <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+            <div style="position: relative; margin-bottom: 1rem;">
+                {% set worker_img = worker.image_url if worker.image_url and 'http' in worker.image_url else
+                'https://ui-avatars.com/api/?name=' + worker.name + '&background=10b981&color=fff&size=100' %}
+                <img src="{{ worker_img }}"
+                    style="width: 80px; height: 80px; border-radius: 50%; border: 4px solid #f0fdf4; box-shadow: 0 4px 10px rgba(0,0,0,0.1); object-fit: cover;">
+                <div
+                    style="position: absolute; bottom: 0; right: 0; width: 22px; height: 22px; background: #10b981; border: 3px solid white; border-radius: 50%;">
+                </div>
+            </div>
+            <h3 style="font-weight: 800; font-size: 1.1rem; margin: 0;">{{ worker.name }}</h3>
+            <p style="margin: 0.2rem 0; font-size: 0.85rem; color: var(--text-main); font-weight: 700;">
+                <i class="fas fa-phone-alt" style="color: #10b981; font-size: 0.7rem; margin-right: 4px;"></i>{{
+                worker.phone }}
+            </p>
+            <p
+                style="color: #10b981; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-top: 0.25rem;">
+                {{ worker.experience }}+ Years Exp</p>
+            <div style="margin-top: 1rem; width: 100%;">
+                <p
+                    style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; letter-spacing: 1px; margin-bottom: 0.5rem; text-align: left;">
+                    Specializes in</p>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: flex-start;">
+                    {% if worker.assigned_services %}
+                    {% for svc in worker.assigned_services.split(',') %}
+                    <span
+                        style="background: rgba(16,185,129,0.1); color: #10b981; padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">{{
+                        svc.strip() }}</span>
+                    {% endfor %}
+                    {% endif %}
+                    {% if worker.skill %}
+                    {% for s in worker.skill.split(',') %}
+                    <span
+                        style="background: #f1f5f9; color: var(--text-muted); padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">{{
+                        s.strip() }}</span>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+            <div
+                style="margin-top: 1.5rem; border-top: 1px solid #f1f5f9; padding-top: 1rem; width: 100%; display: flex; align-items: center; justify-content: space-between;">
+                <a href="tel:{{ worker.phone }}"
+                    style="text-decoration: none; color: var(--text-main); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.4rem;">
+                    <i class="fas fa-phone-alt" style="color: #3b82f6;"></i> Call
+                </a>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn"
+                        style="width: 35px; height: 35px; padding: 0; background: #f8fafc; color: var(--text-muted); border-radius: 8px; justify-content: center;">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <form action="{{ url_for('owner.delete_worker', id=worker.id) }}" method="POST" style="margin: 0;"
+                        onsubmit="return confirm('Remove this staff member?');">
+                        <button type="submit" class="btn"
+                            style="width: 35px; height: 35px; padding: 0; background: #fff1f2; color: var(--danger); border-radius: 8px; justify-content: center;">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div style="grid-column: 1 / -1; text-align: center; padding: 6rem 2rem;">
+        <i class="fas fa-users-slash" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 2rem; display: block;"></i>
+        <h2 style="font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">The team is empty</h2>
+        <p style="color: var(--text-muted); margin-bottom: 2rem;">Add your experts to start growing your salon business.
+        </p>
+        <button class="btn btn-primary" onclick="document.getElementById('addWorkerForm').style.display='block'"
+            style="padding: 1rem 2.5rem; border-radius: 50px; background: #10b981; border: none;">
+            <i class="fas fa-plus"></i> Hire First Stylist
+        </button>
+    </div>
+    {% endfor %}
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@21.0.8/build/css/intlTelInput.css">
+<style>
+    .worker-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .iti {
+        width: 100%;
+        display: block;
+    }
+
+    .iti input {
+        padding-left: 95px !important;
+    }
+
+    .iti__country-list {
+        border-radius: 14px;
+        border: 2px solid #e5e7eb;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        background: white;
+    }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@21.0.8/build/js/intlTelInput.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const input = document.querySelector("#phone");
+        const hiddenInput = document.querySelector("#full_phone");
+        if (input) {
+            const iti = window.intlTelInput(input, {
+                initialCountry: "in",
+                separateDialCode: true,
+                utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@21.0.8/build/js/utils.js",
+            });
+            const form = input.closest("form");
+            if (form) {
+                form.addEventListener("submit", function () {
+                    hiddenInput.value = iti.getNumber();
+                });
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,252 @@
+{% extends "worker/layout.html" %}
+{% block title %}My Jobs{% endblock %}
+
+{% block content %}
+<div class="fade-in" style="margin-bottom: 1.5rem;">
+    <p
+        style="color: var(--primary); font-weight: 800; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.25rem;">
+        MANAGE</p>
+    <h2 style="font-weight: 800; font-size: 1.6rem; color: var(--text-main); margin: 0;">My Jobs</h2>
+</div>
+
+<!-- Filter Tabs -->
+<div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 4px;">
+    {% for tab in ['All', 'Pending', 'Accepted', 'Completed'] %}
+    <button onclick="filterJobs('{{ tab.lower() }}')" id="tab-{{ tab.lower() }}"
+        style="padding: 0.45rem 1.1rem; border-radius: 50px; border: 2px solid {% if loop.first %}var(--primary){% else %}var(--glass-border){% endif %}; background: {% if loop.first %}var(--primary); color: white{% else %}white; color: var(--text-muted){% endif %}; font-size: 0.78rem; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all 0.2s;">
+        {{ tab }}
+    </button>
+    {% endfor %}
+</div>
+
+<!-- Jobs List -->
+<div id="jobs-container">
+    {% if bookings %}
+    {% for b in bookings %}
+    <div class="job-card fade-in" data-status="{{ b.status }}"
+        style="background: white; border-radius: 20px; padding: 1.25rem; margin-bottom: 1rem; border: 1px solid var(--glass-border); box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+        <!-- Existing Card Content -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+            <div>
+                <p style="font-weight: 800; font-size: 1rem; color: var(--text-main); margin: 0;">
+                    {{ b.service.name }}
+                    <span
+                        style="font-size: 0.7rem; color: var(--primary); background: rgba(244,63,94,0.05); padding: 2px 6px; border-radius: 4px; margin-left: 6px;">
+                        <i class="fas fa-clock" style="font-size: 0.6rem;"></i> {{ b.service.duration or 30 }}m
+                    </span>
+                </p>
+                <div
+                    style="font-size: 0.8rem; color: var(--text-muted); margin: 3px 0 0 0; display: flex; flex-direction: column; gap: 2px;">
+                    <span style="font-weight: 700; color: var(--text-main);"><i class="fas fa-user"
+                            style="color: var(--primary); margin-right: 5px;"></i>{{ b.user.name }}</span>
+                    <span><i class="fas fa-phone-alt" style="color: #10b981; margin-right: 5px;"></i>{{ b.user.phone
+                        }}</span>
+                </div>
+            </div>
+
+            <!-- RAPIDO SOUND FOR NEW REQUESTS -->
+            {% if b.status == 'pending' %}
+            <script>
+                // This will only run once per pending job found in list
+                window.addEventListener('load', () => {
+                    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+                    // Play if browser allows (usually requires one user click anywhere first)
+                    audio.play().catch(e => console.log("Sound blocked: Need click first"));
+                });
+            </script>
+            {% endif %}
+            {% if b.status == 'pending' %}
+            {% set has_active = bookings|selectattr('status', 'equalto', 'accepted')|list|length > 0 %}
+            {% if has_active %}
+            <span
+                style="background: rgba(99,102,241,0.1); color: var(--primary); padding: 0.3rem 0.75rem; border-radius: 50px; font-size: 0.7rem; font-weight: 800;">📋
+                In Queue</span>
+            {% else %}
+            <span
+                style="background: rgba(245,158,11,0.1); color: #f59e0b; padding: 0.3rem 0.75rem; border-radius: 50px; font-size: 0.7rem; font-weight: 800;">⏳
+                New Request</span>
+            {% endif %}
+            {% elif b.status == 'accepted' %}
+            <span
+                style="background: #eef2ff; color: #6366f1; border: 1.5px solid #6366f1; padding: 0.3rem 0.75rem; border-radius: 50px; font-size: 0.7rem; font-weight: 800; animation: pulse-light 2s infinite;">⚡
+                Active Job</span>
+            {% elif b.status == 'completed' %}
+            <span
+                style="background: rgba(16,185,129,0.1); color: #10b981; padding: 0.3rem 0.75rem; border-radius: 50px; font-size: 0.7rem; font-weight: 800;">✓
+                Done</span>
+            {% elif b.status == 'rejected' %}
+            <span
+                style="background: rgba(239,68,68,0.1); color: #ef4444; padding: 0.3rem 0.75rem; border-radius: 50px; font-size: 0.7rem; font-weight: 800;">✗
+                Rejected</span>
+            {% endif %}
+        </div>
+
+        <div
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+            <div><i class="fas fa-calendar-alt" style="color: var(--primary); margin-right: 4px;"></i>{{
+                b.slot_time.strftime('%d %b %Y') }}</div>
+            <div><i class="fas fa-clock" style="color: var(--primary); margin-right: 4px;"></i>{{
+                b.slot_time.strftime('%I:%M %p') }}</div>
+            <div><i class="fas fa-rupee-sign" style="color: var(--primary); margin-right: 4px;"></i>₹{{ b.service.price
+                }}</div>
+        </div>
+
+        {% if b.status == 'pending' %}
+        <div style="display: flex; gap: 0.5rem; padding-top: 0.75rem; border-top: 1px solid var(--glass-border);">
+            <form method="POST" action="{{ url_for('worker_panel.reject_booking', id=b.id) }}" style="flex: 1;">
+                <button type="submit"
+                    style="width: 100%; padding: 0.6rem; background: rgba(239,68,68,0.1); color: #ef4444; border: none; border-radius: 12px; font-weight: 700; font-size: 0.8rem; cursor: pointer;">Reject</button>
+            </form>
+            <form method="POST" action="{{ url_for('worker_panel.accept_booking', id=b.id) }}" style="flex: 1;">
+                <button type="submit"
+                    style="width: 100%; padding: 0.6rem; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 0.8rem; cursor: pointer;">Accept</button>
+            </form>
+        </div>
+        {% elif b.status == 'accepted' %}
+        <div style="padding-top: 0.75rem; border-top: 1px solid var(--glass-border);">
+            {# Logic to check if this is the FIRST accepted job in the list (Active) #}
+            {% set active_jobs = bookings|selectattr('status', 'equalto', 'accepted')|list %}
+            {% if active_jobs|length > 0 and active_jobs[0].id == b.id %}
+            <span
+                style="display: inline-block; margin-bottom: 0.8rem; background: #eef2ff; color: #6366f1; border: 1.5px solid #6366f1; padding: 0.3rem 0.75rem; border-radius: 50px; font-size: 0.7rem; font-weight: 800; animation: pulse-light 2s infinite;">⚡
+                Active Job</span>
+
+            <!-- QUICK MESSAGE BUTTONS (RAPIDO STYLE) -->
+            <div style="margin-bottom: 0.8rem;">
+                <p style="font-size: 0.75rem; color: var(--text-muted); font-weight: 800; margin-bottom: 6px;">Send
+                    Quick Update:</p>
+                <div style="display: flex; gap: 0.4rem; overflow-x: auto; padding-bottom: 4px;">
+                    {% set cat = (b.salon.category or '').lower() %}
+                    {% if 'spa' in cat %}{% set quick_msgs = ["Room is getting ready!", "Relaxing oils prepared!", "Warm
+                    towels are ready!"] %}
+                    {% elif 'parlour' in cat or 'parlor' in cat or 'beauty' in cat %}{% set quick_msgs = ["Makeup
+                    station ready!", "Getting equipment set!", "Please wait in lounge."] %}
+                    {% elif 'studio' in cat %}{% set quick_msgs = ["Studio space is ready!", "Setting up now!", "Just 5
+                    mins more!"] %}
+                    {% else %}{% set quick_msgs = ["Your chair is ready!", "Finishing a haircut!", "Please take your
+                    seat."] %}
+                    {% endif %}
+
+                    {% for msg in quick_msgs %}
+                    <form action="{{ url_for('worker_panel.send_message', id=b.id) }}" method="POST">
+                        <input type="hidden" name="message" value="{{ msg }}">
+                        <button type="submit"
+                            style="white-space: nowrap; padding: 0.4rem 0.8rem; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.7rem; font-weight: 700; color: #475569; cursor: pointer; transition: 0.2s;">
+                            {{ msg }}
+                        </button>
+                    </form>
+                    {% endfor %}
+                </div>
+
+                <!-- POLITE STANDARD UPDATES (RAPIDO STYLE) -->
+                <p
+                    style="font-size: 0.65rem; color: #6366f1; font-weight: 850; margin: 8px 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                    Polite Shop Requests:</p>
+                <div style="display: flex; gap: 0.4rem; overflow-x: auto; padding-bottom: 4px;">
+                    {% set polite_msgs = ["Wait some time, I am at shop!", "Don't cancel, please come soon!", "I am
+                    ready at our salon.", "Please visit shop, I am ready!"] %}
+                    {% for msg in polite_msgs %}
+                    <form action="{{ url_for('worker_panel.send_message', id=b.id) }}" method="POST">
+                        <input type="hidden" name="message" value="{{ msg }}">
+                        <button type="submit"
+                            style="white-space: nowrap; padding: 0.4rem 0.8rem; background: #eef2ff; border: 1px solid #c3dafe; border-radius: 8px; font-size: 0.7rem; font-weight: 700; color: #4338ca; cursor: pointer; transition: 0.2s;">
+                            {{ msg }}
+                        </button>
+                    </form>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.5rem;">Enter customer OTP to
+                complete:</p>
+            <form method="POST" action="{{ url_for('worker_panel.verify_otp', id=b.id) }}"
+                style="display: flex; gap: 0.5rem;">
+                <input type="text" name="otp" placeholder="Enter OTP"
+                    style="flex: 1; padding: 0.6rem 0.8rem; border: 2px solid var(--glass-border); border-radius: 12px; font-size: 0.85rem; font-family: 'Outfit', sans-serif;">
+                <button type="submit"
+                    style="padding: 0.6rem 1rem; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 0.8rem; cursor: pointer;">Verify</button>
+            </form>
+            {% else %}
+            <!-- NEXT IN LINE UI (QUEUED) -->
+            <div
+                style="background: rgba(99,102,241,0.05); border: 1px dashed #6366f1; border-radius: 16px; padding: 1.25rem; text-align: center;">
+                <div
+                    style="background: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem auto; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <i class="fas fa-clock" style="color: #6366f1;"></i>
+                </div>
+                <h4 style="font-weight: 800; color: #6366f1; font-size: 0.85rem; margin: 0;">Next in Line</h4>
+                <p style="font-size: 0.68rem; color: #64748b; margin: 5px 0 12px 0;">This job will activate
+                    automatically after your current session ends.</p>
+
+                <form action="{{ url_for('worker_panel.send_message', id=b.id) }}" method="POST">
+                    <input type="hidden" name="message" value="I am with another client, will be with you shortly!">
+                    <button type="submit"
+                        style="width: 100%; surface: white; border: 1.5px solid #6366f1; color: #6366f1; font-size: 0.7rem; padding: 0.5rem; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s;">
+                        <i class="fas fa-paper-plane" style="margin-right: 4px;"></i> Notify Client to Wait
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <div id="main-empty-state"
+        style="text-align: center; padding: 4rem 2rem; background: white; border-radius: 24px; border: 2px dashed var(--glass-border);">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+        <h3 style="font-weight: 800; color: var(--text-main); margin: 0 0 0.5rem 0;">No Jobs Yet</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Your assigned jobs will appear here.</p>
+    </div>
+    {% endif %}
+
+    <!-- Filter Result Empty State (Hidden initially) -->
+    <div id="filter-empty-state"
+        style="display: none; text-align: center; padding: 4rem 2rem; background: white; border-radius: 24px; border: 2px dashed var(--glass-border);">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
+        <h3 style="font-weight: 800; color: var(--text-main); margin: 0 0 0.5rem 0;">No matches found</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">No jobs found for the selected status.</p>
+    </div>
+</div>
+
+<script>
+    function filterJobs(status) {
+        let visibleCount = 0;
+        const cards = document.querySelectorAll('.job-card');
+
+        cards.forEach(card => {
+            const isVisible = (status === 'all' || card.dataset.status === status);
+            card.style.display = isVisible ? 'block' : 'none';
+            if (isVisible) visibleCount++;
+        });
+
+        // Toggle empty state
+        const filterEmpty = document.getElementById('filter-empty-state');
+        if (cards.length > 0) {
+            filterEmpty.style.display = (visibleCount === 0) ? 'block' : 'none';
+        }
+
+        // Update tab styles
+        document.querySelectorAll('[id^="tab-"]').forEach(tab => {
+            tab.style.background = 'white';
+            tab.style.color = 'var(--text-muted)';
+            tab.style.borderColor = 'var(--glass-border)';
+        });
+        const active = document.getElementById(`tab-${status}`);
+        if (active) {
+            active.style.background = 'var(--primary)';
+            active.style.color = 'white';
+            active.style.borderColor = 'var(--primary)';
+        }
+    }
+
+    // On Load: Check if status is in URL
+    window.addEventListener('load', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlStatus = urlParams.get('status');
+        if (urlStatus) {
+            filterJobs(urlStatus.toLowerCase());
+        }
+    });
+</script>
+{% endblock %}

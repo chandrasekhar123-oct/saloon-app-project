@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salon Owner Panel | {% block title %}{% endblock %}</title>
+    <script>
+        // Apply theme immediately to prevent flashing
+        (function () {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='owner/css/style.css') }}">
+    {% block styles %}{% endblock %}
+    <style>
+        /* Modern Mobile Layout - No fixed Desktop Frame */
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .mobile-container {
+            width: 100%;
+            max-width: 600px;
+            min-height: 100vh;
+            background: var(--bg-main);
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Updated Bottom Nav to be fixed to screen bottom, mimicking a real app */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 600px;
+            height: 70px;
+            background-color: var(--bg-card);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+            z-index: 2000;
+            padding: 0 0.5rem;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .profile-badge-plus {
+            display: flex;
+        }
+
+        .profile-badge-plus.has-image {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="mobile-container">
+
+        <!-- Header -->
+        <div class="header fade-in"
+            style="display: flex; flex-direction: column; align-items: center; margin-top: 1rem; margin-bottom: 2rem; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.8rem;">
+                <i class="fas fa-scissors" style="font-size: 2rem; color: var(--primary);"></i>
+                <h1 style="font-weight: 800; font-size: 2rem; color: var(--text-main); margin: 0; line-height: 1;">
+                    SalonHub</h1>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <span
+                    style="background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.2rem 0.6rem; border-radius: 50px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Partner
+                    App</span>
+                <a href="/"
+                    style="background: #f8fafc; color: #64748b; padding: 0.2rem 0.6rem; border-radius: 50px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border: 1px solid #e2e8f0;">
+                    <i class="fas fa-exchange-alt" style="margin-right: 3px;"></i>Switch Mode
+                </a>
+            </div>
+
+            <!-- Mini Notification/User Row -->
+            <div
+                style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 1rem; margin-top: 0.5rem;">
+                <a href="{{ url_for('owner.notifications') }}"
+                    style="width: 42px; height: 42px; border-radius: 14px; background: var(--bg-card); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm); text-decoration: none; border: 1px solid var(--glass-border); position: relative;">
+                    <i class="fas fa-bell" style="color: var(--primary); font-size: 1.1rem;"></i>
+                    {% if pending_staff_count > 0 %}
+                    <span
+                        style="position: absolute; top: -5px; right: -5px; width: 12px; height: 12px; background: #ef4444; border-radius: 50%; border: 2px solid white; animation: pulse-ring 1.5s infinite;"></span>
+                    {% endif %}
+                </a>
+
+                <a href="{{ url_for('owner.settings') }}" style="text-decoration: none; color: inherit;">
+                    <div style="display: flex; align-items: center; gap: 0.8rem; background: var(--bg-card); padding: 5px 5px 5px 14px; border-radius: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid var(--glass-border);"
+                        onmouseover="this.style.transform='translateY(-2px)'"
+                        onmouseout="this.style.transform='translateY(0)'">
+
+                        <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                            <span
+                                style="font-weight: 850; font-size: 0.75rem; color: var(--text-main); line-height: 1;">{{
+                                current_user.name }}</span>
+                            <span style="font-size: 0.6rem; color: var(--primary); font-weight: 700; margin-top: 2px;">
+                                <i class="fas fa-magic"></i> Manager
+                            </span>
+                        </div>
+
+                        <!-- Instagram Style Avatar with Gradient Ring -->
+                        <div
+                            style="position: relative; padding: 2px; background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                            <div
+                                style="width: 34px; height: 34px; border-radius: 50%; background: var(--bg-card); padding: 2px;">
+                                <div id="headerProfileContainer"
+                                    style="width: 100%; height: 100%; border-radius: 50%; background: #f8fafc; display: flex; justify-content: center; align-items: center; overflow: hidden;">
+                                    {% if current_user.profile_image %}
+                                    <img id="headerProfileImg" src="{{ current_user.profile_image }}"
+                                        style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                    <i id="headerProfileIcon" class="fas fa-user"
+                                        style="color: #cbd5e1; font-size: 1rem;"></i>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Instagram Style Badge (Dynamicly hidden/shown via class) -->
+                            <div id="headerProfileBadge"
+                                class="profile-badge-plus {% if current_user.profile_image %}has-image{% endif %}"
+                                style="position: absolute; bottom: -1px; right: -1px; width: 14px; height: 14px; background: #3897f0; border-radius: 50%; border: 2px solid white; align-items: center; justify-content: center;">
+                                <i class="fas fa-plus" style="color: white; font-size: 0.5rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="flash-container px-3">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }} fade-in">
+                <p style="margin: 0; font-size: 0.85rem; font-weight: 600;">
+                    <i class="fas {{ 'fa-check-circle' if category == 'success' else 'fa-exclamation-circle' }}"></i>
+                    {{ message }}
+                </p>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            {% block content %}{% endblock %}
+        </div>
+
+        <!-- Bottom Navigation Bar -->
+        <div class="bottom-nav">
+            <a href="{{ url_for('owner.dashboard') }}"
+                class="bottom-nav-item {% if active_page == 'dashboard' %}active{% endif %}">
+                <i class="fas fa-grip-horizontal"></i>
+                <span>Home</span>
+            </a>
+            <a href="{{ url_for('owner.bookings') }}"
+                class="bottom-nav-item {% if active_page == 'bookings' %}active{% endif %}">
+                <i class="fas fa-list-check"></i>
+                <span>Orders</span>
+            </a>
+            <a href="{{ url_for('owner.manage_services') }}"
+                class="bottom-nav-item {% if active_page == 'services' %}active{% endif %}">
+                <i class="fas fa-scissors"></i>
+                <span>Menu</span>
+            </a>
+            <a href="{{ url_for('owner.manage_offers') }}"
+                class="bottom-nav-item {% if active_page == 'offers' %}active{% endif %}">
+                <i class="fas fa-tags"></i>
+                <span>Offers</span>
+            </a>
+            <a href="{{ url_for('owner.manage_workers') }}"
+                class="bottom-nav-item {% if active_page == 'workers' %}active{% endif %}" style="position: relative;">
+                <i class="fas fa-users"></i>
+                <span>Team</span>
+                {% if pending_staff_count > 0 %}
+                <span
+                    style="position: absolute; top: 5px; right: 15px; background: #ef4444; color: white; font-size: 0.6rem; font-weight: 800; padding: 2px 5px; border-radius: 50%; border: 1.5px solid white;">{{
+                    pending_staff_count }}</span>
+                {% endif %}
+            </a>
+            <a href="{{ url_for('owner.settings') }}"
+                class="bottom-nav-item {% if active_page == 'settings' %}active{% endif %}">
+                <i class="fas fa-user-gear"></i>
+                <span>Profile</span>
+            </a>
+        </div>
+
+    </div> <!-- End mobile-container -->
+
+    <style>
+        .flash-container {
+            margin-bottom: 1rem;
+            padding: 0 1.5rem;
+        }
+
+        .flash-message {
+            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid transparent;
+        }
+
+        .flash-success {
+            background: #f0fdf4;
+            border-left-color: #10b981;
+            color: #065f46;
+        }
+
+        .flash-danger {
+            background: #fef2f2;
+            border-left-color: #ef4444;
+            color: #b91c1c;
+        }
+    </style>
+
+    {% block scripts_extra %}{% endblock %}
+</body>
+
+</html>

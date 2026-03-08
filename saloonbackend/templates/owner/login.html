@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salon Owner Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='owner/css/style.css') }}">
+    <style>
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .mobile-container {
+            width: 100%;
+            max-width: 600px;
+            min-height: 100vh;
+            background: white;
+            /* Clean white bg for login */
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .login-header {
+            height: 35vh;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-header::after {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: url('https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&q=80') center/cover;
+            opacity: 0.15;
+            z-index: 0;
+        }
+
+        .login-content {
+            padding: 0 2rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 1.25rem 1.25rem 1.25rem 3.5rem;
+            border: 2px solid #f1f5f9;
+            border-radius: 20px;
+            background: #f8fafc;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .auth-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .btn-auth {
+            width: 100%;
+            padding: 1.25rem;
+            border-radius: 20px;
+            background: var(--primary);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 800;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-auth:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="mobile-container fade-in">
+
+        <!-- Premium Hero Header -->
+        <div class="login-header">
+            <div style="position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center;">
+                <div
+                    style="width: 80px; height: 80px; background: white; border-radius: 25px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+                    <i class="fas fa-scissors" style="font-size: 2.5rem; color: var(--primary);"></i>
+                </div>
+                <h1 style="margin: 0; font-weight: 800; font-size: 2.2rem; letter-spacing: -1px;">SalonHub</h1>
+                <p
+                    style="margin: 0.5rem 0 0; font-size: 0.9rem; font-weight: 600; opacity: 0.9; text-transform: uppercase; letter-spacing: 2px;">
+                    Partner Access</p>
+            </div>
+        </div>
+
+        <!-- Login Form -->
+        <div class="login-content">
+            <div style="margin-bottom: 2rem;">
+                <h2 style="font-weight: 800; color: var(--text-main); margin: 0 0 0.5rem; font-size: 1.75rem;">Welcome
+                    Back 👋</h2>
+                <p style="color: var(--text-muted); margin: 0; font-size: 0.95rem;">Enter your details to manage your
+                    salon.</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            {% set is_success = category == 'success' %}
+            <div class="fade-in" style="background: {{ '#f0fdf4' if is_success else '#fef2f2' }}; 
+                       border-radius: 15px; 
+                       padding: 1rem; 
+                       margin-bottom: 1.5rem; 
+                       color: {{ '#065f46' if is_success else '#b91c1c' }}; 
+                       font-size: 0.875rem; font-weight: 600;">
+                <i class="fas {{ 'fa-check-circle' if is_success else 'fa-exclamation-circle' }}"></i> {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form action="{{ url_for('owner.login') }}" method="POST">
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" name="email" class="auth-input" placeholder="Email Address" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" name="password" class="auth-input" placeholder="Password" required>
+                </div>
+
+                <div style="text-align: right; margin-bottom: 2rem;">
+                    <a href="{{ url_for('owner.forgot_password') }}"
+                        style="color: var(--primary); font-weight: 700; font-size: 0.85rem; text-decoration: none;">Forgot
+                        Password?</a>
+                </div>
+
+                <button type="submit" class="btn-auth">
+                    Sign In to Salon Hub
+                </button>
+            </form>
+
+            <div style="margin-top: auto; padding-bottom: 2rem; text-align: center;">
+                <p style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500;">
+                    New partner?
+                    <a href="{{ url_for('owner.register') }}"
+                        style="color: var(--primary); font-weight: 800; text-decoration: none;">Apply Now</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

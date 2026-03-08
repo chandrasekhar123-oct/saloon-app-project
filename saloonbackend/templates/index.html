@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saloon Essy | Master Gateway</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --user-gradient: linear-gradient(135deg, #f43f5e 0%, #fb923c 100%);
+            --worker-gradient: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+            --owner-gradient: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --radius-lg: 1.5rem;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image:
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.1) 0px, transparent 50%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 90%;
+            text-align: center;
+            padding: 4rem 0;
+        }
+
+        .header {
+            margin-bottom: 4rem;
+            animation: fadeInDown 1s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .logo-box {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 80px;
+            background: var(--primary-gradient);
+            border-radius: 20px;
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .title {
+            font-size: 4rem;
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, #1e293b, #6366f1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2.5rem;
+            margin-top: 2rem;
+            animation: fadeInUp 1s cubic-bezier(0.22, 1, 0.36, 1) 0.2s backwards;
+        }
+
+        .app-card {
+            position: relative;
+            background: var(--white);
+            padding: 3rem 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            overflow: hidden;
+        }
+
+        .app-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            transition: height 0.3s ease;
+        }
+
+        .app-card.owner::before {
+            background: var(--owner-gradient);
+        }
+
+        .app-card.user::before {
+            background: var(--user-gradient);
+        }
+
+        .app-card.worker::before {
+            background: var(--worker-gradient);
+        }
+
+        .app-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 25px 40px -10px rgba(0, 0, 0, 0.1);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .app-card:hover::before {
+            height: 8px;
+        }
+
+        .icon-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.25rem;
+            margin-bottom: 2rem;
+            transition: all 0.4s ease;
+            color: white;
+        }
+
+        .owner .icon-circle {
+            background: var(--owner-gradient);
+            box-shadow: 0 10px 20px rgba(30, 41, 59, 0.2);
+        }
+
+        .user .icon-circle {
+            background: var(--user-gradient);
+            box-shadow: 0 10px 20px rgba(244, 63, 94, 0.2);
+        }
+
+        .worker .icon-circle {
+            background: var(--worker-gradient);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
+        }
+
+        .app-card:hover .icon-circle {
+            transform: scale(1.1) rotate(8deg);
+        }
+
+        .card-name {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+        }
+
+        .card-tag {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            margin-bottom: 1.5rem;
+        }
+
+        .owner .card-tag {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .user .card-tag {
+            background: #fff1f2;
+            color: #e11d48;
+        }
+
+        .worker .card-tag {
+            background: #ecfdf5;
+            color: #059669;
+        }
+
+        .card-desc {
+            color: var(--text-muted);
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            flex-grow: 1;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            color: white;
+        }
+
+        .owner .action-btn {
+            background: #1e293b;
+        }
+
+        .user .action-btn {
+            background: #f43f5e;
+        }
+
+        .worker .action-btn {
+            background: #10b981;
+        }
+
+        .app-card:hover .action-btn {
+            gap: 1.25rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer {
+            margin-top: 5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            animation: fadeIn 2s ease;
+        }
+
+        .badge {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .app-grid {
+                grid-template-columns: 1fr;
+                max-width: 400px;
+                margin: 2rem auto;
+            }
+
+            .title {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo-box"><i class="fas fa-scissors"></i></div>
+            <div class="badge">Unified Project Demo v2.0</div>
+            <h1 class="title">Saloon Essy</h1>
+            <p class="subtitle">Experience the future of grooming management. A complete ecosystem for Users,
+                Professionals, and Business Owners.</p>
+        </header>
+
+        <div class="app-grid">
+            <!-- Owner Link -->
+            <a href="{{ url_for('owner.dashboard') if current_user.is_authenticated and current_user.get_id().startswith('owner:') else url_for('owner.login') }}"
+                class="app-card owner">
+                <div class="icon-circle"><i class="fas fa-chart-pie"></i></div>
+                <div class="card-tag">Management</div>
+                <h2 class="card-name">Owner Panel</h2>
+                <p class="card-desc">
+                    {% if current_user.is_authenticated and current_user.get_id().startswith('owner:') %}
+                    Welcome back, <strong>{{ current_user.name }}</strong>! Manage your salon and view earnings.
+                    {% else %}
+                    Control your business, monitor real-time earnings, and manage staff schedules.
+                    {% endif %}
+                </p>
+                <div class="action-btn">
+                    {% if current_user.is_authenticated and current_user.get_id().startswith('owner:') %}
+                    Go to Dashboard <i class="fas fa-arrow-right"></i>
+                    {% else %}
+                    Launch Admin <i class="fas fa-chevron-right"></i>
+                    {% endif %}
+                </div>
+            </a>
+
+            <!-- User Link -->
+            <a href="{{ url_for('user_portal.home') }}" class="app-card user">
+                <div class="icon-circle"><i class="fas fa-user-circle"></i></div>
+                <div class="card-tag">Customer</div>
+                <h2 class="card-name">User Portal</h2>
+                <p class="card-desc">Your premium booking experience. Discover top salons, book services, and manage
+                    grooming appointments.</p>
+                <div class="action-btn">Open User Portal <i class="fas fa-chevron-right"></i></div>
+            </a>
+
+            <!-- Worker Link -->
+            <a href="{{ url_for('worker_panel.dashboard') if current_user.is_authenticated and current_user.get_id().startswith('worker:') else url_for('worker_panel.login') }}"
+                class="app-card worker">
+                <div class="icon-circle"><i class="fas fa-id-card"></i></div>
+                <div class="card-tag">Specialist</div>
+                <h2 class="card-name">Worker App</h2>
+                <p class="card-desc">Manage your daily agenda, accept client requests, and verify service completion
+                    with secure OTPs.</p>
+                <div class="action-btn">
+                    {% if current_user.is_authenticated and current_user.get_id().startswith('worker:') %}
+                    Enter Portal <i class="fas fa-arrow-right"></i>
+                    {% else %}
+                    Partner Login <i class="fas fa-chevron-right"></i>
+                    {% endif %}
+                </div>
+            </a>
+        </div>
+
+        <footer class="footer">
+            <p>&copy; 2026 Saloon Essy Professional Ecosystem. Refined for Excellence.</p>
+        </footer>
+    </div>
+</body>
+
+</html>

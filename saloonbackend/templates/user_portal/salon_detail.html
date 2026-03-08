@@ -1,0 +1,347 @@
+{% extends "user_portal/layout.html" %}
+{% block title %}{{ salon.name }}{% endblock %}
+
+{% block styles %}
+<style>
+    .hero {
+        background: linear-gradient(135deg, #f43f5e, #fb923c);
+        min-height: 160px;
+        display: flex;
+        align-items: flex-end;
+        padding: 1.5rem;
+        margin: -1.25rem -1.25rem 1.25rem -1.25rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero::before {
+        content: '💈';
+        position: absolute;
+        right: 1.5rem;
+        top: 50%;
+        transform: translateY(-60%);
+        font-size: 5rem;
+        opacity: 0.18;
+    }
+
+    .service-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .service-row:last-child {
+        border-bottom: none;
+    }
+
+    .worker-chip {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 0.9rem;
+        background: white;
+        border: 2px solid #f1f5f9;
+        border-radius: 14px;
+        cursor: pointer;
+        transition: border-color 0.2s;
+    }
+
+    .worker-chip.selected,
+    .worker-chip:hover {
+        border-color: var(--primary);
+        background: rgba(244, 63, 94, 0.05);
+    }
+
+    .worker-avatar {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #f43f5e, #fb923c);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 800;
+        font-size: 0.9rem;
+    }
+
+    input[type=date],
+    input[type=time] {
+        width: 100%;
+        padding: 0.8rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 14px;
+        font-size: 0.9rem;
+        font-family: 'Outfit', sans-serif;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+    input[type=date]:focus,
+    input[type=time]:focus {
+        border-color: var(--primary);
+    }
+
+    select.svc-select {
+        padding: 0.5rem 0.8rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+        font-size: 0.8rem;
+        outline: none;
+        cursor: pointer;
+        background: white;
+    }
+
+    select.svc-select:focus {
+        border-color: var(--primary);
+    }
+
+    .worker-unavailable {
+        opacity: 0.5;
+        filter: grayscale(1) blur(1px);
+        background: #f8fafc !important;
+        border-color: #e2e8f0 !important;
+        cursor: not-allowed !important;
+        pointer-events: none;
+    }
+
+    .away-badge {
+        font-size: 0.55rem;
+        background: rgba(15, 23, 42, 0.1);
+        color: #0f172a;
+        padding: 1px 6px;
+        border-radius: 50px;
+        font-weight: 850;
+        text-transform: uppercase;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Banner (Dynamic Background) -->
+<div class="hero" style="background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.7)), url('{{ salon.image_url or "
+    https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&q=80" }}') center/cover;">
+    <div style="position: relative; z-index: 1; display: flex; align-items: center; gap: 1rem; width: 100%;">
+        {% if salon.logo_url %}
+        <img src="{{ salon.logo_url }}"
+            style="width: 70px; height: 70px; border-radius: 18px; border: 2px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); object-fit: cover;">
+        {% else %}
+        <div
+            style="width: 70px; height: 70px; background: white; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--primary); font-weight: 900;">
+            {{ salon.name[0].upper() }}
+        </div>
+        {% endif %}
+        <div style="flex: 1;">
+            <p
+                style="color: rgba(255,255,255,0.8); font-size: 0.65rem; font-weight: 700; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 2px;">
+                Partner Salon</p>
+            <h2 style="color: white; font-weight: 900; font-size: 1.6rem; margin: 0 0 4px 0; line-height: 1.1;">{{
+                salon.name }}</h2>
+            <p
+                style="color: rgba(255,255,255,0.9); font-size: 0.75rem; margin: 0; display: flex; align-items: center; gap: 4px;">
+                <i class="fas fa-map-marker-alt" style="font-size: 0.7rem;"></i>{{ salon.address or 'Address not listed'
+                }}
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Shop Gallery (New Section) -->
+{% if salon.shop_photos %}
+<div style="margin-bottom: 1.5rem;">
+    <h3
+        style="font-weight: 800; font-size: 0.9rem; margin-bottom: 0.75rem; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+        <i class="fas fa-camera-retro" style="color: #f43f5e;"></i> Shop Highlights
+    </h3>
+    <div style="display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 8px; border-radius: 4px;">
+        {% for photo in salon.shop_photos.split(',') %}
+        {% if photo.strip() %}
+        <div
+            style="flex-shrink: 0; width: 160px; height: 110px; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #f1f5f9;">
+            <img src="{{ photo.strip() }}"
+                style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;"
+                onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Book Form -->
+<div
+    style="background: white; border-radius: 24px; border: 1px solid var(--glass-border); overflow: hidden; margin-bottom: 1.5rem;">
+    <div style="padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9; background: rgba(244,63,94,0.03);">
+        <h3 style="font-weight: 800; font-size: 1rem; margin: 0; color: var(--text-main);">📅 Book an Appointment</h3>
+    </div>
+    <form method="POST" action="{{ url_for('user_portal.book_service') }}" style="padding: 1.25rem;">
+        <input type="hidden" name="salon_id" value="{{ salon.id }}">
+
+        <!-- Service -->
+        <div style="margin-bottom: 1rem;">
+            <label
+                style="font-size: 0.8rem; font-weight: 800; color: var(--text-main); display: block; margin-bottom: 0.4rem;">Select
+                Service</label>
+            {% if services %}
+            <select name="service_id" required
+                style="width:100%; padding:0.8rem 1rem; border:2px solid #e5e7eb; border-radius:14px; font-family:'Outfit',sans-serif; font-size:0.9rem; outline:none; background:white;"
+                onchange="updatePrice(this)">
+                <option value="">-- Pick a service --</option>
+                {% for svc in services %}
+                <option value="{{ svc.id }}" data-price="{{ svc.price }}">{{ svc.name }} — ₹{{ svc.price }}</option>
+                {% endfor %}
+            </select>
+            <p id="priceTag" style="font-size:0.78rem; color:var(--primary); font-weight:800; margin:6px 0 0 0;"></p>
+            {% else %}
+            <p style="color: var(--text-muted); font-size: 0.85rem; padding: 0.5rem 0;">No services available yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Date & Time -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+            <div>
+                <label
+                    style="font-size: 0.8rem; font-weight: 800; color: var(--text-main); display: block; margin-bottom: 0.4rem;">Date</label>
+                <input type="date" name="slot_date" id="slot_date" required min="{{ today }}" value="{{ today }}">
+            </div>
+            <div>
+                <label
+                    style="font-size: 0.8rem; font-weight: 800; color: var(--text-main); display: block; margin-bottom: 0.4rem;">Time</label>
+                <input type="time" name="slot_time" id="slot_time" required>
+            </div>
+        </div>
+
+        <!-- Specialist -->
+        {% if workers %}
+        <div style="margin-bottom: 1rem;">
+            <label
+                style="font-size: 0.8rem; font-weight: 800; color: var(--text-main); display: block; margin-bottom: 0.6rem;">Choose
+                Specialist (Optional)</label>
+            <div style="overflow-x: auto; display: flex; gap: 0.6rem; padding-bottom: 4px;">
+                <div class="worker-chip selected" onclick="selectWorker(this, '')">
+                    <div class="worker-avatar" style="background: #e2e8f0; color: #64748b;">?</div>
+                    <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">Any</span>
+                </div>
+                {% for w in workers %}
+                <div class="worker-chip {{ 'worker-unavailable' if not w.is_active else '' }}"
+                    onclick="{{ 'selectWorker(this, \'' + w.id|string + '\')' if w.is_active else '' }}">
+                    {% if w.image_url and 'http' in w.image_url %}
+                    <img src="{{ w.image_url }}"
+                        style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
+                    {% else %}
+                    <div class="worker-avatar">{{ w.name[0].upper() }}</div>
+                    {% endif %}
+                    <div>
+                        <p style="font-size: 0.78rem; font-weight: 700; color: var(--text-main); margin: 0;">{{ w.name
+                            }}</p>
+                        <p style="font-size: 0.65rem; color: var(--text-muted); margin: 0;">
+                            {% set active_jobs = b_model.query.filter_by(worker_id=w.id, status='accepted').count() %}
+                            {% if active_jobs > 0 %}
+                            <span style="color: #f59e0b; font-weight: 800;"><i class="fas fa-spinner fa-spin"></i> Busy
+                                (Current)</span>
+                            {% else %}
+                            {{ 'Available' if w.is_active else 'Away' }}
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <input type="hidden" name="worker_id" id="selectedWorker" value="">
+        </div>
+        {% endif %}
+
+        <button type="submit" {% if not services %}disabled{% endif %}
+            style="width:100%; padding:0.9rem; background:linear-gradient(135deg, var(--primary), var(--orange)); color:white; border:none; border-radius:16px; font-size:1rem; font-weight:800; cursor:pointer; transition:transform 0.2s;"
+            onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+            <i class="fas fa-calendar-plus" style="margin-right: 8px;"></i>Confirm Appointment
+        </button>
+    </form>
+</div>
+
+<!-- Services List -->
+{% if services %}
+<div
+    style="background: white; border-radius: 20px; border: 1px solid var(--glass-border); overflow: hidden; margin-bottom: 1.5rem;">
+    <div style="padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9;">
+        <h3 style="font-weight: 800; font-size: 1rem; margin: 0; color: var(--text-main);">✂️ Services & Pricing</h3>
+    </div>
+    {% for svc in services %}
+    <div class="service-row">
+        <div>
+            <p style="font-weight: 700; color: var(--text-main); margin: 0; font-size: 0.9rem;">{{ svc.name }}</p>
+            {% if svc.duration %}<p style="font-size: 0.73rem; color: var(--text-muted); margin: 2px 0 0 0;"><i
+                    class="fas fa-clock" style="margin-right: 3px;"></i>{{ svc.duration }} min</p>{% endif %}
+        </div>
+        <span style="font-weight: 900; color: var(--primary); font-size: 1rem;">₹{{ svc.price }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Team -->
+{% if workers %}
+<div
+    style="background: white; border-radius: 20px; border: 1px solid var(--glass-border); overflow: hidden; margin-bottom: 1.5rem;">
+    <div style="padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9;">
+        <h3 style="font-weight: 800; font-size: 1rem; margin: 0; color: var(--text-main);">👥 Our Specialists</h3>
+    </div>
+    <div style="padding: 1rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+        {% for w in workers %}
+        <div class="worker-card-item {{ 'worker-unavailable' if not w.is_active else '' }}"
+            style="display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem; background: #fafafa; border-radius: 14px; border: 1px solid #f1f5f9; position: relative;">
+            {% if w.image_url and 'http' in w.image_url %}
+            <img src="{{ w.image_url }}"
+                style="width: 42px; height: 42px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
+            {% else %}
+            <div
+                style="width: 42px; height: 42px; background: linear-gradient(135deg, var(--primary), var(--orange)); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 1rem; flex-shrink: 0;">
+                {{ w.name[0].upper() }}</div>
+            {% endif %}
+            <div style="overflow: hidden;">
+                <p
+                    style="font-weight: 800; font-size: 0.85rem; color: var(--text-main); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    {{ w.name }}</p>
+                {% if not w.is_active %}
+                <span class="away-badge">Away</span>
+                {% elif w.skill %}
+                <p
+                    style="font-size: 0.65rem; color: var(--primary); font-weight: 700; margin: 1px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    <i class="fas fa-star" style="font-size: 0.5rem;"></i> {{ w.skill }}
+                </p>
+                {% endif %}
+                <p style="font-size: 0.65rem; color: var(--text-muted); margin: 0;">{{ w.experience or 0 }}yr exp
+                    Specialist</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<script>
+    const today = '{{ today }}';
+    function updatePrice(sel) {
+        const opt = sel.options[sel.selectedIndex];
+        const price = opt.getAttribute('data-price');
+        document.getElementById('priceTag').innerText = price ? `Estimated cost: ₹${price}` : '';
+    }
+    function selectWorker(el, id) {
+        document.querySelectorAll('.worker-chip').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+        document.getElementById('selectedWorker').value = id;
+    }
+
+    // Set default time to current local time
+    window.addEventListener('load', () => {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('slot_time').value = `${hours}:${minutes}`;
+    });
+</script>
+{% endblock %}

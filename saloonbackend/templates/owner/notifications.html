@@ -1,0 +1,163 @@
+{% extends "owner/layout.html" %}
+{% set active_page = 'notifications' %}
+
+{% block title %}Activity Center{% endblock %}
+
+{% block content %}
+<div class="fade-in" style="max-width: 700px; margin: 0 auto; padding-bottom: 5rem;">
+    <!-- Notification Header -->
+    <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+            <h2 style="font-weight: 800; font-size: 1.75rem; color: var(--text-main); margin: 0;">Activity Feed</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Real-time updates from your salon floor.</p>
+        </div>
+        <button class="btn" style="color: var(--primary); font-weight: 700; font-size: 0.85rem; padding: 0;">
+            Mark all as read
+        </button>
+    </div>
+
+    <!-- Timeline Category -->
+    <div style="margin-bottom: 2rem;">
+        <h3
+            style="font-size: 0.75rem; font-weight: 800; color: var(--danger); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span style="width: 30px; height: 1px; background: rgba(239, 68, 68, 0.4);"></span> Pending Worker Requests
+        </h3>
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            {% for w in pending_workers %}
+            <div class="card notification-card fade-in"
+                style="border: 2px solid #3b82f6; box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.1) !important;">
+                <div class="notification-icon" style="background: #eff6ff; color: #2563eb;">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div style="flex: 1;">
+                    <h4 style="font-weight: 800; font-size: 0.95rem; margin: 0; color: var(--text-main);">
+                        New Expert Join Request
+                    </h4>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.1rem 0;">
+                        <b>{{ w.name }}</b> wants to join your salon team.
+                        {% if w.experience %}({{ w.experience }} yrs experience){% endif %}
+                    </p>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.1rem 0;">
+                        Phone: <b>{{ w.phone }}</b>
+                        {% if w.skill %}| Skills: <b>{{ w.skill }}</b>{% endif %}
+                    </p>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+                        <form action="{{ url_for('owner.approve_worker', worker_id=w.id) }}" method="POST"
+                            style="display:inline;">
+                            <button type="submit" class="btn btn-sm"
+                                style="background: #10b981; color: white; border-radius: 6px; font-weight: 700; padding: 0.4rem 1.25rem;">
+                                <i class="fas fa-check"></i> Accept
+                            </button>
+                        </form>
+                        <form action="{{ url_for('owner.reject_worker', worker_id=w.id) }}" method="POST"
+                            style="display:inline;">
+                            <button type="submit" class="btn btn-sm"
+                                style="background: #f8fafc; color: var(--danger); border-radius: 6px; font-weight: 700; padding: 0.4rem 1.25rem;">
+                                <i class="fas fa-times"></i> Reject
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">No pending worker join requests at the
+                moment.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Timeline Category -->
+    <div style="margin-bottom: 1.5rem;">
+        <h3
+            style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span style="width: 30px; height: 1px; background: #e2e8f0;"></span> Recent Activity
+        </h3>
+
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            {% for n in notifications %}
+            <div class="card notification-card fade-in">
+                <div
+                    class="notification-icon status-{{ n.status if n.status in ['pending', 'completed'] else 'default' }}">
+                    <i
+                        class="fas {% if n.status == 'pending' %} fa-clock {% elif n.status == 'completed' %} fa-check-double {% else %} fa-info-circle {% endif %}"></i>
+                </div>
+                <div style="flex: 1;">
+                    <h4 style="font-weight: 700; font-size: 0.95rem; margin: 0; color: var(--text-main);">
+                        {% if n.status == 'pending' %}
+                        New Booking Request
+                        {% elif n.status == 'completed' %}
+                        Service Completed
+                        {% else %}
+                        Booking Status Update
+                        {% endif %}
+                    </h4>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.1rem 0;">
+                        <b>{{ n.user_name or 'A customer' }}</b> scheduled <b>{{ n.service.name }}</b> with <b>{{
+                            n.worker.name }}</b>.
+                    </p>
+                    <p style="font-size: 0.7rem; color: var(--primary); font-weight: 600; margin-top: 0.25rem;">
+                        {{ n.slot_time.strftime('%I:%M %p • %d %b') }}
+                    </p>
+                </div>
+                <div style="width: 8px; height: 8px; background: var(--primary); border-radius: 50%;"></div>
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 4rem 2rem;">
+                <div
+                    style="width: 80px; height: 80px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                    <i class="fas fa-bell-slash" style="font-size: 2rem; color: #cbd5e1;"></i>
+                </div>
+                <h3 style="font-weight: 700; color: var(--text-main);">Inbox Zero</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">No new notifications at the moment.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<style>
+    .notification-card {
+        border: none;
+        border-radius: 20px;
+        padding: 1.25rem;
+        background: white;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        transition: transform 0.2s;
+    }
+
+    .notification-card:hover {
+        transform: scale(1.02);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .notification-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    .status-pending {
+        background: #fffbeb;
+        color: #d97706;
+    }
+
+    .status-completed {
+        background: #f0fdf4;
+        color: #059669;
+    }
+
+    .status-default {
+        background: #f1f5f9;
+        color: var(--text-muted);
+    }
+</style>
+{% endblock %}
+{% endblock %}

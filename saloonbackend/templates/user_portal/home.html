@@ -1,0 +1,689 @@
+{% extends "user_portal/layout.html" %}
+{% block title %}Discover Salons{% endblock %}
+
+{% block styles %}
+<style>
+    .promo-banner {
+        background: linear-gradient(135deg, #f43f5e, #fb923c);
+        border-radius: 20px;
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1.5rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .promo-banner::after {
+        content: '✂️';
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 3.5rem;
+        opacity: 0.25;
+    }
+
+    .search-bar {
+        background: white;
+        border-radius: 16px;
+        padding: 0.75rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        border: 2px solid var(--glass-border);
+        margin-bottom: 1.25rem;
+        transition: border-color 0.2s;
+    }
+
+    .search-bar:focus-within {
+        border-color: var(--primary);
+    }
+
+    .search-bar input {
+        border: none;
+        outline: none;
+        font-size: 0.9rem;
+        width: 100%;
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .cats {
+        display: flex;
+        gap: 0.6rem;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        margin-bottom: 1.25rem;
+        scrollbar-width: none;
+    }
+
+    .cats::-webkit-scrollbar {
+        display: none;
+    }
+
+    .cat-pill {
+        padding: 0.4rem 1rem;
+        border-radius: 50px;
+        border: 2px solid var(--glass-border);
+        background: white;
+        color: var(--text-muted);
+        font-size: 0.78rem;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s;
+    }
+
+    .cat-pill.active,
+    .cat-pill:hover {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+
+    /* Flipkart Style Animations */
+    @keyframes float {
+        0% {
+            transform: translateY(0px) rotate(0deg);
+        }
+
+        50% {
+            transform: translateY(-10px) rotate(2deg);
+        }
+
+        100% {
+            transform: translateY(0px) rotate(0deg);
+        }
+    }
+
+    @keyframes sweep {
+        0% {
+            transform: translateX(-150%);
+        }
+
+        50% {
+            transform: translateX(150%);
+        }
+
+        100% {
+            transform: translateX(150%);
+        }
+    }
+
+    @keyframes pulse-glow {
+        0% {
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+        }
+
+        70% {
+            box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+        }
+    }
+
+    .offer-motion {
+        animation: float 4s ease-in-out infinite;
+    }
+
+    .offer-glow {
+        animation: pulse-glow 2s infinite;
+    }
+
+    .offers-container {
+        display: flex;
+        gap: 1.25rem;
+        overflow-x: auto;
+        padding: 0.5rem 0 1rem 0;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        scroll-snap-type: x mandatory;
+    }
+
+    .offers-container::-webkit-scrollbar {
+        display: none;
+    }
+
+    .offer-banner-card {
+        flex-shrink: 0;
+        width: 88%;
+        max-width: 340px;
+        height: 170px;
+        border-radius: 28px;
+        position: relative;
+        overflow: hidden;
+        text-decoration: none;
+        display: block;
+        scroll-snap-align: center;
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .offer-banner-card:active {
+        transform: scale(0.96);
+    }
+
+    .salon-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 2px 12px rgba(244, 63, 94, 0.06);
+        transition: transform 0.2s, box-shadow 0.2s;
+        text-decoration: none;
+        display: block;
+    }
+
+    .salon-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(244, 63, 94, 0.12);
+    }
+
+    .salon-img-placeholder {
+        height: 130px;
+        background: linear-gradient(135deg, #fce7eb, #fde68a);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+    }
+
+    .salon-body {
+        padding: 1rem;
+    }
+
+    .salon-name {
+        font-weight: 800;
+        font-size: 1rem;
+        color: var(--text-main);
+        margin: 0 0 4px 0;
+    }
+
+    .salon-meta {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 6px;
+    }
+
+    .salon-meta span {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+
+    .salon-meta i {
+        color: var(--primary);
+        margin-right: 3px;
+    }
+
+    .salon-badge {
+        display: inline-block;
+        padding: 0.2rem 0.6rem;
+        border-radius: 50px;
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .salon-open {
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+    }
+
+    .salon-closed {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+    }
+
+    .recent-booking {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.85rem;
+        background: white;
+        border-radius: 14px;
+        margin-bottom: 0.5rem;
+        border: 1px solid var(--glass-border);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Flipkart Style User Ad -->
+<div class="fade-in" style="margin: 0.5rem 1rem 1.5rem 1rem;">
+    <div
+        style="background: linear-gradient(135deg, #f43f5e 0%, #fb923c 100%); border-radius: 20px; padding: 1.25rem; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden; box-shadow: 0 10px 25px rgba(244,63,94,0.3);">
+        <div
+            style="position: absolute; left: -10px; bottom: -10px; width: 80px; height: 80px; background: rgba(255,255,255,0.15); border-radius: 50%;">
+        </div>
+        <div style="position: relative; z-index: 1;">
+            <span
+                style="background: white; color: #f43f5e; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.6rem; font-weight: 900; text-transform: uppercase;">TRENDING
+                OFFERS</span>
+            <h3 style="color: white; font-weight: 900; font-size: 1.2rem; margin: 8px 0 4px 0;">Summer Skin Revival</h3>
+            <p style="color: rgba(255,255,255,0.9); font-size: 0.8rem; margin: 0; font-weight: 600;">Get up to 50%
+                Cashback on Facials!</p>
+            <button
+                style="margin-top: 12px; background: white; color: #f43f5e; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 800; font-size: 0.75rem; cursor: pointer;">Redeem
+                Now</button>
+        </div>
+        <div
+            style="font-size: 3.5rem; position: relative; z-index: 1; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1));">
+            ✨
+        </div>
+    </div>
+</div>
+
+<!-- Greeting & Location -->
+<div class="fade-in" style="margin-bottom: 1.25rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <p
+                style="color: var(--primary); font-weight: 800; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 3px;">
+                DISCOVER</p>
+            <h2 id="greeting" style="font-weight: 900; font-size: 1.55rem; color: var(--text-main); margin: 0;">Good
+                Evening 👋</h2>
+        </div>
+        <!-- Smart Location Indicator -->
+        <div onclick="requestLocation()" id="locationBadge"
+            style="background: white; padding: 0.5rem 0.9rem; border-radius: 50px; border: 1px solid var(--glass-border); display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.3s; animation: float 6s ease-in-out infinite;">
+            <i class="fas fa-location-arrow" style="color: var(--primary); font-size: 0.8rem;"></i>
+            <span id="currentLoc" style="font-size: 0.75rem; font-weight: 800; color: var(--text-main);">Detecting
+                Location...</span>
+        </div>
+    </div>
+    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 3px;">{{ user.name }}, finding the best artists
+        in <span id="locLabel" style="color: var(--primary); font-weight: 750;">your area</span></p>
+</div>
+
+<!-- Flipkart Style Animated Promo Banners (Dynamic) -->
+<div style="margin: 0 -1.25rem 1.5rem -1.25rem; padding: 0 1.25rem;">
+    <div class="offers-container">
+        {% if offers %}
+        {% for offer in offers %}
+        {% set colors = ['#4f46e5', '#10b981', '#f43f5e'] %}
+        <a href="{{ url_for('user_portal.salon_detail', salon_id=offer.salon_id) }}" class="offer-banner-card fade-in"
+            style="background-color: {{ colors[loop.index0 % 3] }};">
+            <div style="position: absolute; inset: 0; background-image: url('{{ offer.image_url or "
+                https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=400&q=80" }}'); background-size: cover;
+                background-position: center; opacity: 0.35;"></div>
+            <div
+                style="position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transform: translateX(-100%); animation: sweep 3s infinite;">
+            </div>
+            <div class="offer-motion"
+                style="position: absolute; right: 15px; top: 15px; font-size: 3.5rem; opacity: 0.3;">✨</div>
+            <div class="offer-motion"
+                style="position: absolute; right: 60px; bottom: 20px; font-size: 20px; opacity: 0.15; animation-delay: -2s;">
+                ✂️</div>
+            <div
+                style="position: relative; padding: 1.5rem; color: white; height: 100%; display: flex; flex-direction: column; justify-content: center;">
+                <span
+                    style="background: rgba(255,255,255,0.25); width: fit-content; padding: 0.2rem 0.65rem; border-radius: 50px; font-size: 0.65rem; font-weight: 850; letter-spacing: 1px; margin-bottom: 0.6rem; text-transform: uppercase;">{{
+                    offer.salon.name }}</span>
+                <h3
+                    style="margin: 0; font-weight: 900; font-size: 1.55rem; line-height: 1.2; text-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+                    {{ offer.title }}</h3>
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px;">
+                    <div class="offer-glow"
+                        style="background: white; color: #1e293b; padding: 0.25rem 0.7rem; border-radius: 10px; font-weight: 950; font-size: 0.9rem;">
+                        {{ offer.discount_tag }}</div>
+                    <p style="font-size: 0.85rem; margin: 0; opacity: 0.95; font-weight: 600;">{{ offer.description[:45]
+                        if offer.description else '' }}</p>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+        {% else %}
+        <div class="offer-banner-card"
+            style="width: 100%; background: linear-gradient(135deg, var(--primary), var(--orange));">
+            <div
+                style="position: absolute; inset: 0; background-image: url('https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500&q=80'); background-size: cover; background-position: center; opacity: 0.3;">
+            </div>
+            <div
+                style="position: relative; padding: 1.5rem; color: white; height: 100%; display: flex; flex-direction: column; justify-content: center; text-align: center;">
+                <h2 style="font-weight: 950; font-size: 1.8rem; margin: 0;">Welcome to Saloon Essy</h2>
+                <p style="font-size: 0.95rem; margin-top: 8px; opacity: 0.9; font-weight: 600;">Book your favorite
+                    stylists at the best prices!</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Smart Reminders (Flipkart Style) -->
+{% set upcoming_accepted = [] %}
+{% for b in user.bookings %}
+{% if b.status == 'accepted' %}
+{% set days_diff = (b.slot_time.date() - now.date()).days %}
+{% if days_diff >= 0 and days_diff <= 2 %} {% do upcoming_accepted.append(b) %} {% endif %} {% endif %} {% endfor %} {%
+    if upcoming_accepted %} <div
+    style="margin-bottom: 1.5rem; background: #fffbe8; border-radius: 20px; padding: 1rem; border: 1px solid #fef3c7; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+        <h3
+            style="font-weight: 900; font-size: 0.85rem; color: #92400e; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">
+            <i class="fas fa-bell" style="animation: ring 1.5s infinite; margin-right: 5px;"></i> Action Required
+        </h3>
+        <span
+            style="font-size: 0.6rem; background: #fef3c7; color: #92400e; padding: 0.2rem 0.5rem; border-radius: 50px; font-weight: 800;">REAL-TIME</span>
+    </div>
+    <div style="display: flex; gap: 0.75rem; overflow-x: auto; scrollbar-width: none; padding-bottom: 0.25rem;">
+        {% for b in upcoming_accepted %}
+        {% set days_diff = (b.slot_time.date() - now.date()).days %}
+        <a href="{{ url_for('user_portal.my_bookings') }}"
+            style="flex-shrink: 0; width: 260px; background: white; border-radius: 14px; padding: 0.75rem; border: 1.5px solid #fef3c7; text-decoration: none; display: flex; align-items: center; gap: 10px; transition: transform 0.2s;"
+            onmouseover="this.style.transform='scale(0.98)'" onmouseout="this.style.transform='scale(1)'">
+            <div
+                style="width: 45px; height: 45px; background: #fde68a; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                {{ '📅' if days_diff > 0 else '🌟' }}
+            </div>
+            <div style="flex: 1; min-width: 0;">
+                <p
+                    style="font-weight: 800; color: #1e293b; font-size: 0.85rem; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    {{ b.service.name }}</p>
+                <p style="font-size: 0.75rem; color: #d97706; font-weight: 850; margin-top: 2px;">
+                    {{ 'TODAY AT ' if days_diff == 0 else 'TOMORROW AT ' if days_diff == 1 else 'IN ' ~ days_diff ~ '
+                    DAYS' }}
+                    {{ b.slot_time.strftime('%I:%M %p') }}
+                </p>
+            </div>
+            <i class="fas fa-chevron-right" style="color: #d97706; font-size: 0.8rem;"></i>
+        </a>
+        {% endfor %}
+    </div>
+    </div>
+
+    <style>
+        @keyframes ring {
+            0% {
+                transform: rotate(0);
+            }
+
+            10% {
+                transform: rotate(15deg);
+            }
+
+            20% {
+                transform: rotate(-15deg);
+            }
+
+            30% {
+                transform: rotate(15deg);
+            }
+
+            40% {
+                transform: rotate(-15deg);
+            }
+
+            50% {
+                transform: rotate(0);
+            }
+
+            100% {
+                transform: rotate(0);
+            }
+        }
+    </style>
+    {% endif %}
+
+    <!-- Search -->
+    <div class="search-bar fade-in">
+        <i class="fas fa-search" style="color: var(--text-muted);"></i>
+        <input type="text" id="searchInput" placeholder="Search salons, services..." oninput="filterSalons(this.value)">
+    </div>
+
+    <!-- Categories -->
+    <div class="cats fade-in">
+        <button class="cat-pill active" onclick="filterCat(this, 'all')">All</button>
+        <button class="cat-pill" onclick="filterCat(this, 'Barber Shop')">💈 Salons</button>
+        <button class="cat-pill" onclick="filterCat(this, 'Spa & Wellness')">🧖 Spa</button>
+        <button class="cat-pill" onclick="filterCat(this, 'Beauty Parlor')">💅 Beauty Parlor</button>
+        <button class="cat-pill" onclick="filterCat(this, 'Tattoo Studio')">🎨 Studios</button>
+    </div>
+
+    <!-- Salons List -->
+    <div style="margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="font-weight: 800; font-size: 1.1rem; color: var(--text-main); margin: 0;">Nearby Places</h3>
+            <span id="salonCount" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">{{
+                salons|length }} found</span>
+        </div>
+
+        <div id="salonGrid">
+            {% if salons %}
+            {% for salon in salons %}
+            <a href="{{ url_for('user_portal.salon_detail', salon_id=salon.id) }}" class="salon-card fade-in"
+                data-cat="{{ salon.category or 'Barber Shop' }}" data-loc="{{ (salon.location or '')|lower }}">
+
+                <div style="height: 140px; background: url('{{ salon.image_url or "
+                    https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500&q=80" }}') center/cover; position:
+                    relative;">
+                    <div style="position: absolute; top: 12px; left: 12px;">
+                        <span class="salon-badge {{ 'salon-open' if salon.is_open else 'salon-closed' }}"
+                            style="box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                            {{ 'Open' if salon.is_open else 'Closed' }}
+                        </span>
+                    </div>
+                    {% if salon.category == 'Beauty Parlor' %}
+                    <div style="position: absolute; bottom: 12px; right: 12px;">
+                        <span
+                            style="background: #f43f5e; color: white; padding: 0.25rem 0.6rem; border-radius: 50px; font-size: 0.65rem; font-weight: 850; box-shadow: 0 4px 12px rgba(244,63,94,0.3);">
+                            <i class="fas fa-venus" style="margin-right: 4px;"></i>WOMEN LED
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="salon-body">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <h4 class="salon-name">{{ salon.name }}</h4>
+                        <div
+                            style="background: #fdf2f8; color: #db2777; padding: 0.2rem 0.6rem; border-radius: 50px; font-size: 0.65rem; font-weight: 800;">
+                            {{ salon.category or 'Salon' }}
+                        </div>
+                    </div>
+
+                    <p
+                        style="font-size: 0.8rem; color: var(--text-muted); margin: 4px 0 8px 0; display: flex; align-items: center; gap: 4px;">
+                        <i class="fas fa-map-marker-alt" style="color: var(--primary);"></i>
+                        {{ salon.location or 'Local area' }}
+                    </p>
+
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--glass-border); padding-top: 10px; margin-top: 5px;">
+                        <div style="display: flex; gap: 8px;">
+                            <span style="font-size: 0.75rem; font-weight: 700; color: #f59e0b;"><i class="fas fa-star"
+                                    style="margin-right: 3px;"></i>{{ salon.rating }}</span>
+                            <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);"><i
+                                    class="fas fa-clock" style="margin-right: 3px;"></i>25-30 min</span>
+                        </div>
+                        <span style="font-size: 0.78rem; font-weight: 850; color: var(--primary);">BOOK <i
+                                class="fas fa-chevron-right"></i></span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+            {% else %}
+            <div
+                style="text-align: center; padding: 3rem 2rem; background: white; border-radius: 20px; border: 2px dashed var(--glass-border);">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🏪</div>
+                <h3 style="font-weight: 800; color: var(--text-main); margin: 0 0 0.5rem 0;">No Salons Found</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Try selecting a different location or category.
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Bookings -->
+    {% if recent_bookings %}
+    <div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <h3 style="font-weight: 800; font-size: 1rem; color: var(--text-main); margin: 0;">Recent Bookings</h3>
+            <a href="{{ url_for('user_portal.my_bookings') }}"
+                style="color: var(--primary); font-size: 0.78rem; font-weight: 700; text-decoration: none;">See All</a>
+        </div>
+        {% for b in recent_bookings %}
+        <div class="recent-booking">
+            <div>
+                <p style="font-weight: 700; color: var(--text-main); margin: 0; font-size: 0.9rem;">{{ b.service.name }}
+                </p>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin: 2px 0 0 0;"><i class="fas fa-store"
+                        style="margin-right: 3px; color: var(--primary);"></i>{{ b.salon.name }}</p>
+            </div>
+            <span class="badge badge-{{ b.status }}">{{ b.status.title() }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <script>
+        let currentCategory = 'all';
+        let detectedCity = '';
+
+        function filterCat(el, cat) {
+            currentCategory = cat;
+            document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+            applyFilters();
+        }
+
+        function filterSalons(q) {
+            const query = q.toLowerCase();
+            const cards = document.querySelectorAll('.salon-card');
+            cards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                const matchesSearch = text.includes(query);
+                card.style.display = matchesSearch ? 'block' : 'none';
+            });
+            // Reset categories when searching
+            if (query.length > 0) {
+                document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+                document.querySelector('.cat-pill').classList.add('active');
+                currentCategory = 'all';
+            }
+        }
+
+        function applyFilters() {
+            const cards = document.querySelectorAll('.salon-card');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const cat = card.getAttribute('data-cat');
+                const loc = card.getAttribute('data-loc');
+
+                const catMatch = currentCategory === 'all' || cat === currentCategory;
+                const locMatch = !detectedCity || loc.includes(detectedCity.toLowerCase()) || detectedCity.toLowerCase().includes(loc);
+
+                if (catMatch) {
+                    card.style.display = 'block';
+                    card.style.animation = 'fadeIn 0.3s ease';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            document.getElementById('salonCount').innerText = `${visibleCount} available`;
+        }
+
+        function requestLocation() {
+            const statusBox = document.getElementById('currentLoc');
+            const label = document.getElementById('locLabel');
+
+            // If they click on it, ask manually
+            if (event && event.type === 'click') {
+                const manualLoc = prompt("Enter city or town to search for salons:", detectedCity || "");
+                if (manualLoc !== null && manualLoc.trim() !== "") {
+                    detectedCity = manualLoc.trim();
+                    statusBox.innerText = detectedCity;
+                    label.innerText = detectedCity;
+                    applyFilters();
+
+                    const badge = document.getElementById('locationBadge');
+                    badge.style.background = '#f0fdf4';
+                    badge.style.borderColor = '#10b981';
+                }
+                return;
+            }
+
+            if (!detectedCity) {
+                statusBox.innerText = "Locating...";
+            }
+
+            // 1. First attempt: Fast IP-based Location (works without permissions / HTTPS)
+            fetch("https://get.geojs.io/v1/ip/geo.json")
+                .then(response => response.json())
+                .then(data => {
+                    // Update only if no manual city or high-accuracy city is set yet
+                    if (!detectedCity || detectedCity === "Locating...") {
+                        const city = data.city || data.region || "Your Location";
+                        detectedCity = city;
+                        statusBox.innerText = city;
+                        label.innerText = city;
+
+                        const badge = document.getElementById('locationBadge');
+                        badge.style.background = '#f0fdf4';
+                        badge.style.borderColor = '#10b981';
+
+                        applyFilters();
+                    }
+                })
+                .catch(err => console.log("IP Location failed", err));
+
+            // 2. Second attempt: High Accuracy GPS (Requires HTTPS & User Permission)
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+
+                        // Reverse Geocoding using free Nominatim API
+                        fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                const exactCity = data.address.city || data.address.town || data.address.village || data.address.suburb;
+                                if (exactCity) {
+                                    detectedCity = exactCity;
+                                    statusBox.innerText = exactCity;
+                                    label.innerText = exactCity;
+
+                                    const badge = document.getElementById('locationBadge');
+                                    badge.style.background = '#f0fdf4';
+                                    badge.style.borderColor = '#10b981';
+
+                                    applyFilters();
+                                }
+                            })
+                            .catch(err => console.error("Reverse geocoding error:", err));
+                    },
+                    (error) => {
+                        console.log("GPS Location unavailable or denied.");
+                        // Fallback completely to IP location or general default
+                        if (!detectedCity) {
+                            setTimeout(() => {
+                                if (!detectedCity) {
+                                    detectedCity = "Hyderabad";
+                                    statusBox.innerText = "Hyderabad";
+                                    label.innerText = "Hyderabad";
+                                    applyFilters();
+                                }
+                            }, 2000); // give IP fetch a chance to finish
+                        }
+                    },
+                    { enableHighAccuracy: true, timeout: 5000 }
+                );
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const hour = new Date().getHours();
+            const g = hour < 12 ? 'Good Morning ☀️' : hour < 17 ? 'Good Afternoon 🌤️' : 'Good Evening 🌙';
+            document.getElementById('greeting').innerText = g;
+
+            // Auto-detect location
+            setTimeout(requestLocation, 1000);
+        });
+    </script>
+    {% endblock %}

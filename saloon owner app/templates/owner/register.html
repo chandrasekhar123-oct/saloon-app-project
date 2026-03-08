@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salon Owner Registration</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='owner/css/style.css') }}">
+    <style>
+        body {
+            background: #f1f5f9;
+            padding: 3rem 1rem;
+        }
+
+        .reg-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .reg-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .step-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 640px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="reg-container fade-in">
+        <div class="reg-header">
+            <h1 style="font-weight: 700; font-size: 2.5rem; color: var(--text-main);">Join SalonHub</h1>
+            <p style="color: var(--text-muted); font-size: 1.1rem;">Register your salon and start growing your business
+                today.</p>
+        </div>
+
+        <form action="{{ url_for('owner.register') }}" method="POST">
+            <!-- Owner Details Section -->
+            <div class="card">
+                <h3 class="step-title"><i class="fas fa-user-circle"></i> 1. Owner Details</h3>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="name" class="form-control" placeholder="John Doe" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" name="email" class="form-control" placeholder="john@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        <input type="tel" name="phone" class="form-control" placeholder="9876543210" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shop Details Section -->
+            <div class="card">
+                <h3 class="step-title"><i class="fas fa-store"></i> 2. Shop Details</h3>
+                <div class="form-group">
+                    <label class="form-label">Shop Name</label>
+                    <input type="text" name="shop_name" class="form-control" placeholder="The Royal Grooming Lounge"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Shop Address</label>
+                    <textarea name="shop_address" class="form-control" rows="3"
+                        placeholder="Visit Door No, Street, City, State..." required></textarea>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Opening Time</label>
+                        <input type="time" name="opening_time" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Closing Time</label>
+                        <input type="time" name="closing_time" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">GST Number (Optional)</label>
+                        <input type="text" name="gst" class="form-control" placeholder="22AAAAA0000A1Z5">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Google Maps Embed URL</label>
+                        <input type="text" name="map_url" class="form-control" placeholder="Paste iframe src here...">
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; align-items: center; margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem;">
+                    Complete Registration <i class="fas fa-check-circle"></i>
+                </button>
+                <p style="color: var(--text-muted); font-size: 0.875rem;">
+                    Already have a shop? <a href="{{ url_for('owner.login') }}"
+                        style="color: var(--primary); font-weight: 600; text-decoration: none;">Login</a>
+                </p>
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>
