@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import check_password_hash, generate_password_hash
-from models import db, User, Salon, Service, Booking, Worker, Offer
+from models import db, User, Salon, Service, Booking, Worker, Offer, Review
 from datetime import datetime, timedelta
 import random
 import string
@@ -212,7 +212,51 @@ def notifications():
     notifications_list = Booking.query.filter_by(user_id=user.id).order_by(Booking.slot_time.desc()).limit(20).all()
     return render_template('user_portal/notifications.html', user=user, notifications=notifications_list, active_page='notifications')
 
-# ─── Settings ────────────────────────────────────────────────────────────────
+@user_portal_bp.route('/bookings/<int:id>/rate', methods=['GET', 'POST'])
+@user_login_required
+def rate_booking(id):
+    booking = Booking.query.get_or_404(id)
+    if booking.user_id != session.get('portal_user_id'):
+        flash('Unauthorized.', 'danger')
+        return redirect(url_for('user_portal.my_bookings'))
+    
+    if booking.status != 'completed':
+        flash('You can only rate completed services.', 'warning')
+        return redirect(url_for('user_portal.my_bookings'))
+
+    if request.method == 'POST':
+        rating = request.form.get('rating')
+        comment = request.form.get('comment')
+        
+        # Check if already reviewed
+        existing = Review.query.filter_by(booking_id=id).first()
+        if existing:
+            flash('You have already reviewed this service.', 'info')
+            return redirect(url_for('user_portal.my_bookings'))
+
+        review = Review(
+            booking_id=id,
+            user_id=booking.user_id,
+            salon_id=booking.salon_id,
+            rating=int(rating),
+            comment=comment
+        )
+        db.session.add(review)
+        
+        # Update Salon Rating (simplified average)
+        salon = Salon.query.get(booking.salon_id)
+        all_reviews = Review.query.filter_by(salon_id=salon.id).all()
+        total_rating = sum(r.rating for r in all_reviews) + int(rating)
+        count = len(all_reviews) + 1
+        salon.rating = round(total_rating / count, 1)
+
+        db.session.commit()
+        flash('Thank you for your feedback! ⭐', 'success')
+        return redirect(url_for('user_portal.my_bookings'))
+        
+    return render_template('user_portal/add_review.html', booking=booking)
+
+# ─── Settings & Profile (Original) ───────────────────────────────────────────
 @user_portal_bp.route('/settings', methods=['GET', 'POST'])
 @user_login_required
 def settings():

@@ -40,6 +40,7 @@ def create_app(config_class=Config):
             if role == "user": return User.query.get(int(id))
             if role == "worker": return Worker.query.get(int(id))
             if role == "owner": return Owner.query.get(int(id))
+            if role == "admin": return SuperAdmin.query.get(int(id))
         return None
 
     # Register Blueprints
@@ -49,6 +50,7 @@ def create_app(config_class=Config):
     from routes.auth_routes import auth_bp
     from routes.worker_panel_routes import worker_panel_bp
     from routes.user_portal_routes import user_portal_bp
+    from routes.admin_routes import admin_bp
 
     app.register_blueprint(user_bp, url_prefix='/user')
     app.register_blueprint(worker_bp, url_prefix='/worker')
@@ -56,6 +58,7 @@ def create_app(config_class=Config):
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(worker_panel_bp)
     app.register_blueprint(user_portal_bp)
+    app.register_blueprint(admin_bp, url_prefix='/superadmin')
 
     @app.context_processor
     def utility_processor():
@@ -80,7 +83,7 @@ app = create_app()
 if __name__ == '__main__':
     with app.app_context():
         # Ensure all models are registered and tables created
-        from models import User, Worker, Owner, Salon, Service, Booking
+        from models import User, Worker, Owner, Salon, Service, Booking, SuperAdmin, Review
         db.create_all()
     
     # Run server - accesible in network via host='0.0.0.0'

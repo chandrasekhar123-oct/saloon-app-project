@@ -45,3 +45,12 @@ class Worker(UserMixin, db.Model):
 
     def get_id(self):
         return f"worker:{self.id}"
+
+class SuperAdmin(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)
+
+    def get_id(self):
+        return f"admin:{self.id}"

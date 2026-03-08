@@ -1,0 +1,38 @@
+{% extends 'admin/layout.html' %}
+
+{% block page_title %}Salon Specialists{% endblock %}
+
+{% block content %}
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Specialist Name</th>
+                <th>Phone</th>
+                <th>Salon</th>
+                <th>Skill</th>
+                <th>Exp</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for worker in workers %}
+            <tr>
+                <td>#{{ worker.id }}</td>
+                <td>{{ worker.name }}</td>
+                <td>{{ worker.phone }}</td>
+                <td>{{ worker.salon.name if worker.salon else 'N/A' }}</td>
+                <td>{{ worker.skill }}</td>
+                <td>{{ worker.experience }} yrs</td>
+                <td>
+                    <span style="color: {{ '#10b981' if worker.is_active else '#ef4444' }};">
+                        {{ 'Online' if worker.status == 'online' else 'Offline' }}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

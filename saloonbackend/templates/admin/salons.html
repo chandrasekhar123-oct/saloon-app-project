@@ -1,0 +1,58 @@
+{% extends 'admin/layout.html' %}
+
+{% block page_title %}Manage All Salons{% endblock %}
+
+{% block content %}
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Salon Name</th>
+                <th>Owner</th>
+                <th>Category</th>
+                <th>Location</th>
+                <th>Rating</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for salon in salons %}
+            <tr>
+                <td>#{{ salon.id }}</td>
+                <td><strong>{{ salon.name }}</strong></td>
+                <td>{{ salon.owner.name if salon.owner else 'No Owner' }}</td>
+                <td>{{ salon.category }}</td>
+                <td>{{ salon.location }}</td>
+                <td>⭐ {{ salon.rating or 'Unrated' }}</td>
+                <td>
+                    <span id="status-{{ salon.id }}" style="color: {{ '#10b981' if salon.is_active else '#ef4444' }};">
+                        {{ 'Active' if salon.is_active else 'Blocked' }}
+                    </span>
+                </td>
+                <td>
+                    <button onclick="toggleSalon({{ salon.id }})" class="btn btn-primary">
+                        Toggle
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function toggleSalon(id) {
+        fetch(`/superadmin/salon/${id}/toggle`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const el = document.getElementById(`status-${id}`);
+                    el.innerText = data.is_active ? 'Active' : 'Blocked';
+                    el.style.color = data.is_active ? '#10b981' : '#ef4444';
+                }
+            });
+    }
+</script>
+{% endblock %}
