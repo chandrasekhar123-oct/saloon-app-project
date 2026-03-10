@@ -94,7 +94,7 @@
 <body>
     <div class="container">
         <h1>How was your service?</h1>
-        <p>At {{ booking.salon.name }}</p>
+        <p>At {{ booking.salon.name if booking.salon else 'Deleted Salon' }}</p>
 
         <form method="POST">
             <input type="hidden" name="rating" id="rating-val" value="5">

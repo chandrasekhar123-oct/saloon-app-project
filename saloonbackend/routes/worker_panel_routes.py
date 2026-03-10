@@ -125,7 +125,7 @@ def dashboard():
 
     pending_count = sum(1 for b in all_bookings if b.status == 'pending')
     completed_count = sum(1 for b in all_bookings if b.status == 'completed')
-    today_earnings = sum(b.service.price for b in all_bookings if b.status == 'completed' and b.slot_time >= today)
+    today_earnings = sum(b.service.price for b in all_bookings if b.status == 'completed' and b.slot_time >= today and b.service)
     upcoming_bookings = [b for b in all_bookings if b.status in ('pending', 'accepted')]
 
     # Show approval notification once, then clear it
@@ -200,6 +200,12 @@ def accept_booking(id):
         booking.worker_message = f"Please wait some time, I am finishing a {first_job.service.name}. Don't cancel, please come to our shop shortly!"
 
     db.session.commit()
+    
+    # 📱 Send REAL SMS to Customer
+    from utils.sms_service import SMSService
+    customer_phone = booking.user.phone
+    SMSService.send_otp(customer_phone, otp, booking.salon.name)
+
     flash(f'Booking accepted! OTP {otp} has been sent to the customer.', 'success')
     return redirect(url_for('worker_panel.my_bookings'))
 

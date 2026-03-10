@@ -164,16 +164,45 @@
         transform: scale(0.96);
     }
 
+    .offer-0 {
+        background-color: #4f46e5;
+    }
+
+    .offer-1 {
+        background-color: #10b981;
+    }
+
+    .offer-2 {
+        background-color: #f43f5e;
+    }
+
+    .sweep-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transform: translateX(-100%);
+        animation: sweep 3s infinite;
+    }
+
+    #salonGrid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.25rem;
+    }
+
     .salon-card {
         background: white;
         border-radius: 20px;
         overflow: hidden;
-        margin-bottom: 1rem;
         border: 1px solid var(--glass-border);
         box-shadow: 0 2px 12px rgba(244, 63, 94, 0.06);
         transition: transform 0.2s, box-shadow 0.2s;
         text-decoration: none;
-        display: block;
+        display: flex;
+        flex-direction: column;
     }
 
     .salon-card:hover {
@@ -303,15 +332,12 @@
     <div class="offers-container">
         {% if offers %}
         {% for offer in offers %}
-        {% set colors = ['#4f46e5', '#10b981', '#f43f5e'] %}
-        <a href="{{ url_for('user_portal.salon_detail', salon_id=offer.salon_id) }}" class="offer-banner-card fade-in"
-            style="background-color: {{ colors[loop.index0 % 3] }};">
-            <div style="position: absolute; inset: 0; background-image: url('{{ offer.image_url or "
+        <a href="{{ url_for('user_portal.salon_detail', salon_id=offer.salon_id) }}"
+            class="offer-banner-card fade-in offer-{{ loop.index0 % 3 }}">
+            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url('{{ offer.image_url or "
                 https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=400&q=80" }}'); background-size: cover;
                 background-position: center; opacity: 0.35;"></div>
-            <div
-                style="position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transform: translateX(-100%); animation: sweep 3s infinite;">
-            </div>
+            <div class="sweep-overlay"></div>
             <div class="offer-motion"
                 style="position: absolute; right: 15px; top: 15px; font-size: 3.5rem; opacity: 0.3;">✨</div>
             <div class="offer-motion"
@@ -527,10 +553,12 @@
         {% for b in recent_bookings %}
         <div class="recent-booking">
             <div>
-                <p style="font-weight: 700; color: var(--text-main); margin: 0; font-size: 0.9rem;">{{ b.service.name }}
+                <p style="font-weight: 700; color: var(--text-main); margin: 0; font-size: 0.9rem;">{{ b.service.name if
+                    b.service else 'Deleted Service' }}
                 </p>
                 <p style="font-size: 0.75rem; color: var(--text-muted); margin: 2px 0 0 0;"><i class="fas fa-store"
-                        style="margin-right: 3px; color: var(--primary);"></i>{{ b.salon.name }}</p>
+                        style="margin-right: 3px; color: var(--primary);"></i>{{ b.salon.name if b.salon else 'Deleted
+                    Salon' }}</p>
             </div>
             <span class="badge badge-{{ b.status }}">{{ b.status.title() }}</span>
         </div>

@@ -64,7 +64,9 @@ def register():
         gender = request.form.get('gender')
         
         shop_name = request.form.get('shop_name')
-        category = request.form.get('category' or 'Barber Shop')
+        # Get multiple categories from the form
+        categories = request.form.getlist('category')
+        category_str = ", ".join(categories) if categories else 'Barber Shop'
         shop_address = request.form.get('shop_address')
         state = request.form.get('state')
         location = request.form.get('city') # Getting city and storing in location
@@ -90,7 +92,7 @@ def register():
             new_salon = Salon(
                 owner_id=new_owner.id,
                 name=shop_name,
-                category=category,
+                category=category_str,
                 address=shop_address,
                 state=state,
                 location=location,
@@ -672,9 +674,9 @@ def earnings():
     
     all_bookings = Booking.query.filter_by(salon_id=salon.id).all()
     completed = [b for b in all_bookings if b.status == 'completed']
-    total_revenue = sum(b.service.price for b in completed)
+    total_revenue = sum(b.service.price for b in completed if b.service)
     today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
-    today_revenue = sum(b.service.price for b in completed if b.slot_time >= today)
+    today_revenue = sum(b.service.price for b in completed if b.service and b.slot_time >= today)
     
     return render_template('owner/earnings.html',
                            shop=salon,

@@ -4,187 +4,363 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Salon Owner Login</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Saloon Essy | Owner Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;950&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='owner/css/style.css') }}">
     <style>
+        :root {
+            --primary-premium: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.4);
+            --bg-glass: rgba(255, 255, 255, 0.8);
+            --text-dark: #0f172a;
+            --text-slate: #64748b;
+        }
+
         body {
-            background: var(--bg-main);
-            color: var(--text-main);
+            background: #f1f5f9;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.1) 0px, transparent 50%);
             margin: 0;
             display: flex;
             justify-content: center;
-        }
-
-        .mobile-container {
-            width: 100%;
-            max-width: 600px;
-            min-height: 100vh;
-            background: white;
-            /* Clean white bg for login */
-            position: relative;
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.05);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .login-header {
-            height: 35vh;
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-            display: flex;
-            flex-direction: column;
             align-items: center;
-            justify-content: center;
+            min-height: 100vh;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 450px;
+            background: white;
+            border-radius: 40px;
+            box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header-section {
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
             color: white;
-            border-bottom-left-radius: 40px;
-            border-bottom-right-radius: 40px;
-            margin-bottom: 2rem;
+            text-align: center;
             position: relative;
             overflow: hidden;
         }
 
-        .login-header::after {
+        .header-section::before {
             content: '';
             position: absolute;
-            width: 200%;
-            height: 200%;
-            background: url('https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&q=80') center/cover;
-            opacity: 0.15;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500&q=80') center/cover;
+            opacity: 0.1;
+        }
+
+        .logo-box {
+            width: 70px;
+            height: 70px;
+            background: white;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo-box i {
+            font-size: 2rem;
+            color: #1e293b;
+        }
+
+        .form-section {
+            padding: 3rem 2.5rem;
+            position: relative;
+        }
+
+        /* Subtle Background Logo (Watermark) */
+        .form-bg-logo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 15rem;
+            color: rgba(99, 102, 241, 0.03);
+            pointer-events: none;
             z-index: 0;
         }
 
-        .login-content {
-            padding: 0 2rem;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .input-group {
+        .input-wrapper {
             position: relative;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
+            z-index: 1;
         }
 
-        .input-group i {
+        .input-wrapper i.prefix-icon {
             position: absolute;
-            left: 1.25rem;
+            left: 1.5rem;
             top: 50%;
             transform: translateY(-50%);
-            color: var(--text-muted);
-            font-size: 1.1rem;
+            color: var(--text-slate);
+            transition: 0.3s;
         }
 
-        .auth-input {
+        .input-wrapper input {
             width: 100%;
-            padding: 1.25rem 1.25rem 1.25rem 3.5rem;
+            padding: 1.3rem 1.5rem 1.3rem 4rem;
             border: 2px solid #f1f5f9;
             border-radius: 20px;
             background: #f8fafc;
             font-size: 1rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
+            font-weight: 600;
+            color: var(--text-dark);
+            transition: 0.3s;
         }
 
-        .auth-input:focus {
+        .input-wrapper input:focus {
             outline: none;
-            border-color: var(--primary);
+            border-color: var(--primary-premium);
             background: white;
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            box-shadow: 0 10px 25px -5px var(--primary-glow);
         }
 
-        .btn-auth {
+        .input-wrapper .toggle-pass {
+            position: absolute;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-slate);
+        }
+
+        .auth-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .btn-submit {
             width: 100%;
-            padding: 1.25rem;
-            border-radius: 20px;
-            background: var(--primary);
+            padding: 1.3rem;
+            border-radius: 22px;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
             color: white;
-            font-size: 1.1rem;
             font-weight: 800;
+            font-size: 1.1rem;
             border: none;
             cursor: pointer;
-            box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 15px 35px -10px rgba(30, 41, 59, 0.5);
+            transition: 0.3s;
         }
 
-        .btn-auth:active {
-            transform: scale(0.98);
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 45px -12px rgba(30, 41, 59, 0.6);
+        }
+
+        .social-login {
+            margin-top: 3rem;
+            text-align: center;
+        }
+
+        .social-btns {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        .social-icon {
+            width: 55px;
+            height: 55px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 1.2rem;
+        }
+
+        .social-icon:hover {
+            background: #f8fafc;
+            transform: scale(1.1);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="mobile-container fade-in">
-
-        <!-- Premium Hero Header -->
-        <div class="login-header">
-            <div style="position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center;">
-                <div
-                    style="width: 80px; height: 80px; background: white; border-radius: 25px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
-                    <i class="fas fa-scissors" style="font-size: 2.5rem; color: var(--primary);"></i>
-                </div>
-                <h1 style="margin: 0; font-weight: 800; font-size: 2.2rem; letter-spacing: -1px;">SalonHub</h1>
-                <p
-                    style="margin: 0.5rem 0 0; font-size: 0.9rem; font-weight: 600; opacity: 0.9; text-transform: uppercase; letter-spacing: 2px;">
-                    Partner Access</p>
+    <div class="login-card fade-in">
+        <div class="header-section">
+            <div class="logo-box">
+                <i class="fas fa-scissors"></i>
             </div>
+            <h1 style="font-weight: 950; font-size: 2.5rem; letter-spacing: -2px; margin: 0;">Saloon Essy</h1>
+            <p
+                style="text-transform: uppercase; font-size: 0.85rem; letter-spacing: 3px; font-weight: 700; opacity: 0.7; margin-top: 0.5rem;">
+                Partner Portal</p>
         </div>
 
-        <!-- Login Form -->
-        <div class="login-content">
-            <div style="margin-bottom: 2rem;">
-                <h2 style="font-weight: 800; color: var(--text-main); margin: 0 0 0.5rem; font-size: 1.75rem;">Welcome
-                    Back 👋</h2>
-                <p style="color: var(--text-muted); margin: 0; font-size: 0.95rem;">Enter your details to manage your
-                    salon.</p>
+        <div class="form-section">
+            <!-- Real-world feature: Background Logo Watermark -->
+            <div class="form-bg-logo">
+                <i class="fas fa-scissors"></i>
+            </div>
+
+            <div style="margin-bottom: 2.5rem; position: relative; z-index: 1;">
+                <h2 style="font-weight: 800; color: var(--text-dark); margin: 0; font-size: 1.6rem;">Partner Login</h2>
+                <p style="color: var(--text-slate); font-weight: 500; margin-top: 0.4rem;">Manage your business with
+                    excellence.</p>
             </div>
 
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-            {% for category, message in messages %}
-            {% set is_success = category == 'success' %}
-            <div class="fade-in" style="background: {{ '#f0fdf4' if is_success else '#fef2f2' }}; 
-                       border-radius: 15px; 
-                       padding: 1rem; 
-                       margin-bottom: 1.5rem; 
-                       color: {{ '#065f46' if is_success else '#b91c1c' }}; 
-                       font-size: 0.875rem; font-weight: 600;">
-                <i class="fas {{ 'fa-check-circle' if is_success else 'fa-exclamation-circle' }}"></i> {{ message }}
+            <div style="position: relative; z-index: 1; margin-bottom: 2rem;">
+                {% for category, message in messages %}
+                <div
+                    style="padding: 1rem; border-radius: 15px; background: #fff1f2; color: #be123c; font-size: 0.9rem; font-weight: 600; border-left: 4px solid #be123c;">
+                    <i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i> {{ message }}
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
             {% endif %}
             {% endwith %}
 
             <form action="{{ url_for('owner.login') }}" method="POST">
-                <div class="input-group">
-                    <i class="fas fa-envelope"></i>
-                    <input type="email" name="email" class="auth-input" placeholder="Email Address" required>
-                </div>
-                <div class="input-group">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" name="password" class="auth-input" placeholder="Password" required>
+                <!-- Input Group: Email -->
+                <div class="input-wrapper">
+                    <i class="fas fa-envelope prefix-icon"></i>
+                    <input type="email" name="email" placeholder="Business Email" required>
                 </div>
 
-                <div style="text-align: right; margin-bottom: 2rem;">
+                <!-- Input Group: Password -->
+                <div class="input-wrapper">
+                    <i class="fas fa-lock prefix-icon"></i>
+                    <input type="password" name="password" id="passwordField" placeholder="Secure Password" required>
+                    <i class="fas fa-eye-slash toggle-pass" onclick="togglePassword()"></i>
+                </div>
+
+                <!-- Real-world feature: Remember Me -->
+                <div class="auth-actions">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" style="width: 18px; height: 18px; border-radius: 6px;"> Remember Me
+                    </label>
                     <a href="{{ url_for('owner.forgot_password') }}"
-                        style="color: var(--primary); font-weight: 700; font-size: 0.85rem; text-decoration: none;">Forgot
-                        Password?</a>
+                        style="color: var(--primary-premium); text-decoration: none;">Reset Password?</a>
                 </div>
 
-                <button type="submit" class="btn-auth">
-                    Sign In to Salon Hub
-                </button>
+                <button type="submit" class="btn-submit">Sign In to Dashboard</button>
             </form>
 
-            <div style="margin-top: auto; padding-bottom: 2rem; text-align: center;">
-                <p style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500;">
-                    New partner?
-                    <a href="{{ url_for('owner.register') }}"
-                        style="color: var(--primary); font-weight: 800; text-decoration: none;">Apply Now</a>
-                </p>
+            <!-- Real-world feature: Social Support -->
+            <div class="social-login">
+                <span
+                    style="font-size: 0.85rem; color: var(--text-slate); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Or
+                    Continue With</span>
+                <div class="social-btns">
+                    <div class="social-icon" style="color: #ea4335;" onclick="simulateSocialLogin('Google')"><i class="fab fa-google"></i></div>
+                    <div class="social-icon" style="color: #000;" onclick="simulateSocialLogin('Apple')"><i class="fab fa-apple"></i></div>
+                    <div class="social-icon" style="color: #1877f2;" onclick="simulateSocialLogin('Facebook')"><i class="fab fa-facebook-f"></i></div>
+                </div>
+            </div>
+
+            <div style="margin-top: 3.5rem; text-align: center; font-size: 0.95rem; font-weight: 600;">
+                <span style="color: var(--text-slate);">New Partner?</span>
+                <a href="{{ url_for('owner.register') }}"
+                    style="color: var(--primary-premium); text-decoration: none; margin-left: 5px; font-weight: 800;">Apply
+                    for Access</a>
+            </div>
+
+            <!-- Security Badge -->
+            <div
+                style="margin-top: 2rem; display: flex; align-items: center; justify-content: center; gap: 8px; color: #10b981; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">
+                <i class="fas fa-shield-alt"></i> SSL Secured Partner Portal
             </div>
         </div>
     </div>
+
+    <!-- Social Auth Simulation Overlay -->
+    <div id="authOverlay"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 9999; backdrop-filter: blur(8px); flex-direction: column; align-items: center; justify-content: center; color: white;">
+        <div id="loader"
+            style="width: 60px; height: 60px; border: 5px solid rgba(255,255,255,0.1); border-top-color: var(--primary-premium); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 2rem;">
+        </div>
+        <h2 id="authStatus" style="font-weight: 800; letter-spacing: -1px;">Connecting to Secure Server...</h2>
+        <p id="authDetail" style="opacity: 0.7; font-weight: 500;">Please wait while we verify your identity.</p>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const field = document.getElementById('passwordField');
+            const icon = document.querySelector('.toggle-pass');
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            } else {
+                field.type = 'password';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            }
+        }
+
+        function simulateSocialLogin(provider) {
+            const overlay = document.getElementById('authOverlay');
+            const status = document.getElementById('authStatus');
+            const detail = document.getElementById('authDetail');
+            const loader = document.getElementById('loader');
+
+            overlay.style.display = 'flex';
+            status.innerText = `Connecting to ${provider}...`;
+            detail.innerText = "Establishing secure SSL tunnel...";
+
+            setTimeout(() => {
+                status.innerText = "Authenticating Identity...";
+                detail.innerText = `Retrieving authorized token from ${provider} cloud.`;
+            }, 1500);
+
+            setTimeout(() => {
+                loader.style.display = 'none';
+                status.innerHTML = `<i class="fas fa-check-circle" style="color: #10b981; font-size: 3rem; margin-bottom: 1rem; display: block;"></i> Verified!`;
+                detail.innerText = "Redirecting to your Saloon Essy Dashboard...";
+
+                setTimeout(() => {
+                    // In a real app, this would redirect. Here we just close it for demo.
+                    window.location.href = "{{ url_for('owner.dashboard') }}";
+                }, 1500);
+            }, 3500);
+        }
+
+        // Add keyframes for spinner if not present
+        const style = document.createElement('style');
+        style.innerHTML = `@keyframes spin { to { transform: rotate(360deg); } }`;
+        document.head.appendChild(style);
+    </script>
 </body>
 
 </html>

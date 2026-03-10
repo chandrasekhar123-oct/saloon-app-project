@@ -30,7 +30,7 @@ def create_app(config_class=Config):
             return redirect(url_for('user_portal.login'))
 
     # Unified user loader for all 3 roles
-    from models import User, Worker, Owner
+    from models import User, Worker, Owner, SuperAdmin
     
     @login_manager.user_loader
     def load_user(user_id):

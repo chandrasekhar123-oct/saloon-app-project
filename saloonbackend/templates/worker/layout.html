@@ -42,6 +42,62 @@
             background: var(--bg-main);
             display: flex;
             flex-direction: column;
+            position: relative;
+            transition: max-width 0.3s ease;
+        }
+
+        @media (min-width: 1024px) {
+            .mobile-container {
+                max-width: 1000px;
+                flex-direction: row;
+            }
+
+            .header {
+                display: none !important;
+            }
+
+            .bottom-nav {
+                height: 100vh;
+                width: 240px;
+                flex-direction: column;
+                justify-content: flex-start;
+                padding-top: 3rem;
+                left: 0;
+                transform: none;
+                border-top: none;
+                border-right: 1px solid var(--glass-border);
+                position: sticky;
+                top: 0;
+            }
+
+            .nav-item {
+                flex-direction: row;
+                width: 90%;
+                justify-content: flex-start;
+                padding: 1rem 1.5rem;
+                gap: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .nav-item i {
+                font-size: 1.5rem;
+            }
+
+            .main-content {
+                padding: 3rem;
+                flex: 1;
+            }
+
+            .desktop-worker-header {
+                display: flex !important;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 2rem;
+            }
+        }
+
+        .desktop-worker-header {
+            display: none;
         }
 
         .header {
@@ -200,6 +256,19 @@
 
         <!-- Flash Messages -->
         <div class="main-content">
+            <div class="desktop-worker-header">
+                <div style="display: flex; align-items: center; gap: 0.8rem;">
+                    <i class="fas fa-cut" style="font-size: 2rem; color: var(--primary);"></i>
+                    <h1 style="font-weight: 800; font-size: 2rem; color: var(--text-main); margin: 0;">WorkerHub</h1>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <span class="header-badge" style="background: var(--primary); color: white;">Artist Portal</span>
+                    <a href="/"
+                        style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; font-weight: 700; border: 1px solid #e2e8f0; padding: 0.4rem 0.8rem; border-radius: 50px;">
+                        <i class="fas fa-exchange-alt"></i> Switch Mode
+                    </a>
+                </div>
+            </div>
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
             <div class="flash-messages">

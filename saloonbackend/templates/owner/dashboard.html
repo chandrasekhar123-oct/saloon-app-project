@@ -126,7 +126,8 @@
 </div>
 
 <!-- Premium Stats Grid -->
-<div class="stats-grid fade-in" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+<div class="stats-grid fade-in"
+    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
     <a href="{{ url_for('owner.bookings') }}" style="text-decoration: none;">
         <div class="stat-card"
             style="background: var(--bg-card); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"

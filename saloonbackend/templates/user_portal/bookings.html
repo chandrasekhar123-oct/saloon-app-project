@@ -61,9 +61,11 @@
     <!-- Top Row: service + badge -->
     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
         <div>
-            <p style="font-weight: 800; font-size: 1rem; color: var(--text-main); margin: 0;">{{ b.service.name }}</p>
+            <p style="font-weight: 800; font-size: 1rem; color: var(--text-main); margin: 0;">{{ b.service.name if
+                b.service else 'Deleted Service' }}</p>
             <p style="font-size: 0.78rem; color: var(--text-muted); margin: 3px 0 0 0;">
-                <i class="fas fa-store" style="color: var(--primary); margin-right: 3px;"></i>{{ b.salon.name }}
+                <i class="fas fa-store" style="color: var(--primary); margin-right: 3px;"></i>{{ b.salon.name if b.salon
+                else 'Deleted Salon' }}
             </p>
         </div>
         {% if b.status == 'pending' %}
@@ -90,9 +92,8 @@
                 b.slot_time.strftime('%I:%M %p') }}</p>
         </div>
         <div style="background: #fafafa; border-radius: 10px; padding: 0.55rem; text-align: center;">
-            <p style="font-size: 0.6rem; color: var(--text-muted); font-weight: 700; margin: 0;">PRICE</p>
             <p style="font-size: 0.82rem; font-weight: 800; color: var(--primary); margin: 2px 0 0 0;">₹{{
-                b.service.price }}</p>
+                b.service.price if b.service else '0' }}</p>
         </div>
     </div>
 

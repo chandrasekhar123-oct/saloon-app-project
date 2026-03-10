@@ -38,6 +38,61 @@
             box-shadow: 0 0 50px rgba(0, 0, 0, 0.05);
             display: flex;
             flex-direction: column;
+            transition: max-width 0.3s ease;
+        }
+
+        @media (min-width: 1024px) {
+            .mobile-container {
+                max-width: 1100px;
+                flex-direction: row;
+            }
+
+            .header {
+                display: none !important;
+            }
+
+            .bottom-nav {
+                height: 100vh;
+                width: 240px;
+                flex-direction: column;
+                justify-content: flex-start;
+                padding-top: 3rem;
+                left: 0;
+                transform: none;
+                border-top: none;
+                border-right: 1px solid var(--glass-border);
+                position: sticky;
+                top: 0;
+            }
+
+            .bottom-nav-item {
+                flex-direction: row;
+                width: 90%;
+                justify-content: flex-start;
+                padding: 1rem 1.5rem;
+                gap: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .bottom-nav-item i {
+                font-size: 1.5rem;
+            }
+
+            .main-content {
+                padding: 3rem;
+                flex: 1;
+            }
+
+            .desktop-owner-header {
+                display: flex !important;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 2rem;
+            }
+        }
+
+        .desktop-owner-header {
+            display: none;
         }
 
         /* Updated Bottom Nav to be fixed to screen bottom, mimicking a real app */
@@ -162,6 +217,40 @@
 
         <!-- Main Content Area -->
         <div class="main-content">
+            <div class="desktop-owner-header">
+                <div style="display: flex; align-items: center; gap: 0.8rem;">
+                    <i class="fas fa-scissors" style="font-size: 2rem; color: var(--primary);"></i>
+                    <h1 style="font-weight: 800; font-size: 2rem; color: var(--text-main); margin: 0; line-height: 1;">
+                        SalonHub</h1>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1.5rem;">
+                    <a href="{{ url_for('owner.notifications') }}"
+                        style="color: var(--text-muted); position: relative; font-size: 1.3rem;">
+                        <i class="fas fa-bell"></i>
+                        {% if pending_staff_count > 0 %}
+                        <span
+                            style="position: absolute; top: -5px; right: -5px; width: 10px; height: 10px; background: #ef4444; border-radius: 50%; border: 2px solid white;"></span>
+                        {% endif %}
+                    </a>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <div style="text-align: right;">
+                            <div style="font-weight: 800; font-size: 0.9rem;">{{ current_user.name }}</div>
+                            <div style="font-size: 0.7rem; color: var(--primary); font-weight: 700;">Owner Portal</div>
+                        </div>
+                        <div
+                            style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; border: 2px solid var(--primary);">
+                            {% if current_user.profile_image %}
+                            <img src="{{ current_user.profile_image }}"
+                                style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                            <div
+                                style="width: 100%; height: 100%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-weight: 800;">
+                                {{ current_user.name[0] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
             {% block content %}{% endblock %}
         </div>
 

@@ -2,6 +2,30 @@
 {% block title %}Notifications{% endblock %}
 
 {% block content %}
+<style>
+    .status-strip {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: #f59e0b;
+        /* Default */
+    }
+
+    .status-strip.accepted {
+        background: #6366f1;
+    }
+
+    .status-strip.completed {
+        background: #10b981;
+    }
+
+    .status-strip.rejected {
+        background: #ef4444;
+    }
+</style>
+
 <div class="fade-in">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <h2 style="font-weight: 900; font-size: 1.5rem; color: var(--text-main);">Notifications</h2>
@@ -15,26 +39,28 @@
         {% for b in notifications %}
         <div class="card" style="padding: 1rem; position: relative; overflow: hidden;">
             <!-- Status Indicator Strip -->
-            <div
-                style="position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: {{ '#6366f1' if b.status == 'accepted' else '#10b981' if b.status == 'completed' else '#ef4444' if b.status == 'rejected' else '#f59e0b' }};">
-            </div>
+            <div class="status-strip {{ b.status }}"></div>
 
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-                <h4 style="font-weight: 800; font-size: 0.95rem; color: var(--text-main);">{{ b.service.name }}</h4>
+                <h4 style="font-weight: 800; font-size: 0.95rem; color: var(--text-main);">{{ b.service.name if
+                    b.service else 'Deleted Service' }}</h4>
                 <span class="badge badge-{{ b.status }}">{{ b.status|title }}</span>
             </div>
 
             <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.5rem;">
                 {% if b.status == 'pending' %}
-                Your request at <strong>{{ b.salon.name }}</strong> is pending approval.
+                Your request at <strong>{{ b.salon.name if b.salon else 'Deleted Salon' }}</strong> is pending approval.
                 {% elif b.status == 'accepted' %}
-                Good news! Your booking at <strong>{{ b.salon.name }}</strong> is confirmed.
+                Good news! Your booking at <strong>{{ b.salon.name if b.salon else 'Deleted Salon' }}</strong> is
+                confirmed.
                 <span style="display: block; margin-top: 4px; color: var(--primary); font-weight: 700;">OTP: {{ b.otp
                     }}</span>
                 {% elif b.status == 'completed' %}
-                Service completed at <strong>{{ b.salon.name }}</strong>. Hope you loved it!
+                Service completed at <strong>{{ b.salon.name if b.salon else 'Deleted Salon' }}</strong>. Hope you loved
+                it!
                 {% elif b.status == 'rejected' %}
-                Booking at <strong>{{ b.salon.name }}</strong> was cancelled or declined.
+                Booking at <strong>{{ b.salon.name if b.salon else 'Deleted Salon' }}</strong> was cancelled or
+                declined.
                 {% endif %}
             </p>
 

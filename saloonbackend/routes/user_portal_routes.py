@@ -139,6 +139,10 @@ def book_service():
     db.session.add(booking)
     db.session.commit()
 
+    # 📱 Send Confirmation SMS
+    from utils.sms_service import SMSService
+    SMSService.send_booking_confirmation(user.phone, booking.salon.name, slot_datetime.strftime('%d %b, %I:%M %p'))
+
     flash('Appointment request sent! ⏳ Waiting for your specialist to accept.', 'success')
     return redirect(url_for('user_portal.my_bookings'))
 
@@ -149,7 +153,7 @@ def my_bookings():
     user = get_current_user()
     from datetime import datetime
     bookings = Booking.query.filter_by(user_id=user.id).order_by(Booking.slot_time.desc()).all()
-    return render_template('user_portal/bookings.html', user=user, bookings=bookings, active_page='bookings', now=datetime.now())
+    return render_template('user_portal/bookings.html', user=user, bookings=bookings, active_page='bookings', now=datetime.now(), b_model=Booking)
 
 @user_portal_bp.route('/api/bookings/status')
 @user_login_required
@@ -165,7 +169,7 @@ def profile():
     user = get_current_user()
     total_bookings = Booking.query.filter_by(user_id=user.id).count()
     completed = Booking.query.filter_by(user_id=user.id, status='completed').count()
-    total_spent = sum(b.service.price for b in Booking.query.filter_by(user_id=user.id, status='completed').all())
+    total_spent = sum(b.service.price for b in Booking.query.filter_by(user_id=user.id, status='completed').all() if b.service)
     return render_template('user_portal/profile.html',
                            user=user, total_bookings=total_bookings,
                            completed=completed, total_spent=total_spent,

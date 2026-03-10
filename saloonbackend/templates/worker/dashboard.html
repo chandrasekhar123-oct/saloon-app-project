@@ -327,9 +327,11 @@
     <div
         style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
         <div>
-            <p style="font-weight: 700; color: var(--text-main); margin: 0; font-size: 0.9rem;">{{ b.service.name }}</p>
+            <p style="font-weight: 700; color: var(--text-main); margin: 0; font-size: 0.9rem;">{{ b.service.name if
+                b.service else 'Deleted Service' }}</p>
             <p style="font-size: 0.78rem; color: var(--text-muted); margin: 3px 0 0 0;">
-                <i class="fas fa-user" style="margin-right: 3px; color: var(--primary);"></i>{{ b.user.name }}
+                <i class="fas fa-user" style="margin-right: 3px; color: var(--primary);"></i>{{ b.user.name if b.user
+                else 'Deleted User' }}
                 &nbsp;·&nbsp;
                 {% set days_diff = (b.slot_time.date() - now.date()).days %}
                 {% if days_diff == 0 %}

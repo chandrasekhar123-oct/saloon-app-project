@@ -44,7 +44,7 @@ def get_salons():
         # Simple case-insensitive search for location
         query = query.filter(Salon.location.ilike(f"%{location}%"))
     if category:
-        query = query.filter_by(category=category)
+        query = query.filter(Salon.category.contains(category))
         
     salons = query.all()
     result = []
@@ -134,6 +134,12 @@ def create_booking():
     )
     db.session.add(booking)
     db.session.commit()
+    
+    # 📱 Send SMS Awareness
+    from utils.sms_service import SMSService
+    user_phone = data.get('phone') or User.query.get(user_id).phone
+    SMSService.send_booking_confirmation(user_phone, booking.salon.name, slot_time_str)
+
     return jsonify({"message": "Booking created", "status": "success", "booking_id": booking.id, "otp": otp})
 
 @user_bp.route('/booking/<int:user_id>', methods=['GET'])
@@ -156,12 +162,12 @@ def get_bookings(user_id):
 
         result.append({
             "id": b.id,
-            "service": b.service.name,
-            "salon": b.salon.name,
+            "service": b.service.name if b.service else "Deleted Service",
+            "salon": b.salon.name if b.salon else "Deleted Salon",
             "status": b.status,
             "slot_time": b.slot_time.strftime('%Y-%m-%d %H:%M:%S'),
             "otp": b.otp,
-            "map_url": b.salon.map_url,
+            "map_url": b.salon.map_url if b.salon else "#",
             "days_left": days_left,
             "message": message
         })

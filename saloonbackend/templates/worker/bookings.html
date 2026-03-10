@@ -9,11 +9,32 @@
     <h2 style="font-weight: 800; font-size: 1.6rem; color: var(--text-main); margin: 0;">My Jobs</h2>
 </div>
 
+<style>
+    .ftab {
+        padding: 0.45rem 1.1rem;
+        border-radius: 50px;
+        border: 2px solid var(--glass-border);
+        background: white;
+        color: var(--text-muted);
+        font-size: 0.78rem;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s;
+    }
+
+    .ftab.active {
+        border-color: var(--primary);
+        background: var(--primary);
+        color: white;
+    }
+</style>
+
 <!-- Filter Tabs -->
 <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 4px;">
     {% for tab in ['All', 'Pending', 'Accepted', 'Completed'] %}
     <button onclick="filterJobs('{{ tab.lower() }}')" id="tab-{{ tab.lower() }}"
-        style="padding: 0.45rem 1.1rem; border-radius: 50px; border: 2px solid {% if loop.first %}var(--primary){% else %}var(--glass-border){% endif %}; background: {% if loop.first %}var(--primary); color: white{% else %}white; color: var(--text-muted){% endif %}; font-size: 0.78rem; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all 0.2s;">
+        class="ftab {% if loop.first %}active{% endif %}">
         {{ tab }}
     </button>
     {% endfor %}
@@ -29,17 +50,20 @@
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
             <div>
                 <p style="font-weight: 800; font-size: 1rem; color: var(--text-main); margin: 0;">
-                    {{ b.service.name }}
+                    {{ b.service.name if b.service else 'Deleted Service' }}
                     <span
                         style="font-size: 0.7rem; color: var(--primary); background: rgba(244,63,94,0.05); padding: 2px 6px; border-radius: 4px; margin-left: 6px;">
-                        <i class="fas fa-clock" style="font-size: 0.6rem;"></i> {{ b.service.duration or 30 }}m
+                        <i class="fas fa-clock" style="font-size: 0.6rem;"></i> {{ (b.service.duration if b.service else
+                        30) or 30 }}m
                     </span>
                 </p>
                 <div
                     style="font-size: 0.8rem; color: var(--text-muted); margin: 3px 0 0 0; display: flex; flex-direction: column; gap: 2px;">
                     <span style="font-weight: 700; color: var(--text-main);"><i class="fas fa-user"
-                            style="color: var(--primary); margin-right: 5px;"></i>{{ b.user.name }}</span>
-                    <span><i class="fas fa-phone-alt" style="color: #10b981; margin-right: 5px;"></i>{{ b.user.phone
+                            style="color: var(--primary); margin-right: 5px;"></i>{{ b.user.name if b.user else 'Deleted
+                        User' }}</span>
+                    <span><i class="fas fa-phone-alt" style="color: #10b981; margin-right: 5px;"></i>{{ b.user.phone if
+                        b.user else 'N/A'
                         }}</span>
                 </div>
             </div>
@@ -181,7 +205,7 @@
                 <form action="{{ url_for('worker_panel.send_message', id=b.id) }}" method="POST">
                     <input type="hidden" name="message" value="I am with another client, will be with you shortly!">
                     <button type="submit"
-                        style="width: 100%; surface: white; border: 1.5px solid #6366f1; color: #6366f1; font-size: 0.7rem; padding: 0.5rem; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s;">
+                        style="width: 100%; background: white; border: 1.5px solid #6366f1; color: #6366f1; font-size: 0.7rem; padding: 0.5rem; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s;">
                         <i class="fas fa-paper-plane" style="margin-right: 4px;"></i> Notify Client to Wait
                     </button>
                 </form>

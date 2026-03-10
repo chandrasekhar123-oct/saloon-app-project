@@ -4,312 +4,443 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Salon Owner Registration</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Saloon Essy | Partner Registration</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;950&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@21.0.8/build/css/intlTelInput.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='owner/css/style.css') }}">
     <style>
+        :root {
+            --primary-premium: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.4);
+            --text-dark: #0f172a;
+            --text-slate: #64748b;
+            --bg-page: #f1f5f9;
+        }
+
         body {
-            background: var(--bg-main);
-            color: var(--text-main);
+            background: var(--bg-page);
+            background-image:
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.1) 0px, transparent 50%);
             margin: 0;
             display: flex;
             justify-content: center;
+            font-family: 'Outfit', sans-serif;
         }
 
-        .mobile-container {
+        .main-container {
             width: 100%;
-            max-width: 600px;
-            min-height: 100vh;
-            background: var(--bg-main);
+            max-width: 800px;
+            padding: 4rem 1.5rem;
             position: relative;
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.05);
-            display: flex;
-            flex-direction: column;
         }
 
-        .reg-header {
-            padding: 2.5rem 2rem 1.5rem;
-            background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+        .premium-card {
+            background: white;
+            border-radius: 40px;
+            box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header-section {
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
             color: white;
-            border-bottom-left-radius: 30px;
-            border-bottom-right-radius: 30px;
-            margin-bottom: 2rem;
-            box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.3);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
         }
 
-        .reg-content {
-            padding: 0 1.5rem 3rem;
-            flex: 1;
+        .header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=800&q=80') center/cover;
+            opacity: 0.1;
         }
 
-        .step-title {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-size: 1.1rem;
-            font-weight: 800;
-            margin: 0 0 1.5rem 0.5rem;
-            color: var(--text-main);
-        }
-
-        .step-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 10px;
+        .logo-box {
+            width: 70px;
+            height: 70px;
+            background: white;
+            border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.9rem;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 1;
         }
 
-        .icon-blue {
-            background: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
+        .logo-box i {
+            font-size: 2rem;
+            color: #1e293b;
         }
 
-        .icon-green {
-            background: rgba(16, 185, 129, 0.1);
-            color: #10b981;
+        .form-section {
+            padding: 4rem 3rem;
+            position: relative;
         }
 
-        .reg-card {
-            background: white;
-            border-radius: 20px;
-            padding: 1.5rem;
+        /* Subtle Background Logo (Watermark) */
+        .form-bg-logo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 25rem;
+            color: rgba(99, 102, 241, 0.02);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .section-group {
+            position: relative;
+            z-index: 1;
+            margin-bottom: 4rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
             margin-bottom: 2rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            border: none;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 1rem;
+        }
+
+        .section-header i {
+            width: 45px;
+            height: 45px;
+            background: #f1f5f9;
+            color: var(--primary-premium);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .section-header h3 {
+            font-weight: 850;
+            font-size: 1.3rem;
+            margin: 0;
+            color: var(--text-dark);
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
         }
 
         .input-group {
-            margin-bottom: 1.25rem;
+            margin-bottom: 2rem;
         }
 
         .input-label {
             display: block;
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--text-slate);
+            margin-bottom: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
         }
 
-        .auth-input {
+        .form-input {
             width: 100%;
-            padding: 1rem;
+            padding: 1.2rem 1.5rem;
             border: 2px solid #f1f5f9;
-            border-radius: 14px;
+            border-radius: 18px;
             background: #f8fafc;
-            font-size: 0.95rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            transition: 0.3s;
+            box-sizing: border-box;
         }
 
-        .auth-input:focus {
+        .form-input:focus {
             outline: none;
-            border-color: #3b82f6;
+            border-color: var(--primary-premium);
             background: white;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            box-shadow: 0 10px 25px -5px var(--primary-glow);
+        }
+
+        textarea.form-input {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 1rem;
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 20px;
+            border: 2px solid #f1f5f9;
+        }
+
+        .cat-chip {
+            cursor: pointer;
+            position: relative;
+        }
+
+        .cat-chip input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .cat-chip span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.8rem;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-slate);
+            transition: 0.2s;
+            text-align: center;
+        }
+
+        .cat-chip input:checked+span {
+            background: var(--primary-premium);
+            border-color: var(--primary-premium);
+            color: white;
+            box-shadow: 0 8px 20px -5px var(--primary-glow);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1.5rem;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: white;
+            font-weight: 900;
+            font-size: 1.2rem;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 20px 40px -10px rgba(30, 41, 59, 0.5);
+            transition: 0.3s;
+            margin-top: 2rem;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 25px 50px -12px rgba(30, 41, 59, 0.6);
         }
 
         .iti {
             width: 100%;
-            display: block;
         }
-
-        .iti input {
-            padding-left: 95px !important;
-        }
-
 
         .iti__country-list {
-            border-radius: 14px;
-            border: 2px solid #f1f5f9;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.95rem;
-        }
-
-        .iti__flag {
-            border-radius: 2px;
-        }
-
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-
-        .btn-auth {
-            width: 100%;
-            padding: 1.25rem;
             border-radius: 20px;
-            background: #10b981;
-            color: white;
-            font-size: 1.1rem;
-            font-weight: 800;
             border: none;
-            cursor: pointer;
-            box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.4);
-            transition: transform 0.2s ease;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+            font-family: inherit;
+            z-index: 100;
         }
 
-        .btn-auth:active {
-            transform: scale(0.98);
+        .fade-in {
+            animation: fadeIn 0.8s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .input-grid {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+
+            .form-section {
+                padding: 3rem 1.5rem;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="mobile-container fade-in">
-
-        <div class="reg-header">
-            <h1 style="font-weight: 800; font-size: 2rem; margin: 0 0 0.5rem;">Join SalonHub</h1>
-            <p style="margin: 0; opacity: 0.9; font-size: 0.95rem;">Become a verified partner and grow your business.
-            </p>
-        </div>
-
-        <div class="reg-content">
-
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-            {% for category, message in messages %}
-            {% set is_success = category == 'success' %}
-            <div class="fade-in" style="background: {{ '#f0fdf4' if is_success else '#fef2f2' }}; 
-                       border-radius: 15px; 
-                       padding: 1rem; 
-                       margin-bottom: 1.5rem; 
-                       color: {{ '#065f46' if is_success else '#b91c1c' }}; 
-                       font-size: 0.875rem; font-weight: 600;">
-                <i class="fas {{ 'fa-check-circle' if is_success else 'fa-exclamation-circle' }}"></i> {{ message }}
+    <div class="main-container fade-in">
+        <div class="premium-card">
+            <div class="header-section">
+                <div class="logo-box">
+                    <i class="fas fa-scissors"></i>
+                </div>
+                <h1 style="font-weight: 950; font-size: 2.8rem; letter-spacing: -2px; margin: 0;">Saloon Essy</h1>
+                <p
+                    style="text-transform: uppercase; font-size: 0.9rem; letter-spacing: 4px; font-weight: 700; opacity: 0.8; margin-top: 0.5rem;">
+                    Partner Registration</p>
             </div>
-            {% endfor %}
-            {% endif %}
-            {% endwith %}
 
-            <form action="{{ url_for('owner.register') }}" method="POST">
-
-                <!-- Owner Details Section -->
-                <div class="step-title">
-                    <div class="step-icon icon-blue"><i class="fas fa-user"></i></div>
-                    Personal Details
+            <div class="form-section">
+                <div class="form-bg-logo">
+                    <i class="fas fa-scissors"></i>
                 </div>
-                <div class="reg-card">
-                    <div class="input-group">
-                        <label class="input-label">Full Name</label>
-                        <input type="text" name="name" class="auth-input" placeholder="John Doe" required>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                <div style="position: relative; z-index: 1; margin-bottom: 3rem;">
+                    {% for category, message in messages %}
+                    {% set is_success = category == 'success' %}
+                    <div
+                        style="padding: 1.2rem; border-radius: 20px; background: {{ '#f0fdf4' if is_success else '#fff1f2' }}; color: {{ '#166534' if is_success else '#be123c' }}; font-size: 0.95rem; font-weight: 600; border-left: 5px solid {{ '#10b981' if is_success else '#be123c' }}; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                        <i class="fas {{ 'fa-check-circle' if is_success else 'fa-exclamation-circle' }}"
+                            style="margin-right: 10px;"></i> {{ message }}
                     </div>
-                    <div class="input-group">
-                        <label class="input-label">Email Address</label>
-                        <input type="email" name="email" class="auth-input" placeholder="john@example.com" required>
-                    </div>
-                    <div class="grid-2">
-                        <div class="input-group">
-                            <label class="input-label">Phone</label>
-                            <input type="tel" id="phone" name="raw_phone" class="auth-input"
-                                placeholder="Enter mobile number" required>
-                            <input type="hidden" name="phone" id="full_phone">
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% endwith %}
+
+                <form action="{{ url_for('owner.register') }}" method="POST">
+
+                    <!-- Section 1: Identity -->
+                    <div class="section-group">
+                        <div class="section-header">
+                            <i class="fas fa-user-tie"></i>
+                            <h3>Personal Identity</h3>
+                        </div>
+                        <div class="input-grid">
+                            <div class="input-group">
+                                <label class="input-label">Full Name</label>
+                                <input type="text" name="name" class="form-input" placeholder="e.g. Marthanda Sai .S"
+                                    required>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Email Address</label>
+                                <input type="email" name="email" class="form-input" placeholder="business@example.com"
+                                    required>
+                            </div>
+                        </div>
+                        <div class="input-grid">
+                            <div class="input-group">
+                                <label class="input-label">Phone Number</label>
+                                <input type="tel" id="phone" name="raw_phone" class="form-input" required>
+                                <input type="hidden" name="phone" id="full_phone">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Gender</label>
+                                <select name="gender" class="form-input" required>
+                                    <option value="" disabled selected>Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="input-group">
-                            <label class="input-label">Gender</label>
-                            <select name="gender" class="auth-input" required>
-                                <option value="" disabled selected>Select Gender</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
-                            </select>
+                            <label class="input-label">Secure Password</label>
+                            <input type="password" name="password" class="form-input" placeholder="••••••••" required>
                         </div>
                     </div>
-                    <div class="input-group">
-                        <label class="input-label">Password</label>
-                        <input type="password" name="password" class="auth-input" placeholder="••••••••" required>
-                    </div>
-                </div>
 
-                <!-- Shop Details Section -->
-                <div class="step-title">
-                    <div class="step-icon icon-green"><i class="fas fa-store"></i></div>
-                    Business Identity
-                </div>
-                <div class="reg-card">
-                    <div class="grid-2">
+                    <!-- Section 2: Business -->
+                    <div class="section-group">
+                        <div class="section-header">
+                            <i class="fas fa-store"></i>
+                            <h3>Business Profile</h3>
+                        </div>
                         <div class="input-group">
                             <label class="input-label">Salon Name</label>
-                            <input type="text" name="shop_name" class="auth-input" placeholder="The Royal Lounge"
+                            <input type="text" name="shop_name" class="form-input" placeholder="e.g. Elite Style Lounge"
                                 required>
                         </div>
                         <div class="input-group">
-                            <label class="input-label">Category</label>
-                            <select name="category" class="auth-input" required>
-                                <option value="Barber Shop" selected>Barber Shop</option>
-                                <option value="Beauty Parlor">Beauty Parlor</option>
-                                <option value="Spa & Wellness">Spa & Wellness</option>
-                                <option value="Tattoo Studio">Tattoo Studio</option>
-                                <option value="Nail Art">Nail Art</option>
-                                <option value="Other">Other Category</option>
-                            </select>
+                            <label class="input-label">Categories of Excellence</label>
+                            <div class="category-grid">
+                                <label class="cat-chip"><input type="checkbox" name="category" value="Barber Shop"
+                                        checked><span>Barber Shop</span></label>
+                                <label class="cat-chip"><input type="checkbox" name="category"
+                                        value="Beauty Parlor"><span>Beauty Parlor</span></label>
+                                <label class="cat-chip"><input type="checkbox" name="category"
+                                        value="Spa & Wellness"><span>Spa & Wellness</span></label>
+                                <label class="cat-chip"><input type="checkbox" name="category"
+                                        value="Tattoo Studio"><span>Tattoo Studio</span></label>
+                                <label class="cat-chip"><input type="checkbox" name="category"
+                                        value="Nail Art"><span>Nail Art</span></label>
+                                <label class="cat-chip"><input type="checkbox" name="category"
+                                        value="Other"><span>Other</span></label>
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="grid-2">
-                        <div class="input-group">
-                            <label class="input-label">State/Province</label>
-                            <select id="stateSelect" name="state" class="auth-input" required>
-                                <option value="" disabled selected>Select country first</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label class="input-label">City</label>
-                            <select id="citySelect" name="city" class="auth-input" required>
-                                <option value="" disabled selected>Select state first</option>
-                            </select>
-                            <input type="text" id="customCityInput" class="auth-input"
-                                placeholder="Enter your town/city" style="display: none; margin-top: 0.5rem;" disabled>
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">Full Address</label>
-                        <textarea name="shop_address" class="auth-input" rows="2" placeholder="Street, City..."
-                            required></textarea>
-                    </div>
-
-                    <div class="grid-2">
-                        <div class="input-group">
-                            <label class="input-label">Opens At</label>
-                            <input type="time" name="opening_time" class="auth-input" required>
+                        <div class="input-grid">
+                            <div class="input-group">
+                                <label class="input-label">State</label>
+                                <select id="stateSelect" name="state" class="form-input" required>
+                                    <option value="" disabled selected>Loading...</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">City</label>
+                                <select id="citySelect" name="city" class="form-input" required>
+                                    <option value="" disabled selected>Select state first</option>
+                                </select>
+                                <input type="text" id="customCityInput" class="form-input" placeholder="Type city name"
+                                    style="display: none; margin-top: 1rem;" disabled>
+                            </div>
                         </div>
                         <div class="input-group">
-                            <label class="input-label">Closes At</label>
-                            <input type="time" name="closing_time" class="auth-input" required>
+                            <label class="input-label">Full Physical Address</label>
+                            <textarea name="shop_address" class="form-input"
+                                placeholder="Street name, Landmark, Building No..." required></textarea>
+                        </div>
+                        <div class="input-grid">
+                            <div class="input-group">
+                                <label class="input-label">Operations Start</label>
+                                <input type="time" name="opening_time" class="form-input" required>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Operations End</label>
+                                <input type="time" name="closing_time" class="form-input" required>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="input-group">
-                        <label class="input-label">Map Embed Link (Optional)</label>
-                        <input type="text" name="map_url" class="auth-input" placeholder="Google Maps iframe src...">
-                    </div>
-                </div>
+                    <button type="submit" class="btn-submit">Complete Application</button>
 
-                <button type="submit" class="btn-auth">
-                    Complete Registration
-                </button>
-
-                <div style="text-align: center; margin-top: 1.5rem;">
-                    <p style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500;">
-                        Already registered?
+                    <div style="text-align: center; margin-top: 3rem; font-weight: 700; color: var(--text-slate);">
+                        Already have a portal?
                         <a href="{{ url_for('owner.login') }}"
-                            style="color: #3b82f6; font-weight: 800; text-decoration: none;">Sign In</a>
-                    </p>
-                </div>
+                            style="color: var(--primary-premium); text-decoration: none; margin-left: 5px; font-weight: 900;">Sign
+                            In Instead</a>
+                    </div>
 
-            </form>
+                    <!-- Trust Seal -->
+                    <div
+                        style="margin-top: 3rem; display: flex; align-items: center; justify-content: center; gap: 10px; color: #10b981; font-size: 0.8rem; font-weight: 850; text-transform: uppercase; letter-spacing: 2px;">
+                        <i class="fas fa-university"></i> Verified Professional Platform
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
+    <!-- Preservation of original Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@21.0.8/build/js/intlTelInput.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -357,7 +488,6 @@
                             });
                             stateSelect.dataset.country = countryName;
                         } else {
-                            // Fallback
                             const fallbackStates = ['Andhra Pradesh', 'Telangana', 'Karnataka', 'Maharashtra', 'Tamil Nadu', 'Delhi', 'Other'];
                             fallbackStates.forEach(state => {
                                 const option = document.createElement('option');
@@ -369,7 +499,6 @@
                         }
                     })
                     .catch(err => {
-                        console.error('Error fetching states:', err);
                         stateSelect.innerHTML = '<option value="" disabled selected>Select State</option><option value="Other">Other</option>';
                     });
             }
@@ -382,7 +511,6 @@
                 }
             });
 
-            // Initial load for auto-detected country
             setTimeout(() => {
                 const initialCountryData = iti.getSelectedCountryData();
                 if (initialCountryData && initialCountryData.name) {
@@ -391,18 +519,14 @@
                 }
             }, 1000);
 
-            // Fetch cities on state change
             stateSelect.addEventListener('change', function () {
                 const stateName = this.value;
                 const countryName = this.dataset.country || 'India';
-
                 if (!stateName || stateName === 'Other') {
                     citySelect.innerHTML = '<option value="" disabled selected>Select City</option><option value="Other">Other</option>';
                     return;
                 }
-
                 citySelect.innerHTML = '<option value="" disabled selected>Loading cities...</option>';
-
                 fetch("https://countriesnow.space/api/v0.1/countries/state/cities", {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -424,10 +548,6 @@
                         optionOther.value = 'Other';
                         optionOther.textContent = 'Other (Type Manually)';
                         citySelect.appendChild(optionOther);
-                    })
-                    .catch(err => {
-                        console.error('Error fetching cities:', err);
-                        citySelect.innerHTML = '<option value="" disabled selected>Select City</option><option value="Other">Other (Type Manually)</option>';
                     });
             });
 
