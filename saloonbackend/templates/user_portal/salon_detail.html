@@ -1,252 +1,227 @@
 {% extends "user_portal/layout.html" %}
-{% block title %}{{ salon.name }}{% endblock %}
+{% block title %}{{ salon.name }} | Details{% endblock %}
+{% block page_title %}{{ salon.name }}{% endblock %}
 
 {% block styles %}
 <style>
-    .hero {
-        background: linear-gradient(135deg, #f43f5e, #fb923c);
-        min-height: 160px;
-        display: flex;
-        align-items: flex-end;
-        padding: 1.5rem;
-        margin: -1.25rem -1.25rem 1.25rem -1.25rem;
-        position: relative;
-        overflow: hidden;
+    .salon-hero {
+        height: 280px; position: relative; border-radius: 30px; overflow: hidden; margin-bottom: 2rem; box-shadow: var(--shadow-md);
+    }
+    .salon-hero img { width: 100%; height: 100%; object-fit: cover; }
+    .hero-glass {
+        position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
+        display: flex; flex-direction: column; justify-content: flex-end; padding: 2rem; color: white;
     }
 
-    .hero::before {
-        content: '💈';
-        position: absolute;
-        right: 1.5rem;
-        top: 50%;
-        transform: translateY(-60%);
-        font-size: 5rem;
-        opacity: 0.18;
+    .salon-tag {
+        background: var(--primary); color: white; padding: 4px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 800;
+        text-transform: uppercase; width: fit-content; margin-bottom: 0.75rem;
     }
 
-    .service-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem;
-        border-bottom: 1px solid #f1f5f9;
+    .stat-pill {
+        display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.15); backdrop-filter: blur(8px);
+        padding: 6px 14px; border-radius: 50px; font-size: 0.8rem; font-weight: 700;
     }
 
-    .service-row:last-child {
-        border-bottom: none;
+    .section-card {
+        background: var(--bg-card); border-radius: 24px; border: 1px solid var(--glass-border); padding: 1.5rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm);
     }
 
-    .worker-chip {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.6rem 0.9rem;
-        background: white;
-        border: 2px solid #f1f5f9;
-        border-radius: 14px;
-        cursor: pointer;
-        transition: border-color 0.2s;
+    .section-title { font-weight: 900; font-size: 1.1rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 12px; }
+
+    .service-grid { display: grid; gap: 12px; }
+
+    .worker-strip { display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
+    .worker-strip::-webkit-scrollbar { display: none; }
+
+    .worker-card {
+        flex: 0 0 140px; background: var(--bg-main); padding: 1rem; border-radius: 20px; border: 2px solid transparent; text-align: center; cursor: pointer; transition: all 0.2s;
+    }
+    .worker-card.selected { background: white; border-color: var(--primary); box-shadow: 0 8px 16px rgba(99, 102, 241, 0.1); }
+
+    .worker-img {
+        width: 60px; height: 60px; border-radius: 18px; background: #e2e8f0; display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 10px auto; font-weight: 900; color: #475569; font-size: 1.2rem; overflow: hidden;
     }
 
-    .worker-chip.selected,
-    .worker-chip:hover {
-        border-color: var(--primary);
-        background: rgba(244, 63, 94, 0.05);
+    .booking-bar {
+        position: sticky; bottom: 85px; background: var(--bg-card); padding: 1.5rem; border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid var(--glass-border); z-index: 100; margin-top: 1rem;
     }
 
-    .worker-avatar {
-        width: 36px;
-        height: 36px;
-        background: linear-gradient(135deg, #f43f5e, #fb923c);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 800;
-        font-size: 0.9rem;
+    .input-pill {
+        background: var(--bg-main); border: 2px solid var(--glass-border); border-radius: 14px; padding: 12px 16px; width: 100%;
+        font-family: inherit; font-weight: 600; outline: none; transition: all 0.2s; color: var(--text-main);
     }
+    .input-pill:focus { border-color: var(--primary); background: white; }
 
-    input[type=date],
-    input[type=time] {
-        width: 100%;
-        padding: 0.8rem 1rem;
-        border: 2px solid #e5e7eb;
-        border-radius: 14px;
-        font-size: 0.9rem;
-        font-family: 'Outfit', sans-serif;
-        outline: none;
-        transition: border-color 0.2s;
-    }
-
-    input[type=date]:focus,
-    input[type=time]:focus {
-        border-color: var(--primary);
-    }
-
-    select.svc-select {
-        padding: 0.5rem 0.8rem;
-        border: 2px solid #e5e7eb;
-        border-radius: 10px;
-        font-family: 'Outfit', sans-serif;
-        font-weight: 700;
-        font-size: 0.8rem;
-        outline: none;
-        cursor: pointer;
-        background: white;
-    }
-
-    select.svc-select:focus {
-        border-color: var(--primary);
-    }
-
-    .worker-unavailable {
-        opacity: 0.5;
-        filter: grayscale(1) blur(1px);
-        background: #f8fafc !important;
-        border-color: #e2e8f0 !important;
-        cursor: not-allowed !important;
-        pointer-events: none;
-    }
-
-    .away-badge {
-        font-size: 0.55rem;
-        background: rgba(15, 23, 42, 0.1);
-        color: #0f172a;
-        padding: 1px 6px;
-        border-radius: 50px;
-        font-weight: 850;
-        text-transform: uppercase;
-    }
+    .gallery-thumb { width: 120px; height: 120px; border-radius: 16px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--glass-border); }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Hero Banner (Dynamic Background) -->
-<div class="hero" style="background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.7)), url('{{ salon.image_url or "
-    https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&q=80" }}') center/cover;">
-    <div style="position: relative; z-index: 1; display: flex; align-items: center; gap: 1rem; width: 100%;">
-        {% if salon.logo_url %}
-        <img src="{{ salon.logo_url }}"
-            style="width: 70px; height: 70px; border-radius: 18px; border: 2px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); object-fit: cover;">
-        {% else %}
-        <div
-            style="width: 70px; height: 70px; background: white; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--primary); font-weight: 900;">
-            {{ salon.name[0].upper() }}
-        </div>
-        {% endif %}
-        <div style="flex: 1;">
-            <p
-                style="color: rgba(255,255,255,0.8); font-size: 0.65rem; font-weight: 700; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 2px;">
-                Partner Salon</p>
-            <h2 style="color: white; font-weight: 900; font-size: 1.6rem; margin: 0 0 4px 0; line-height: 1.1;">{{
-                salon.name }}</h2>
-            <p
-                style="color: rgba(255,255,255,0.9); font-size: 0.75rem; margin: 0; display: flex; align-items: center; gap: 4px;">
-                <i class="fas fa-map-marker-alt" style="font-size: 0.7rem;"></i>{{ salon.address or 'Address not listed'
-                }}
-            </p>
+<div class="fade-in">
+    <!-- Salon Hero -->
+    <div class="salon-hero">
+        <img src="{{ salon.image_url or "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&q=80" }}" alt="{{ salon.name }}">
+        <div class="hero-glass">
+            <div class="salon-tag" data-i18n="official_partner">Official Partner</div>
+            <h1 style="font-weight: 900; font-size: 2rem; margin: 0 0 10px 0;">{{ salon.name }}</h1>
+            <div style="display: flex; gap: 12px;">
+                <div class="stat-pill"><i class="fas fa-star" style="color: #fbbf24;"></i> {{ salon.rating or '4.5' }}</div>
+                <div class="stat-pill" onclick="window.open('https://www.google.com/maps/search/?api=1&query={{ salon.address|urlencode }} {{ salon.location|urlencode }}', '_blank')" style="cursor: pointer;">
+                    <i class="fas fa-map-marker-alt" style="color: #6366f1;"></i> {{ (salon.address or "Downtown")|truncate(25) }}
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Shop Gallery (New Section) -->
-{% if salon.shop_photos %}
-<div style="margin-bottom: 1.5rem;">
-    <h3
-        style="font-weight: 800; font-size: 0.9rem; margin-bottom: 0.75rem; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
-        <i class="fas fa-camera-retro" style="color: #f43f5e;"></i> Shop Highlights
-    </h3>
-    <div style="display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 8px; border-radius: 4px;">
-        {% for photo in salon.shop_photos.split(',') %}
-        {% if photo.strip() %}
-        <div
-            style="flex-shrink: 0; width: 160px; height: 110px; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #f1f5f9;">
-            <img src="{{ photo.strip() }}"
-                style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;"
-                onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+    <!-- Excellence & Trust Badges -->
+    {% if salon.excellence_categories %}
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin: -1.25rem 1rem 1.5rem 1.5rem; position: relative; z-index: 10;">
+        {% for cat in salon.excellence_categories.split(',') %}
+        {% if cat.strip() %}
+        <div style="background: white; color: var(--text-main); padding: 8px 16px; border-radius: 50px; font-size: 0.75rem; font-weight: 850; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1.5px solid #fff; display: flex; align-items: center; gap: 8px;">
+            <div style="width: 20px; height: 20px; background: #fef3c7; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-crown" style="color: #f59e0b; font-size: 0.65rem;"></i>
+            </div>
+            {{ cat.strip() }}
         </div>
         {% endif %}
         {% endfor %}
     </div>
-</div>
-{% endif %}
+    {% endif %}
 
-<!-- Book Form -->
-<div
-    style="background: white; border-radius: 24px; border: 1px solid var(--glass-border); overflow: hidden; margin-bottom: 1.5rem;">
-    <div style="padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9; background: rgba(244,63,94,0.03);">
-        <h3 style="font-weight: 800; font-size: 1rem; margin: 0; color: var(--text-main);">📅 Book an Appointment</h3>
-    </div>
-    <form method="POST" action="{{ url_for('user_portal.book_service') }}" style="padding: 1.25rem;">
-        <input type="hidden" name="salon_id" value="{{ salon.id }}">
-
-        <!-- Service -->
-        <div style="margin-bottom: 1rem;">
-            <label
-                style="font-size: 0.8rem; font-weight: 800; color: var(--text-main); display: block; margin-bottom: 0.4rem;">Select
-                Service</label>
-            {% if services %}
-            <select name="service_id" required
-                style="width:100%; padding:0.8rem 1rem; border:2px solid #e5e7eb; border-radius:14px; font-family:'Outfit',sans-serif; font-size:0.9rem; outline:none; background:white;"
-                onchange="updatePrice(this)">
-                <option value="">-- Pick a service --</option>
-                {% for svc in services %}
-                <option value="{{ svc.id }}" data-price="{{ svc.price }}">{{ svc.name }} — ₹{{ svc.price }}</option>
-                {% endfor %}
-            </select>
-            <p id="priceTag" style="font-size:0.78rem; color:var(--primary); font-weight:800; margin:6px 0 0 0;"></p>
-            {% else %}
-            <p style="color: var(--text-muted); font-size: 0.85rem; padding: 0.5rem 0;">No services available yet.</p>
+    <!-- Gallery Section -->
+    {% if salon.shop_photos %}
+    <div class="section-card">
+        <h3 class="section-title"><i class="fas fa-images" style="color: #6366f1;"></i> <span data-i18n="shop_gallery">Shop Gallery</span></h3>
+        <div class="worker-strip" style="gap: 12px;">
+            {% for photo in salon.shop_photos.split(',') %}
+            {% if photo.strip() %}
+            <img src="{{ photo.strip() }}" class="gallery-thumb">
             {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Info & Booking Section -->
+    <form method="POST" action="{{ url_for('user_portal.book_service') }}">
+        <input type="hidden" name="salon_id" value="{{ salon.id }}">
+        
+        <div class="section-card">
+            <h3 class="section-title"><i class="fas fa-cut" style="color: var(--primary);"></i> <span data-i18n="select_service">Select Service</span></h3>
+            <div class="service-grid">
+                {% if services %}
+                    <select name="service_id" id="service_id" required class="input-pill" style="height: 60px; font-size: 1.1rem; border: 2px solid var(--primary); background: rgba(99, 102, 241, 0.05);" onchange="updatePrice(this)">
+                        <option value="" data-i18n="select_service">-- Select Service --</option>
+                        {% for svc in services %}
+                        <option value="{{ svc.id }}" data-price="{{ svc.price }}">{{ svc.name }} — ₹{{ svc.price }}</option>
+                        {% endfor %}
+                    </select>
+                {% else %}
+                    <p style="text-align: center; color: var(--text-muted);" data-i18n="no_services">No services available at this time.</p>
+                {% endif %}
+            </div>
         </div>
 
-        <!-- Date & Time -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
-            <div>
-                <label
-                    style="font-size: 0.8rem; font-weight: 800; color: var(--text-main); display: block; margin-bottom: 0.4rem;">Date</label>
-                <input type="date" name="slot_date" id="slot_date" required min="{{ today }}" value="{{ today }}">
-            </div>
-            <div>
-                <label
-                    style="font-size: 0.8rem; font-weight: 800; color: var(--text-main); display: block; margin-bottom: 0.4rem;">Time</label>
-                <input type="time" name="slot_time" id="slot_time" required>
+        <div class="section-card">
+            <h3 class="section-title"><i class="fas fa-clock" style="color: #10b981;"></i> <span data-i18n="select_date_time">Select Date & Time</span></h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <label style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 8px; display: block;" data-i18n="date_label">DATE</label>
+                    <input type="date" name="slot_date" id="slot_date" required min="{{ today }}" value="{{ today }}" class="input-pill">
+                </div>
+                <div>
+                    <label style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 8px; display: block;" data-i18n="time_label">TIME</label>
+                    <input type="time" name="slot_time" id="slot_time" required class="input-pill">
+                </div>
             </div>
         </div>
 
-        <!-- Specialist -->
+        <!-- Work Gallery Section -->
+        <div class="section-card">
+            <h3 class="section-title"><i class="fas fa-images" style="color: #ec4899;"></i> <span>Professional Lookbook</span></h3>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: -10px; margin-bottom: 12px;">See latest work from our specialists</p>
+            <div style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none;">
+                {% if salon.gallery %}
+                    {% for img in salon.gallery %}
+                    <div style="flex-shrink: 0; width: 120px; height: 160px; border-radius: 16px; overflow: hidden; border: 1px solid var(--glass-border);">
+                        <img src="{{ img.image_url }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <!-- Placeholder Work Photos -->
+                    <div style="flex-shrink: 0; width: 120px; height: 160px; border-radius: 16px; overflow: hidden; border: 1px solid var(--glass-border); position: relative;">
+                        <img src="https://images.unsplash.com/photo-1562322140-8baeececf3df?w=200" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div style="flex-shrink: 0; width: 120px; height: 160px; border-radius: 16px; overflow: hidden; border: 1px solid var(--glass-border);">
+                        <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=200" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div style="flex-shrink: 0; width: 120px; height: 160px; border-radius: 16px; overflow: hidden; border: 1px solid var(--glass-border);">
+                        <img src="https://images.unsplash.com/photo-1621605815841-2cd6180bf377?w=200" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Safety Features -->
+        <div class="section-card">
+            <h3 class="section-title"><i class="fas fa-shield-alt" style="color: #10b981;"></i> <span>Safety & Professionalism</span></h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div style="background: rgba(16,185,129,0.05); padding: 10px; border-radius: 12px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-check-circle" style="color: #10b981; font-size: 0.8rem;"></i>
+                    <span style="font-size: 0.7rem; font-weight: 800; color: var(--text-main);">Sanitized Tools</span>
+                </div>
+                <div style="background: rgba(59,130,246,0.05); padding: 10px; border-radius: 12px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-certificate" style="color: #3b82f6; font-size: 0.8rem;"></i>
+                    <span style="font-size: 0.7rem; font-weight: 800; color: var(--text-main);">Certified Staff</span>
+                </div>
+                <div style="background: rgba(245,158,11,0.05); padding: 10px; border-radius: 12px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-mask" style="color: #f59e0b; font-size: 0.8rem;"></i>
+                    <span style="font-size: 0.7rem; font-weight: 800; color: var(--text-main);">Mask Policy</span>
+                </div>
+                <div style="background: rgba(239,68,68,0.05); padding: 10px; border-radius: 12px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-wind" style="color: #ef4444; font-size: 0.8rem;"></i>
+                    <span style="font-size: 0.7rem; font-weight: 800; color: var(--text-main);">AC Premises</span>
+                </div>
+            </div>
+        </div>
+
         {% if workers %}
-        <div style="margin-bottom: 1rem;">
-            <label
-                style="font-size: 0.8rem; font-weight: 800; color: var(--text-main); display: block; margin-bottom: 0.6rem;">Choose
-                Specialist (Optional)</label>
-            <div style="overflow-x: auto; display: flex; gap: 0.6rem; padding-bottom: 4px;">
-                <div class="worker-chip selected" onclick="selectWorker(this, '')">
-                    <div class="worker-avatar" style="background: #e2e8f0; color: #64748b;">?</div>
-                    <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">Any</span>
+        <div class="section-card">
+            <h3 class="section-title"><i class="fas fa-user-friends" style="color: #f59e0b;"></i> <span data-i18n="select_specialist">Select Specialist</span></h3>
+            <div class="worker-strip">
+                <div class="worker-card selected" onclick="selectWorker(this, '')">
+                    <div class="worker-img">?</div>
+                    <div style="font-weight: 800; font-size: 0.9rem;" data-i18n="any">Any</div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);" data-i18n="auto_assign">Auto Assign</div>
                 </div>
                 {% for w in workers %}
-                <div class="worker-chip {{ 'worker-unavailable' if not w.is_active else '' }}"
-                    onclick="{{ 'selectWorker(this, \'' + w.id|string + '\')' if w.is_active else '' }}">
-                    {% if w.image_url and 'http' in w.image_url %}
-                    <img src="{{ w.image_url }}"
-                        style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
-                    {% else %}
-                    <div class="worker-avatar">{{ w.name[0].upper() }}</div>
+                <div class="worker-card {{ 'worker-unavailable' if not w.is_active else '' }}" onclick="{{ 'selectWorker(this, \'' + w.id|string + '\')' if w.is_active else '' }}">
+                    <div class="worker-img">
+                        {% if w.image_url %}
+                        <img src="{{ w.image_url }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                        {{ w.name[0]|upper }}
+                        {% endif %}
+                    </div>
+                    <div style="font-weight: 800; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;">{{ w.name }}</div>
+                    
+                    {% if w.skill %}
+                    <div style="font-size: 0.65rem; font-weight: 700; color: var(--primary); background: var(--primary-light); padding: 2px 8px; border-radius: 4px; display: inline-block; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px;">
+                        <i class="fas fa-magic" style="font-size: 0.6rem;"></i> {{ w.skill }}
+                    </div>
                     {% endif %}
-                    <div>
-                        <p style="font-size: 0.78rem; font-weight: 700; color: var(--text-main); margin: 0;">{{ w.name
-                            }}</p>
-                        <p style="font-size: 0.65rem; color: var(--text-muted); margin: 0;">
-                            {% set active_jobs = b_model.query.filter_by(worker_id=w.id, status='accepted').count() %}
-                            {% if active_jobs > 0 %}
-                            <span style="color: #f59e0b; font-weight: 800;"><i class="fas fa-spinner fa-spin"></i> Busy
-                                (Current)</span>
-                            {% else %}
-                            {{ 'Available' if w.is_active else 'Away' }}
-                            {% endif %}
-                        </p>
+
+                    <div style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
+                        <span style="font-size: 0.65rem; color: var(--text-muted); font-weight: 700;">
+                            <i class="fas fa-history"></i> {{ w.experience or '1+' }}Y Exp
+                        </span>
+                        <div style="font-size: 0.7rem; color: #10b981; font-weight: 800;">
+                            <span data-i18n="{{ 'available' if w.is_active else 'away' }}">{{ 'Available' if w.is_active else 'Away' }}</span>
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
@@ -255,88 +230,85 @@
         </div>
         {% endif %}
 
-        <button type="submit" {% if not services %}disabled{% endif %}
-            style="width:100%; padding:0.9rem; background:linear-gradient(135deg, var(--primary), var(--orange)); color:white; border:none; border-radius:16px; font-size:1rem; font-weight:800; cursor:pointer; transition:transform 0.2s;"
-            onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-            <i class="fas fa-calendar-plus" style="margin-right: 8px;"></i>Confirm Appointment
-        </button>
+        <!-- Payment Selection -->
+        <div class="section-card">
+            <h3 class="section-title"><i class="fas fa-credit-card" style="color: #8b5cf6;"></i> <span data-i18n="payment_method">Payment Method</span></h3>
+            <div style="display: grid; gap: 12px;">
+                <label class="input-pill" style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 15px;">
+                    <input type="radio" name="payment_type" value="offline" checked onchange="togglePaymentInfo(false)" style="width: 20px; height: 20px; accent-color: var(--primary);">
+                    <div>
+                        <div style="font-weight: 800; font-size: 0.95rem;" data-i18n="pay_at_salon">Pay at Salon</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="cash_upi_at_counter">Cash or UPI at counter after service</div>
+                    </div>
+                </label>
+                <label class="input-pill" style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 15px;">
+                    <input type="radio" name="payment_type" value="online" onchange="togglePaymentInfo(true)" style="width: 20px; height: 20px; accent-color: var(--primary);">
+                    <div>
+                        <div style="font-weight: 800; font-size: 0.95rem;">Pay Online (UPI)</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Secure payment via UPI / Scanner</div>
+                    </div>
+                </label>
+            </div>
+
+            <!-- UPI Info (Hidden by default) -->
+            <div id="upiInfo" style="display: none; margin-top: 1.5rem; padding: 1.5rem; background: #f8fafc; border-radius: 20px; border: 2px dashed var(--primary); text-align: center;">
+                <p style="font-size: 0.8rem; font-weight: 800; color: var(--primary); margin-bottom: 1rem;">SCAN & PAY ANY AMOUNT</p>
+                {% if salon.qr_code_url %}
+                    <img src="{{ salon.qr_code_url }}" style="width: 180px; height: 180px; margin: 0 auto 1rem auto; display: block; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                {% else %}
+                    <div style="width: 150px; height: 150px; background: #e2e8f0; border-radius: 12px; margin: 0 auto 1rem auto; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-qrcode" style="font-size: 4rem; color: #94a3b8;"></i>
+                    </div>
+                {% endif %}
+                <div style="background: white; border: 1px solid #e2e8f0; padding: 10px; border-radius: 10px; display: inline-flex; align-items: center; gap: 10px;">
+                    <span style="font-family: monospace; font-weight: 900; font-size: 1rem; color: var(--text-main);">{{ salon.upi_id or "owner@upi" }}</span>
+                    <i class="fas fa-copy" style="color: var(--primary); cursor: pointer;" onclick="copyUPI()"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="booking-bar">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <div>
+                    <p style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); margin: 0;" data-i18n="total_price">TOTAL PRICE</p>
+                    <h3 id="priceDisplay" style="font-size: 1.8rem; font-weight: 900; color: var(--text-main); margin: 0;">₹0</h3>
+                </div>
+                <div style="text-align: right;">
+                    <p style="font-size: 0.8rem; font-weight: 800; color: #10b981; margin: 0;"><i class="fas fa-bolt"></i> <span data-i18n="instant_confirm">Instant Confirm</span></p>
+                    <p id="methodLabel" style="font-size: 0.7rem; color: var(--text-muted); margin: 0;" data-i18n="pay_at_salon">Pay at Salon</p>
+                </div>
+            </div>
+            <button type="submit" {% if not services %}disabled{% endif %} style="width: 100%; height: 60px; background: var(--primary); color: white; border: none; border-radius: 18px; font-weight: 800; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.2);">
+                <span data-i18n="confirm_appointment">Confirm Appointment</span> <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
     </form>
 </div>
 
-<!-- Services List -->
-{% if services %}
-<div
-    style="background: white; border-radius: 20px; border: 1px solid var(--glass-border); overflow: hidden; margin-bottom: 1.5rem;">
-    <div style="padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9;">
-        <h3 style="font-weight: 800; font-size: 1rem; margin: 0; color: var(--text-main);">✂️ Services & Pricing</h3>
-    </div>
-    {% for svc in services %}
-    <div class="service-row">
-        <div>
-            <p style="font-weight: 700; color: var(--text-main); margin: 0; font-size: 0.9rem;">{{ svc.name }}</p>
-            {% if svc.duration %}<p style="font-size: 0.73rem; color: var(--text-muted); margin: 2px 0 0 0;"><i
-                    class="fas fa-clock" style="margin-right: 3px;"></i>{{ svc.duration }} min</p>{% endif %}
-        </div>
-        <span style="font-weight: 900; color: var(--primary); font-size: 1rem;">₹{{ svc.price }}</span>
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
-
-<!-- Team -->
-{% if workers %}
-<div
-    style="background: white; border-radius: 20px; border: 1px solid var(--glass-border); overflow: hidden; margin-bottom: 1.5rem;">
-    <div style="padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9;">
-        <h3 style="font-weight: 800; font-size: 1rem; margin: 0; color: var(--text-main);">👥 Our Specialists</h3>
-    </div>
-    <div style="padding: 1rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
-        {% for w in workers %}
-        <div class="worker-card-item {{ 'worker-unavailable' if not w.is_active else '' }}"
-            style="display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem; background: #fafafa; border-radius: 14px; border: 1px solid #f1f5f9; position: relative;">
-            {% if w.image_url and 'http' in w.image_url %}
-            <img src="{{ w.image_url }}"
-                style="width: 42px; height: 42px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
-            {% else %}
-            <div
-                style="width: 42px; height: 42px; background: linear-gradient(135deg, var(--primary), var(--orange)); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 1rem; flex-shrink: 0;">
-                {{ w.name[0].upper() }}</div>
-            {% endif %}
-            <div style="overflow: hidden;">
-                <p
-                    style="font-weight: 800; font-size: 0.85rem; color: var(--text-main); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    {{ w.name }}</p>
-                {% if not w.is_active %}
-                <span class="away-badge">Away</span>
-                {% elif w.skill %}
-                <p
-                    style="font-size: 0.65rem; color: var(--primary); font-weight: 700; margin: 1px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    <i class="fas fa-star" style="font-size: 0.5rem;"></i> {{ w.skill }}
-                </p>
-                {% endif %}
-                <p style="font-size: 0.65rem; color: var(--text-muted); margin: 0;">{{ w.experience or 0 }}yr exp
-                    Specialist</p>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-{% endif %}
-
 <script>
-    const today = '{{ today }}';
     function updatePrice(sel) {
         const opt = sel.options[sel.selectedIndex];
         const price = opt.getAttribute('data-price');
-        document.getElementById('priceTag').innerText = price ? `Estimated cost: ₹${price}` : '';
+        document.getElementById('priceDisplay').innerText = price ? `₹${price}` : '₹0';
     }
+
     function selectWorker(el, id) {
-        document.querySelectorAll('.worker-chip').forEach(c => c.classList.remove('selected'));
+        document.querySelectorAll('.worker-card').forEach(c => c.classList.remove('selected'));
         el.classList.add('selected');
         document.getElementById('selectedWorker').value = id;
     }
 
-    // Set default time to current local time
+    function togglePaymentInfo(show) {
+        document.getElementById('upiInfo').style.display = show ? 'block' : 'none';
+        document.getElementById('methodLabel').innerText = show ? 'UPI Online' : 'Pay at Salon';
+    }
+
+    function copyUPI() {
+        const upi = "{{ salon.upi_id or 'owner@upi' }}";
+        navigator.clipboard.writeText(upi);
+        alert('UPI ID Copied!');
+    }
+
     window.addEventListener('load', () => {
         const now = new Date();
         const hours = String(now.getHours()).padStart(2, '0');

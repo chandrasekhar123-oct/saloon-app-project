@@ -3,32 +3,107 @@
 {% block page_title %}System Overview{% endblock %}
 
 {% block content %}
+<style>
+    .stat-card {
+        background: linear-gradient(145deg, #1e293b, #111827);
+        border: 1px solid rgba(255,255,255,0.05);
+        position: relative;
+        overflow: hidden;
+    }
+    .stat-card::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
+        transform: rotate(45deg);
+    }
+    .icon-box {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+</style>
+
 <div class="stats-grid">
-    <div class="card">
+    <div class="card stat-card">
+        <div class="icon-box" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">
+            <i class="fas fa-store"></i>
+        </div>
         <div class="stat-label">Total Salons</div>
         <div class="stat-value">{{ stats.total_salons }}</div>
-        <div style="color: var(--primary); font-size: 0.8rem;"><i class="fas fa-arrow-up"></i> Active Businesses</div>
+        <div style="color: var(--primary); font-size: 0.8rem; font-weight: 600;">Active Partners</div>
     </div>
-    <div class="card">
+    
+    <div class="card stat-card">
+        <div class="icon-box" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+            <i class="fas fa-user-tie"></i>
+        </div>
+        <div class="stat-label">Salon Owners</div>
+        <div class="stat-value">{{ stats.total_owners }}</div>
+        <div style="color: #f59e0b; font-size: 0.8rem; font-weight: 600;">Business Accounts</div>
+    </div>
+
+    <div class="card stat-card">
+        <div class="icon-box" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+            <i class="fas fa-users"></i>
+        </div>
         <div class="stat-label">Platform Users</div>
         <div class="stat-value">{{ stats.total_users }}</div>
-        <div style="color: #10b981; font-size: 0.8rem;"><i class="fas fa-check-circle"></i> Verified Accounts</div>
+        <div style="color: #10b981; font-size: 0.8rem; font-weight: 600;">Active Customers</div>
     </div>
-    <div class="card">
+
+    <div class="card stat-card">
+        <div class="icon-box" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">
+            <i class="fas fa-id-badge"></i>
+        </div>
         <div class="stat-label">Specialists</div>
         <div class="stat-value">{{ stats.total_workers }}</div>
-        <div style="color: var(--text-muted); font-size: 0.8rem;"><i class="fas fa-briefcase"></i> Service Providers
-        </div>
+        <div style="color: #8b5cf6; font-size: 0.8rem; font-weight: 600;">Registered Artists</div>
     </div>
-    <div class="card">
+
+    <div class="card stat-card">
+        <div class="icon-box" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+            <i class="fas fa-calendar-check"></i>
+        </div>
+        <div class="stat-label">Total Jobs</div>
+        <div class="stat-value">{{ stats.total_bookings }}</div>
+        <div style="color: #ef4444; font-size: 0.8rem; font-weight: 600;">Service Requests</div>
+    </div>
+
+    <div class="card stat-card" style="border: 1px solid rgba(16, 185, 129, 0.3);">
+        <div class="icon-box" style="background: rgba(16, 185, 129, 0.2); color: #10b981;">
+            <i class="fas fa-coins"></i>
+        </div>
         <div class="stat-label">Total Revenue</div>
         <div class="stat-value">₹{{ stats.total_revenue }}</div>
-        <div style="color: #fbbf24; font-size: 0.8rem;"><i class="fas fa-coins"></i> Gross Bookings</div>
+        <div style="color: #10b981; font-size: 0.8rem; font-weight: 900;">Platform GSV</div>
+    </div>
+
+    <div class="card stat-card" style="border: 1px solid {{ 'rgba(99, 102, 241, 0.3)' if config.TWILIO_ACCOUNT_SID != 'YOUR_ACCOUNT_SID' else 'rgba(239, 68, 68, 0.3)' }};">
+        <div class="icon-box" style="background: {{ 'rgba(99, 102, 241, 0.1)' if config.TWILIO_ACCOUNT_SID != 'YOUR_ACCOUNT_SID' else 'rgba(239, 68, 68, 0.1)' }}; color: {{ 'var(--primary)' if config.TWILIO_ACCOUNT_SID != 'YOUR_ACCOUNT_SID' else '#ef4444' }};">
+            <i class="fas fa-sms"></i>
+        </div>
+        <div class="stat-label">Twilio SMS</div>
+        <div class="stat-value" style="font-size: 1.2rem; margin: 1rem 0;">
+            {{ 'Configured ✓' if config.TWILIO_ACCOUNT_SID != 'YOUR_ACCOUNT_SID' else 'Pending Setup ⚠' }}
+        </div>
+        <div style="color: var(--text-muted); font-size: 0.7rem;">Verified OTP Delivery</div>
     </div>
 </div>
 
 <div class="card">
-    <h3 style="margin-bottom: 1.5rem;">Recently Registered Salons</h3>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h3>Recently Registered Salons</h3>
+        <a href="{{ url_for('admin.salons') }}" style="color: var(--primary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">View All</a>
+    </div>
     <table>
         <thead>
             <tr>
@@ -46,13 +121,13 @@
                 <td><strong>{{ salon.name }}</strong></td>
                 <td>{{ salon.location }}</td>
                 <td>
-                    <span id="status-{{ salon.id }}" style="color: {{ '#10b981' if salon.is_active else '#ef4444' }};">
+                    <span id="status-{{ salon.id }}" class="status-badge" style="color: {{ '#10b981' if salon.is_active else '#ef4444' }}; background: {{ 'rgba(16,185,129,0.1)' if salon.is_active else 'rgba(239,68,68,0.1)' }}; padding: 4px 10px; border-radius: 50px; font-size: 0.75rem; font-weight: 700;">
                         {{ 'Active' if salon.is_active else 'Blocked' }}
                     </span>
                 </td>
                 <td>
-                    <button onclick="toggleSalon({{ salon.id }})" class="btn btn-primary"
-                        style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">
+                    <button onclick="toggleSalon({{ salon.id }})" class="btn"
+                        style="padding: 0.4rem 0.8rem; font-size: 0.75rem; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1);">
                         Toggle Access
                     </button>
                 </td>
@@ -61,6 +136,68 @@
         </tbody>
     </table>
 </div>
+
+<div style="margin-top: 3rem; margin-bottom: 2rem;">
+    <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-tasks" style="color: var(--primary);"></i> Platform Management
+    </h3>
+    <div class="stats-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+        <a href="{{ url_for('admin.salons') }}" class="card stat-card" style="text-decoration: none; transition: transform 0.3s ease, border-color 0.3s ease;">
+            <div class="icon-box" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">
+                <i class="fas fa-store"></i>
+            </div>
+            <div style="font-weight: 700; color: white;">Manage Salons</div>
+            <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 5px;">Configure & Audit Shops</div>
+        </a>
+
+        <a href="{{ url_for('admin.owners') }}" class="card stat-card" style="text-decoration: none; transition: transform 0.3s ease, border-color 0.3s ease;">
+            <div class="icon-box" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <div style="font-weight: 700; color: white;">Salon Owners</div>
+            <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 5px;">Business Partner Control</div>
+        </a>
+
+        <a href="{{ url_for('admin.users') }}" class="card stat-card" style="text-decoration: none; transition: transform 0.3s ease, border-color 0.3s ease;">
+            <div class="icon-box" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                <i class="fas fa-users"></i>
+            </div>
+            <div style="font-weight: 700; color: white;">Platform Users</div>
+            <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 5px;">Customer Management</div>
+        </a>
+
+        <a href="{{ url_for('admin.workers') }}" class="card stat-card" style="text-decoration: none; transition: transform 0.3s ease, border-color 0.3s ease;">
+            <div class="icon-box" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">
+                <i class="fas fa-id-badge"></i>
+            </div>
+            <div style="font-weight: 700; color: white;">Specialists</div>
+            <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 5px;">Artist Verification</div>
+        </a>
+
+        <a href="{{ url_for('admin.bookings') }}" class="card stat-card" style="text-decoration: none; transition: transform 0.3s ease, border-color 0.3s ease;">
+            <div class="icon-box" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div style="font-weight: 700; color: white;">Global Bookings</div>
+            <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 5px;">Monitor All Schedules</div>
+        </a>
+
+        <a href="{{ url_for('admin.complaints') }}" class="card stat-card" style="text-decoration: none; transition: transform 0.3s ease, border-color 0.3s ease;">
+            <div class="icon-box" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div style="font-weight: 700; color: white;">User Complaints</div>
+            <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 5px;">Grievance & Resolution</div>
+        </a>
+    </div>
+</div>
+
+<style>
+    .stat-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary) !important;
+    }
+</style>
 
 <script>
     function toggleSalon(id) {
@@ -71,6 +208,7 @@
                     const el = document.getElementById(`status-${id}`);
                     el.innerText = data.is_active ? 'Active' : 'Blocked';
                     el.style.color = data.is_active ? '#10b981' : '#ef4444';
+                    el.style.background = data.is_active ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)';
                 }
             });
     }

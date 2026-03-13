@@ -27,13 +27,22 @@
                 <td>{{ salon.location }}</td>
                 <td>⭐ {{ salon.rating or 'Unrated' }}</td>
                 <td>
-                    <span id="status-{{ salon.id }}" style="color: {{ '#10b981' if salon.is_active else '#ef4444' }};">
-                        {{ 'Active' if salon.is_active else 'Blocked' }}
-                    </span>
+                    <div id="status-container-{{ salon.id }}">
+                        {% if salon.is_active %}
+                        <span id="status-{{ salon.id }}" style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 4px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">
+                            Active
+                        </span>
+                        {% else %}
+                        <span id="status-{{ salon.id }}" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 4px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(239, 68, 68, 0.2);">
+                            ⛔ Blocked
+                        </span>
+                        {% endif %}
+                    </div>
                 </td>
                 <td>
-                    <button onclick="toggleSalon({{ salon.id }})" class="btn btn-primary">
-                        Toggle
+                    <button onclick="toggleSalon({{ salon.id }})" id="btn-{{ salon.id }}" class="btn" style="padding: 6px 15px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; background: {{ 'rgba(239, 68, 68, 0.1)' if salon.is_active else 'rgba(16, 185, 129, 0.1)' }}; color: {{ '#ef4444' if salon.is_active else '#10b981' }}; border: 1px solid {{ 'rgba(239, 68, 68, 0.2)' if salon.is_active else 'rgba(16, 185, 129, 0.2)' }};">
+                        <i class="fas {{ 'fa-ban' if salon.is_active else 'fa-check-circle' }}" style="margin-right: 5px;"></i>
+                        {{ 'Block Account' if salon.is_active else 'Unblock Account' }}
                     </button>
                 </td>
             </tr>
@@ -49,8 +58,25 @@
             .then(data => {
                 if (data.success) {
                     const el = document.getElementById(`status-${id}`);
-                    el.innerText = data.is_active ? 'Active' : 'Blocked';
-                    el.style.color = data.is_active ? '#10b981' : '#ef4444';
+                    const btn = document.getElementById(`btn-${id}`);
+                    
+                    if (data.is_active) {
+                        el.innerText = 'Active';
+                        el.style.background = 'rgba(16, 185, 129, 0.1)';
+                        el.style.color = '#10b981';
+                        btn.innerHTML = '<i class="fas fa-ban" style="margin-right: 5px;"></i> Block Account';
+                        btn.style.background = 'rgba(239, 68, 68, 0.1)';
+                        btn.style.color = '#ef4444';
+                        showToast('Salon Unblocked Successfully!', 'success');
+                    } else {
+                        el.innerText = 'Blocked';
+                        el.style.background = 'rgba(239, 68, 68, 0.1)';
+                        el.style.color = '#ef4444';
+                        btn.innerHTML = '<i class="fas fa-check-circle" style="margin-right: 5px;"></i> Unblock Account';
+                        btn.style.background = 'rgba(16, 185, 129, 0.1)';
+                        btn.style.color = '#10b981';
+                        showToast('Salon Blocked Successfully!', 'danger');
+                    }
                 }
             });
     }

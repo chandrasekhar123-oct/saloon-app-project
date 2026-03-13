@@ -1,0 +1,115 @@
+{% extends 'admin/layout.html' %}
+
+{% block page_title %}Manage Salon Owners{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h3>Registered Shop Owners</h3>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Contact info</th>
+                <th>Gender</th>
+                <th>Salon Registered</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if owners %}
+                {% for owner in owners %}
+                <tr>
+                    <td>#{{ owner.id }}</td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <img src="{{ owner.profile_image or 'https://i.pravatar.cc/150?u=' + owner.email }}" 
+                                 style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
+                            <strong>{{ owner.name }}</strong>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-size: 0.85rem;">{{ owner.email }}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">{{ owner.phone }}</div>
+                    </td>
+                    <td>{{ owner.gender or 'Not specified' }}</td>
+                    <td>
+                        {% if owner.shop %}
+                            <span style="color: var(--primary);">{{ owner.shop.name }}</span>
+                        {% else %}
+                            <span style="color: var(--text-muted); font-style: italic;">No Salon Added</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div id="status-container-{{ owner.id }}">
+                            {% if owner.is_active %}
+                            <span id="status-{{ owner.id }}" style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 4px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">
+                                Active
+                            </span>
+                            {% else %}
+                            <span id="status-{{ owner.id }}" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 4px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(239, 68, 68, 0.2);">
+                                ⛔ Blocked
+                            </span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <button onclick="toggleOwner({{ owner.id }})" id="btn-{{ owner.id }}" class="btn" style="padding: 6px 15px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; background: {{ 'rgba(239, 68, 68, 0.1)' if owner.is_active else 'rgba(16, 185, 129, 0.1)' }}; color: {{ '#ef4444' if owner.is_active else '#10b981' }}; border: 1px solid {{ 'rgba(239, 68, 68, 0.2)' if owner.is_active else 'rgba(16, 185, 129, 0.2)' }};">
+                            <i class="fas {{ 'fa-ban' if owner.is_active else 'fa-check-circle' }}" style="margin-right: 5px;"></i>
+                            {{ 'Block Account' if owner.is_active else 'Unblock Account' }}
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 3rem;">
+                        <i class="fas fa-user-circle" style="font-size: 3rem; color: #334155; margin-bottom: 1rem; display: block;"></i>
+                        <p>No salon owners registered yet.</p>
+                    </td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+function toggleOwner(ownerId) {
+    fetch(`/superadmin/owner/${ownerId}/toggle`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const statusLabel = document.getElementById(`status-${ownerId}`);
+            const actionBtn = document.getElementById(`btn-${ownerId}`);
+            
+            if (data.is_active) {
+                statusLabel.innerText = 'Active';
+                statusLabel.style.background = 'rgba(16, 185, 129, 0.1)';
+                statusLabel.style.color = '#10b981';
+                actionBtn.innerHTML = '<i class="fas fa-ban" style="margin-right: 5px;"></i> Block Account';
+                actionBtn.style.background = 'rgba(239, 68, 68, 0.1)';
+                actionBtn.style.color = '#ef4444';
+                showToast('Account Unblocked Successfully!', 'success');
+            } else {
+                statusLabel.innerText = 'Blocked';
+                statusLabel.style.background = 'rgba(239, 68, 68, 0.1)';
+                statusLabel.style.color = '#ef4444';
+                actionBtn.innerHTML = '<i class="fas fa-check-circle" style="margin-right: 5px;"></i> Unblock Account';
+                actionBtn.style.background = 'rgba(16, 185, 129, 0.1)';
+                actionBtn.style.color = '#10b981';
+                showToast('Account Blocked Successfully!', 'danger');
+            }
+        }
+    });
+}
+</script>
+{% endblock %}

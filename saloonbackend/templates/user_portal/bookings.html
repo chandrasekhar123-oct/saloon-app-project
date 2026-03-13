@@ -1,401 +1,152 @@
 {% extends "user_portal/layout.html" %}
 {% block title %}My Bookings{% endblock %}
+{% block page_title %}My Bookings{% endblock %}
+{% block i18n_page %}nav_bookings{% endblock %}
+{% block nav_bookings %}active{% endblock %}
 
 {% block styles %}
 <style>
+    .booking-filter {
+        display: flex; gap: 10px; margin-bottom: 2rem; overflow-x: auto; padding: 4px 0; scrollbar-width: none;
+    }
+    .booking-filter::-webkit-scrollbar { display: none; }
+
+    .filter-pill {
+        padding: 8px 18px; border-radius: 50px; background: var(--bg-card); border: 1px solid var(--glass-border);
+        color: var(--text-muted); font-weight: 700; font-size: 0.85rem; cursor: pointer; white-space: nowrap; transition: all 0.2s;
+    }
+    .filter-pill.active {
+        background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+    }
+
     .booking-card {
-        background: white;
-        border-radius: 20px;
-        padding: 1.1rem 1.2rem;
-        margin-bottom: 1rem;
-        border: 1px solid var(--glass-border);
-        box-shadow: 0 2px 10px rgba(244, 63, 94, 0.04);
-        animation: fadeIn 0.3s ease;
+        background: var(--bg-card); border-radius: 20px; border: 1px solid var(--glass-border);
+        margin-bottom: 1.5rem; overflow: hidden; transition: transform 0.2s;
     }
+    .booking-card:hover { transform: translateY(-3px); }
 
-    @keyframes otpPulse {
+    .card-header { padding: 1.25rem; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; }
+    .card-body { padding: 1.25rem; }
+    .card-footer { padding: 1.25rem; background: var(--bg-main); border-top: 1px solid var(--glass-border); }
 
-        0%,
-        100% {
-            box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.3)
-        }
+    .status-badge { padding: 4px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 850; text-transform: uppercase; }
+    .status-pending { background: #fee2e2; color: #ef4444; }
+    .status-accepted { background: #e0e7ff; color: #4338ca; }
+    .status-completed { background: #dcfce7; color: #15803d; }
+    .status-rejected { background: #f1f5f9; color: #64748b; }
 
-        50% {
-            box-shadow: 0 0 0 8px rgba(244, 63, 94, 0)
-        }
-    }
+    .service-name { font-size: 1.05rem; font-weight: 900; margin-bottom: 4px; }
+    .salon-name { font-size: 0.85rem; color: var(--text-muted); font-weight: 700; }
 
-    .otp-box {
-        animation: otpPulse 2s ease-in-out infinite;
-    }
+    .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 1.25rem 0; }
+    .info-item { text-align: center; background: var(--bg-main); padding: 10px; border-radius: 14px; }
+    .info-label { font-size: 0.6rem; font-weight: 850; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px; }
+    .info-value { font-size: 0.85rem; font-weight: 850; color: var(--text-main); }
+
+    .otp-display { background: var(--bg-main); border: 2px dashed var(--primary); border-radius: 16px; padding: 1.5rem; text-align: center; }
+    .otp-bits { display: flex; justify-content: center; gap: 8px; margin: 12px 0; }
+    .otp-digit { width: 35px; height: 45px; background: white; border: 2px solid var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 900; color: var(--primary); }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="fade-in" style="margin-bottom: 1.5rem;">
-    <p
-        style="color: var(--primary); font-weight: 800; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 3px;">
-        HISTORY</p>
-    <h2 style="font-weight: 900; font-size: 1.55rem; color: var(--text-main); margin: 0;">My Bookings</h2>
-</div>
-
-<!-- Filter Tabs -->
-<div
-    style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none;">
-    <button onclick="filterBookings(this,'all')" class="ftab active-tab"
-        style="padding:0.4rem 1rem;border-radius:50px;border:2px solid var(--primary);background:var(--primary);color:white;font-size:0.75rem;font-weight:700;cursor:pointer;white-space:nowrap;">All</button>
-    <button onclick="filterBookings(this,'pending')" class="ftab"
-        style="padding:0.4rem 1rem;border-radius:50px;border:2px solid #e5e7eb;background:white;color:var(--text-muted);font-size:0.75rem;font-weight:700;cursor:pointer;white-space:nowrap;">Pending</button>
-    <button onclick="filterBookings(this,'accepted')" class="ftab"
-        style="padding:0.4rem 1rem;border-radius:50px;border:2px solid #e5e7eb;background:white;color:var(--text-muted);font-size:0.75rem;font-weight:700;cursor:pointer;white-space:nowrap;">Accepted</button>
-    <button onclick="filterBookings(this,'completed')" class="ftab"
-        style="padding:0.4rem 1rem;border-radius:50px;border:2px solid #e5e7eb;background:white;color:var(--text-muted);font-size:0.75rem;font-weight:700;cursor:pointer;white-space:nowrap;">Completed</button>
-    <button onclick="filterBookings(this,'rejected')" class="ftab"
-        style="padding:0.4rem 1rem;border-radius:50px;border:2px solid #e5e7eb;background:white;color:var(--text-muted);font-size:0.75rem;font-weight:700;cursor:pointer;white-space:nowrap;">Cancelled</button>
+<div class="booking-filter">
+    <button onclick="filterBookings(this,'all')" class="filter-pill active" data-i18n="all_bookings">All Bookings</button>
+    <button onclick="filterBookings(this,'pending')" class="filter-pill" data-i18n="pending">Pending</button>
+    <button onclick="filterBookings(this,'accepted')" class="filter-pill" data-i18n="accepted">Accepted</button>
+    <button onclick="filterBookings(this,'completed')" class="filter-pill" data-i18n="completed">Completed</button>
+    <button onclick="filterBookings(this,'rejected')" class="filter-pill" data-i18n="rejected">Rejected</button>
 </div>
 
 {% if bookings %}
-{% for b in bookings %}
-<div class="booking-card" id="booking-{{ b.id }}" data-status="{{ b.status }}">
-
-    <!-- Top Row: service + badge -->
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
-        <div>
-            <p style="font-weight: 800; font-size: 1rem; color: var(--text-main); margin: 0;">{{ b.service.name if
-                b.service else 'Deleted Service' }}</p>
-            <p style="font-size: 0.78rem; color: var(--text-muted); margin: 3px 0 0 0;">
-                <i class="fas fa-store" style="color: var(--primary); margin-right: 3px;"></i>{{ b.salon.name if b.salon
-                else 'Deleted Salon' }}
-            </p>
+    {% for b in bookings %}
+    <div class="booking-card fade-in reveal" data-status="{{ b.status }}">
+        <div class="card-header">
+            <div>
+                <h3 class="service-name">{{ b.service.name if b.service else 'Service Deleted' }}</h3>
+                <span class="salon-name"><i class="fas fa-store"></i> {{ b.salon.name if b.salon else 'Salon Deleted' }}</span>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+                <span class="status-badge status-{{ b.status }}" style="backdrop-filter: blur(4px); box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                    <i class="fas {% if b.status == 'accepted' %}fa-check{% elif b.status == 'pending' %}fa-clock{% elif b.status == 'completed' %}fa-star{% else %}fa-times{% endif %}"></i> {{ b.status|upper }}
+                </span>
+                <a href="https://wa.me/919999999999?text=I%20need%20help%20with%20my%20booking%20at%20{{ b.salon.name|urlencode }}" target="_blank" style="font-size: 0.65rem; font-weight: 800; color: #25d366; text-decoration: none;">
+                    <i class="fab fa-whatsapp"></i> Get Help
+                </a>
+            </div>
         </div>
+        
+        <div class="card-body">
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Date</div>
+                    <div class="info-value">{{ b.slot_time.strftime('%d %b') }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Time</div>
+                    <div class="info-value">{{ b.slot_time.strftime('%I:%M %p') }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Price</div>
+                    <div class="info-value">₹{{ b.service.price if b.service else '0' }}</div>
+                </div>
+            </div>
+
+            {% if b.status == 'accepted' and b.otp %}
+            <div class="otp-display">
+                <p style="font-size: 0.7rem; font-weight: 850; color: var(--text-muted); margin-bottom: 5px;" data-i18n="otp_instruction">SHOW THIS OTP TO START SERVICE</p>
+                <div class="otp-bits">
+                    {% for char in b.otp %}
+                        <div class="otp-digit">{{ char }}</div>
+                    {% endfor %}
+                </div>
+                <p style="font-size: 0.75rem; color: var(--primary); font-weight: 850; margin-top: 5px;">
+                    <i class="fas fa-certificate"></i> Specialist: {{ b.worker.name }}
+                </p>
+            </div>
+            {% elif b.status == 'pending' %}
+            <div style="background: rgba(99, 102, 241, 0.05); padding: 1rem; border-radius: 14px; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(99, 102, 241, 0.1);">
+                <span style="font-size: 1.5rem;">⏳</span>
+                <p style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">Awaiting confirmation from salon. You'll get an OTP once accepted.</p>
+            </div>
+            {% endif %}
+        </div>
+
         {% if b.status == 'pending' %}
-        <span class="badge badge-pending">⏳ Awaiting</span>
-        {% elif b.status == 'accepted' %}
-        <span class="badge badge-accepted">✅ Accepted</span>
-        {% elif b.status == 'completed' %}
-        <span class="badge badge-completed">✓ Done</span>
-        {% elif b.status == 'rejected' %}
-        <span class="badge badge-rejected">✗ Declined</span>
+        <div class="card-footer">
+            <form method="POST" action="{{ url_for('user_portal.cancel_booking', id=b.id) }}">
+                <button type="submit" style="width: 100%; padding: 12px; border: none; background: #fee2e2; color: #b91c1c; border-radius: 12px; font-weight: 850; cursor: pointer;" data-i18n="cancel_btn">Cancel Appointment</button>
+            </form>
+        </div>
+        {% elif b.status == 'completed' and not b.review %}
+        <div class="card-footer">
+            <a href="{{ url_for('user_portal.rate_booking', id=b.id) }}" style="display: block; text-align: center; background: var(--primary); color: white; padding: 12px; border-radius: 12px; text-decoration: none; font-weight: 850;" data-i18n="rate_btn">Rate Service</a>
+        </div>
         {% endif %}
     </div>
-
-    <!-- Info Grid -->
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 0.75rem;">
-        <div style="background: #fafafa; border-radius: 10px; padding: 0.55rem; text-align: center;">
-            <p style="font-size: 0.6rem; color: var(--text-muted); font-weight: 700; margin: 0;">DATE</p>
-            <p style="font-size: 0.82rem; font-weight: 800; color: var(--text-main); margin: 2px 0 0 0;">{{
-                b.slot_time.strftime('%d %b') }}</p>
-        </div>
-        <div style="background: #fafafa; border-radius: 10px; padding: 0.55rem; text-align: center;">
-            <p style="font-size: 0.6rem; color: var(--text-muted); font-weight: 700; margin: 0;">TIME</p>
-            <p style="font-size: 0.82rem; font-weight: 800; color: var(--text-main); margin: 2px 0 0 0;">{{
-                b.slot_time.strftime('%I:%M %p') }}</p>
-        </div>
-        <div style="background: #fafafa; border-radius: 10px; padding: 0.55rem; text-align: center;">
-            <p style="font-size: 0.82rem; font-weight: 800; color: var(--primary); margin: 2px 0 0 0;">₹{{
-                b.service.price if b.service else '0' }}</p>
-        </div>
-    </div>
-
-    {% if b.worker %}
-    <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.75rem;">
-        <i class="fas fa-user" style="color: var(--primary); margin-right: 4px;"></i>Specialist: <strong
-            style="color: var(--text-main);">{{ b.worker.name }}</strong>
-    </p>
-    {% endif %}
-
-    {# ── STATUS-BASED MESSAGES ── #}
-
-    {% if b.status == 'pending' %}
-    <!-- Waiting for worker -->
-    <div
-        style="background: rgba(245,158,11,0.07); border: 1px dashed rgba(245,158,11,0.4); border-radius: 14px; padding: 0.85rem 1rem; display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
-        <div style="font-size: 1.5rem; animation: spin 3s linear infinite; display: inline-block;">⏳</div>
-        <div>
-            <p style="font-weight: 800; color: #b45309; font-size: 0.85rem; margin: 0;">Waiting for Specialist</p>
-            <p style="font-size: 0.75rem; color: #92400e; margin: 3px 0 0 0;">
-                {% if b.worker %}{{ b.worker.name }} hasn't responded yet. You'll receive your OTP once they accept.
-                {% else %}Your request is with the salon team. You'll get an OTP once a specialist accepts.{% endif %}
-            </p>
-        </div>
-    </div>
-    <!-- Cancel -->
-    <form method="POST" action="{{ url_for('user_portal.cancel_booking', id=b.id) }}"
-        onsubmit="return confirm('Cancel this booking?')">
-        <button type="submit"
-            style="width:100%;padding:0.6rem;background:rgba(239,68,68,0.07);color:#dc2626;border:1px solid rgba(239,68,68,0.2);border-radius:12px;font-weight:700;font-size:0.8rem;cursor:pointer;">
-            <i class="fas fa-times" style="margin-right:4px;"></i>Cancel Booking
-        </button>
-    </form>
-
-    {% elif b.status == 'accepted' and b.otp %}
-    <!-- 🚖 RAPIDO-STYLE CONFIRMED CARD -->
-    <div class="fade-in"
-        style="margin-top: 1rem; background: white; border-radius: 24px; border: 2px solid var(--primary); overflow: hidden; box-shadow: 0 12px 25px rgba(244, 63, 94, 0.12);">
-
-        <!-- Header: Arrival Info -->
-        <div
-            style="background: var(--primary); padding: 1rem; color: white; display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <div
-                    style="width: 32px; height: 32px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-check" style="font-size: 0.8rem;"></i>
-                </div>
-                <span
-                    style="font-weight: 800; font-size: 0.85rem; letter-spacing: 0.5px; text-transform: uppercase;">Job
-                    Confirmed</span>
-            </div>
-            {% if b.salon.map_url %}
-            <a href="{{ b.salon.map_url }}" target="_blank"
-                style="color: white; text-decoration: none; font-size: 0.75rem; font-weight: 800; background: rgba(0,0,0,0.1); padding: 5px 12px; border-radius: 50px;">
-                <i class="fas fa-location-arrow" style="margin-right:4px;"></i>Track Location
-            </a>
-            {% endif %}
-        </div>
-
-        <div style="padding: 1rem 1.25rem 0.25rem 1.25rem;">
-            <!-- REAL-TIME STATUS INFO -->
-            <div
-                style="background: #f8fafc; border-radius: 14px; padding: 0.85rem 1rem; border: 1.5px solid #eef2ff; display: flex; align-items: flex-start; gap: 12px; margin-bottom: 0.5rem;">
-                <div
-                    style="background: #6366f1; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(99,102,241,0.2);">
-                    <i class="fas fa-user-clock" style="color: white; font-size: 0.8rem;"></i>
-                </div>
-                <div>
-                    <h4 style="margin: 0; font-size: 0.82rem; font-weight: 850; color: #1e1b4b;">Specialist Status</h4>
-                    <p
-                        style="margin: 2px 0 0 0; font-size: 0.73rem; color: #4338ca; font-weight: 700; line-height: 1.3;">
-                        {% if b.worker_message %}
-                        <span style="color: var(--primary);">"{{ b.worker_message }}"</span>
-                        {% else %}
-                        Your specialist is getting ready for your session.
-                        {% endif %}
-                    </p>
-
-                    {# QUEUE CALCULATION #}
-                    {% if b.status == 'accepted' %}
-                    {% set all_accepted = b_model.query.filter_by(worker_id=b.worker_id,
-                    status='accepted').order_by(b_model.slot_time).all() %}
-                    {% set ns = namespace(pos=0, wait=0, found=false) %}
-                    {% for job in all_accepted %}
-                    {% if job.id == b.id %}
-                    {% set ns.pos = loop.index %}
-                    {% set ns.found = true %}
-                    {% elif not ns.found %}
-                    {% set ns.wait = ns.wait + (job.service.duration or 30) %}
-                    {% endif %}
-                    {% endfor %}
-
-                    {% if ns.pos > 1 %}
-                    <div style="margin-top: 8px; display: flex; align-items: center; gap: 8px;">
-                        <span
-                            style="background: white; color: #6366f1; padding: 2px 8px; border-radius: 6px; font-size: 0.62rem; font-weight: 850; border: 1px solid #c3dafe; box-shadow: 0 2px 4px rgba(99,102,241,0.05);">
-                            <i class="fas fa-list-ol"></i> QUEUE #{{ ns.pos }}
-                        </span>
-                        <span style="color: #64748b; font-size: 0.65rem; font-weight: 800;">
-                            <i class="fas fa-hourglass-start" style="color: #6366f1;"></i> Est. Wait: {{ ns.wait }} min
-                        </span>
-                    </div>
-                    {% endif %}
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <div style="padding: 1.25rem;">
-            <!-- OTP Section -->
-            <div
-                style="text-align: center; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px dashed #e2e8f0;">
-                <p
-                    style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
-                    Share OTP with Specialist</p>
-                <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 10px;">
-                    {% for char in b.otp %}
-                    <div
-                        style="width: 45px; height: 50px; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 900; color: var(--text-main); line-height: 1;">
-                        {{ char }}
-                    </div>
-                    {% endfor %}
-                </div>
-                <button onclick="copyOTP('{{ b.otp }}', 'otp-btn-{{ b.id }}')" id="otp-btn-{{ b.id }}"
-                    style="background: none; border: none; color: var(--primary); font-weight: 700; font-size: 0.75rem; cursor: pointer;">
-                    <i class="fas fa-copy" style="margin-right: 4px;"></i>Copy OTP
-                </button>
-            </div>
-
-            <!-- WORKER MESSAGE BUBBLE (RAPIDO STYLE) -->
-            {% if b.worker_message %}
-            <div class="fade-in"
-                style="margin-bottom: 1.5rem; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 16px; padding: 0.85rem 1rem;">
-                <p style="margin: 0; font-size: 0.8rem; color: #1e40af; font-weight: 700;">
-                    <i class="fas fa-comment-dots" style="margin-right: 6px; color: #3b82f6;"></i>{{ b.worker_message }}
-                </p>
-                <p
-                    style="margin: 4px 0 0 0; font-size: 0.6rem; color: #60a5fa; font-weight: 800; text-transform: uppercase;">
-                    Latest update from {{ b.worker.name if b.worker else 'Specialist' }}</p>
-            </div>
-            {% endif %}
-
-            <!-- Payment Action -->
-            <div style="background: #fdf2f8; border-radius: 18px; padding: 1.2rem; border: 1px solid #fbcfe8;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <div>
-                        <h4 style="margin: 0; font-size: 0.95rem; font-weight: 850; color: #86198f;">Total to Pay</h4>
-                        <p style="margin: 2px 0 0 0; font-size: 1.2rem; font-weight: 900; color: var(--primary);">₹{{
-                            b.service.price }}</p>
-                    </div>
-                    <div style="text-align: right;">
-                        <span
-                            style="font-size: 0.65rem; font-weight: 800; color: #be185d; text-transform: uppercase; background: #fce7f3; padding: 2px 8px; border-radius: 4px;">{{
-                            b.payment_method if b.payment_method else 'Pending' }}</span>
-                    </div>
-                </div>
-
-                {% if not b.payment_method %}
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                    <form action="{{ url_for('user_portal.update_payment', id=b.id) }}" method="POST">
-                        <input type="hidden" name="payment_method" value="Cash">
-                        <button type="submit"
-                            style="width: 100%; padding: 0.8rem; border-radius: 14px; border: 2px solid #fbcfe8; background: white; color: #86198f; font-weight: 800; font-size: 0.8rem; cursor: pointer;">
-                            <i class="fas fa-money-bill" style="margin-right: 5px;"></i>Cash
-                        </button>
-                    </form>
-                    <form action="{{ url_for('user_portal.update_payment', id=b.id) }}" method="POST">
-                        <input type="hidden" name="payment_method" value="Online">
-                        <button type="submit"
-                            style="width: 100%; padding: 0.8rem; border-radius: 14px; border: none; background: linear-gradient(135deg, #ec4899, #db2777); color: white; font-weight: 800; font-size: 0.8rem; cursor: pointer; box-shadow: 0 4px 12px rgba(219,39,119,0.3);">
-                            <i class="fas fa-bolt" style="margin-right: 5px;"></i>Pay Online
-                        </button>
-                    </form>
-                </div>
-                {% elif b.payment_method == 'Online' %}
-                <div
-                    style="text-align: center; background: white; padding: 1rem; border-radius: 14px; border: 1px dashed #fbcfe8;">
-                    {% if b.salon.qr_code_url %}
-                    <img src="{{ b.salon.qr_code_url }}" style="width: 150px; height: 150px; border-radius: 8px;">
-                    <p style="font-size: 0.65rem; color: var(--text-muted); margin-top: 8px;">Scan to Complete Payment
-                    </p>
-                    {% else %}
-                    <p style="font-size: 0.75rem; color: #be185d; font-weight: 700;">Owner hasn't set up Online Pay</p>
-                    {% endif %}
-                    <button onclick="this.nextElementSibling.submit()"
-                        style="background:none; border:none; color:var(--primary); font-weight:700; font-size:0.7rem; margin-top:5px; cursor:pointer;">Switch
-                        to Cash</button>
-                    <form action="{{ url_for('user_portal.update_payment', id=b.id) }}" method="POST"
-                        style="display:none;">
-                        <input type="hidden" name="payment_method" value="Cash">
-                    </form>
-                </div>
-                {% else %}
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 0.75rem; font-weight: 700; color: #86198f;"><i
-                            class="fas fa-info-circle"></i> Pay Cash at Salon</span>
-                    <button onclick="this.nextElementSibling.submit()"
-                        style="background:none; border:none; color:var(--primary); font-weight:700; font-size:0.7rem; cursor:pointer;">Switch
-                        to Online</button>
-                    <form action="{{ url_for('user_portal.update_payment', id=b.id) }}" method="POST"
-                        style="display:none;">
-                        <input type="hidden" name="payment_method" value="Online">
-                    </form>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    {% elif b.status == 'rejected' %}
-    <!-- Detailed rejection message removed as per user request -->
-
-    {% elif b.status == 'completed' %}
-    <!-- Completed -->
-    <div
-        style="background: rgba(16,185,129,0.07); border: 1px solid rgba(16,185,129,0.2); border-radius: 14px; padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.75rem;">
-        <div style="font-size: 1.4rem;">🏆</div>
-        <div>
-            <p style="font-weight: 800; color: #059669; font-size: 0.85rem; margin: 0;">Service Completed!</p>
-            <p style="font-size: 0.75rem; color: #065f46; margin: 3px 0 0 0;">We hope you enjoyed your grooming
-                experience. See you again!</p>
-
-            {% if not b.review %}
-            <a href="{{ url_for('user_portal.rate_booking', id=b.id) }}"
-                style="display: inline-block; margin-top: 10px; padding: 6px 15px; background: #6366f1; color: white; border-radius: 8px; font-weight: 700; font-size: 0.75rem; text-decoration: none;">
-                <i class="fas fa-star" style="margin-right: 4px;"></i>Rate & Review
-            </a>
-            {% else %}
-            <div style="margin-top: 8px; color: #fbbf24; font-size: 0.7rem; font-weight: 800;">
-                <i class="fas fa-check-circle"></i> Reviewed: {{ '⭐' * b.review.rating }}
-            </div>
-            {% endif %}
-        </div>
-    </div>
-    {% endif %}
-</div>
-{% endfor %}
-
+    {% endfor %}
 {% else %}
-<div
-    style="text-align:center;padding:4rem 2rem;background:white;border-radius:24px;border:2px dashed var(--glass-border);">
-    <div style="font-size:3rem;margin-bottom:1rem;">📅</div>
-    <h3 style="font-weight:800;color:var(--text-main);margin:0 0 0.5rem 0;">No Bookings Yet</h3>
-    <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:1.25rem;">Discover salons and book your first
-        appointment!</p>
-    <a href="{{ url_for('user_portal.home') }}"
-        style="display:inline-block;background:linear-gradient(135deg,var(--primary),var(--orange));color:white;padding:0.7rem 1.5rem;border-radius:14px;font-weight:800;text-decoration:none;font-size:0.9rem;">Explore
-        Salons</a>
-</div>
+    <div style="text-align: center; padding: 5rem 2rem;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">📅</div>
+        <h3 style="font-weight: 900; margin-bottom: 0.5rem;" data-i18n="no_bookings">No Bookings Found</h3>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;" data-i18n="start_journey">Start your journey today!</p>
+        <a href="{{ url_for('user_portal.home') }}" style="display: inline-block; background: var(--primary); color: white; padding: 12px 28px; border-radius: 14px; text-decoration: none; font-weight: 900;" data-i18n="book_now">Book Now</a>
+    </div>
 {% endif %}
 
 <script>
     function filterBookings(btn, status) {
-        document.querySelectorAll('.booking-card').forEach(c => {
-            c.style.display = (status === 'all' || c.dataset.status === status) ? 'block' : 'none';
-        });
-        document.querySelectorAll('.ftab').forEach(t => {
-            t.style.background = 'white'; t.style.color = 'var(--text-muted)'; t.style.borderColor = '#e5e7eb';
-        });
-        btn.style.background = 'var(--primary)'; btn.style.color = 'white'; btn.style.borderColor = 'var(--primary)';
-    }
-    function copyOTP(otp, id) {
-        navigator.clipboard.writeText(otp).then(() => {
-            const el = document.getElementById(id);
-            const orig = el.innerText;
-            el.innerText = 'Copied!';
-            setTimeout(() => el.innerText = orig, 1500);
+        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.booking-card').forEach(card => {
+            card.style.display = (status === 'all' || card.dataset.status === status) ? 'block' : 'none';
         });
     }
 
-    // ─── LIVE REFRESH LOGIC (Rapido Style) ───
-    // Store current statuses of all bookings on page load
-    const currentStatuses = {};
-    document.querySelectorAll('.booking-card').forEach(cc => {
-        const bid = cc.getAttribute('id')?.split('-')[1];
-        if (bid) currentStatuses[bid] = cc.dataset.status;
-    });
-
-    function pollBookingStatus() {
+    function pollStatus() {
         fetch("{{ url_for('user_portal.get_bookings_status') }}")
             .then(res => res.json())
-            .then(data => {
-                let statusChanged = false;
-                for (const bid in data) {
-                    // If a new booking appears or an existing one changes status
-                    if (!currentStatuses[bid] || currentStatuses[bid] !== data[bid]) {
-                        statusChanged = true;
-                        break;
-                    }
-                }
-
-                if (statusChanged) {
-                    console.log("Booking status changed! Refreshing UI...");
-                    location.reload(); // Refresh to show OTP/Payment immediately
-                }
-            })
-            .catch(err => console.error("Polling error:", err));
-    }
-
-    // Check every 5 seconds if anything changed
-    if (Object.keys(currentStatuses).length > 0) {
-        setInterval(pollBookingStatus, 5000);
+            .then(data => location.reload());
     }
 </script>
 {% endblock %}

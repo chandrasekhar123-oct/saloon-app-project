@@ -1,6 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
-from models import db, User, Salon, Service, Booking, Worker, Offer, Review
+from models import db, User, Salon, Service, Booking, Worker, Offer, Review, Notification
 from datetime import datetime, timedelta
 import random
 import string
@@ -15,6 +15,13 @@ def user_login_required(f):
         if 'portal_user_id' not in session:
             flash('Please login to continue.', 'danger')
             return redirect(url_for('user_portal.login'))
+        
+        user = User.query.get(session['portal_user_id'])
+        if not user or not user.is_active:
+            session.pop('portal_user_id', None)
+            flash('Your account has been suspended. Please contact support.', 'danger')
+            return redirect(url_for('user_portal.login'))
+            
         return f(*args, **kwargs)
     return decorated
 
@@ -34,6 +41,9 @@ def login():
         password = request.form.get('password')
         user = User.query.filter_by(phone=phone).first()
         if user and check_password_hash(user.password, password):
+            if not user.is_active:
+                flash('Your account has been suspended. Please contact support.', 'danger')
+                return redirect(url_for('user_portal.login'))
             session['portal_user_id'] = user.id
             flash(f'Welcome back, {user.name}! 👋', 'success')
             return redirect(url_for('user_portal.home'))
@@ -70,16 +80,25 @@ def register():
 def home():
     user = get_current_user()
     all_salons = Salon.query.filter_by(is_active=True).all()
-    # Only show salons that are currently open
-    salons = [s for s in all_salons if s.is_open]
+    # Show all active salons regardless of current open status
+    salons = all_salons
     raw_offers = Offer.query.filter_by(is_active=True).order_by(Offer.created_at.desc()).limit(10).all()
     # Only show offers from salons that are currently open
     active_offers = [o for o in raw_offers if o.salon and o.salon.is_open]
     recent_bookings = Booking.query.filter_by(user_id=user.id).order_by(Booking.slot_time.desc()).limit(3).all()
+    
+    # Fetch specialists with rating > 4
+    all_workers = Worker.query.filter_by(is_approved=True, is_active=True).all()
+    top_workers = [w for w in all_workers if w.rating >= 4.5] # Filtering by rating
+    # Shuffle or limit if needed
+    random.shuffle(top_workers)
+    top_workers = top_workers[:10]
+
     return render_template('user_portal/home.html',
                            user=user,
                            salons=salons,
-                           offers=active_offers,
+                           active_offers=active_offers,
+                           top_workers=top_workers,
                            recent_bookings=recent_bookings,
                            now=datetime.now(),
                            active_page='home')
@@ -137,6 +156,16 @@ def book_service():
         otp=None
     )
     db.session.add(booking)
+    db.session.commit()
+    
+    # 🔔 Add Notification for User
+    new_notif = Notification(
+        user_id=user.id,
+        title="Booking Request Sent 💇",
+        message=f"Your request for {booking.service.name} has been sent to the specialist. Waiting for approval.",
+        type="booking"
+    )
+    db.session.add(new_notif)
     db.session.commit()
 
     # 📱 Send Confirmation SMS
@@ -212,8 +241,14 @@ def update_payment(id):
 @user_login_required
 def notifications():
     user = get_current_user()
-    # Simple notifications based on booking status changes
-    notifications_list = Booking.query.filter_by(user_id=user.id).order_by(Booking.slot_time.desc()).limit(20).all()
+    from models import Notification
+    notifications_list = Notification.query.filter_by(user_id=user.id).order_by(Notification.created_at.desc()).limit(30).all()
+    
+    # Mark all as read when viewing
+    for n in notifications_list:
+        n.is_read = True
+    db.session.commit()
+    
     return render_template('user_portal/notifications.html', user=user, notifications=notifications_list, active_page='notifications')
 
 @user_portal_bp.route('/bookings/<int:id>/rate', methods=['GET', 'POST'])
@@ -298,3 +333,53 @@ def logout():
     session.pop('portal_user_id', None)
     flash('You have been logged out.', 'success')
     return redirect(url_for('user_portal.login'))
+@user_portal_bp.route('/api/check-booking-status')
+@user_login_required
+def check_booking_status():
+    user = get_current_user()
+    # Find bookings whose status changed (no longer pending) and hasn't notified user yet
+    updated_bookings = Booking.query.filter(
+        Booking.user_id == user.id,
+        Booking.status != 'pending',
+        Booking.user_notified == False
+    ).all()
+    
+    if updated_bookings:
+        status_data = []
+        for b in updated_bookings:
+            b.user_notified = True
+            status_data.append({
+                "id": b.id,
+                "status": b.status,
+                "service": b.service.name if b.service else "Service",
+                "message": f"Your booking for {b.service.name if b.service else 'Service'} has been {b.status}!"
+            })
+        db.session.commit()
+        return jsonify({"updates": True, "bookings": status_data})
+    
+    # Check for upcoming reminders (if booking is in next 30 mins)
+    upcoming = Booking.query.filter(
+        Booking.user_id == user.id,
+        Booking.status == 'accepted',
+        Booking.slot_time > datetime.utcnow(),
+        Booking.slot_time <= datetime.utcnow() + timedelta(minutes=30),
+        Booking.user_notified == True # Only remind after it became accepted
+    ).all()
+
+    # Note: Using a session variable to prevent spamming reminders for same slot
+    reminded_slots = session.get('reminded_slots', [])
+    for b in upcoming:
+        if b.id not in reminded_slots:
+            reminded_slots.append(b.id)
+            session['reminded_slots'] = reminded_slots
+            return jsonify({
+                "updates": True, 
+                "bookings": [{
+                    "id": b.id,
+                    "status": "upcoming",
+                    "service": b.service.name,
+                    "message": f"Reminder: Your job for {b.service.name} is in less than 30 minutes! ⏰"
+                }]
+            })
+    
+    return jsonify({"updates": False})

@@ -50,7 +50,6 @@ def create_app(config_class=Config):
     from routes.auth_routes import auth_bp
     from routes.worker_panel_routes import worker_panel_bp
     from routes.user_portal_routes import user_portal_bp
-    from routes.admin_routes import admin_bp
 
     app.register_blueprint(user_bp, url_prefix='/user')
     app.register_blueprint(worker_bp, url_prefix='/worker')
@@ -58,7 +57,6 @@ def create_app(config_class=Config):
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(worker_panel_bp)
     app.register_blueprint(user_portal_bp)
-    app.register_blueprint(admin_bp, url_prefix='/superadmin')
 
     @app.context_processor
     def utility_processor():

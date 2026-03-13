@@ -1,91 +1,74 @@
 {% extends "user_portal/layout.html" %}
 {% block title %}My Profile{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+{% block i18n_page %}nav_profile{% endblock %}
+{% block nav_profile %}active{% endblock %}
 
 {% block content %}
-<!-- Profile Card -->
-<div style="text-align: center; margin-bottom: 1.5rem;" class="fade-in">
-    <div
-        style="width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--orange)); margin: 0 auto 1rem auto; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: white; font-weight: 900; box-shadow: 0 8px 24px rgba(244,63,94,0.3);">
-        {{ user.name[0].upper() }}
-    </div>
-    <h2 style="font-weight: 900; font-size: 1.3rem; color: var(--text-main); margin: 0;">{{ user.name }}</h2>
-    <p style="color: var(--text-muted); font-size: 0.85rem; margin: 4px 0 0 0;"><i class="fas fa-phone"
-            style="margin-right: 4px; color: var(--primary);"></i>{{ user.phone }}</p>
-    <span
-        style="display: inline-block; margin-top: 8px; background: rgba(244,63,94,0.1); color: var(--primary); padding: 0.25rem 0.85rem; border-radius: 50px; font-size: 0.72rem; font-weight: 800;">🌟
-        Valued Customer</span>
-</div>
-
-<!-- Stats row -->
-<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.5rem;">
-    <div
-        style="background: white; border-radius: 16px; padding: 1rem; text-align: center; border: 1px solid var(--glass-border);">
-        <p style="font-size: 1.6rem; font-weight: 900; color: var(--primary); margin: 0;">{{ total_bookings }}</p>
-        <p style="font-size: 0.65rem; color: var(--text-muted); margin: 2px 0 0 0; font-weight: 700;">Total</p>
-    </div>
-    <div
-        style="background: white; border-radius: 16px; padding: 1rem; text-align: center; border: 1px solid var(--glass-border);">
-        <p style="font-size: 1.6rem; font-weight: 900; color: #10b981; margin: 0;">{{ completed }}</p>
-        <p style="font-size: 0.65rem; color: var(--text-muted); margin: 2px 0 0 0; font-weight: 700;">Done</p>
-    </div>
-    <div
-        style="background: white; border-radius: 16px; padding: 1rem; text-align: center; border: 1px solid var(--glass-border);">
-        <p style="font-size: 1.4rem; font-weight: 900; color: #6366f1; margin: 0;">₹{{ "%.0f"|format(total_spent) }}</p>
-        <p style="font-size: 0.65rem; color: var(--text-muted); margin: 2px 0 0 0; font-weight: 700;">Spent</p>
-    </div>
-</div>
-
-<!-- Menu -->
-<div
-    style="background: white; border-radius: 20px; border: 1px solid var(--glass-border); overflow: hidden; margin-bottom: 1rem;">
-    <a href="{{ url_for('user_portal.my_bookings') }}"
-        style="display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; text-decoration: none; border-bottom: 1px solid #f1f5f9; transition: background 0.2s;"
-        onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background='white'">
-        <div
-            style="width: 40px; height: 40px; background: rgba(244,63,94,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.1rem;">
-            <i class="fas fa-calendar-check"></i></div>
-        <div style="flex: 1;">
-            <p style="font-weight: 700; color: var(--text-main); margin: 0; font-size: 0.9rem;">My Bookings</p>
-            <p style="font-size: 0.75rem; color: var(--text-muted); margin: 2px 0 0 0;">View all appointments</p>
+<div class="fade-in">
+    <!-- Profile Header -->
+    <div class="reveal" style="background: var(--bg-card); border-radius: 24px; padding: 2.5rem 2rem; border: 1px solid var(--glass-border); text-align: center; margin-bottom: 2rem; box-shadow: var(--shadow-sm);">
+        <div style="width: 100px; height: 100px; border-radius: 30px; background: linear-gradient(135deg, var(--primary), var(--accent)); margin: 0 auto 1.5rem auto; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: white; font-weight: 900; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);">
+            {% if user and user.profile_image %}
+            <img src="{{ user.profile_image }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 30px;">
+            {% else %}
+            {{ user.name[0]|upper }}
+            {% endif %}
         </div>
-        <i class="fas fa-chevron-right" style="color: var(--text-muted); font-size: 0.8rem;"></i>
+        <h2 style="font-weight: 900; font-size: 1.5rem; margin-bottom: 0.5rem;">{{ user.name }}</h2>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 0.5rem;">
+            <div style="background: var(--bg-main); border: 1px solid var(--glass-border); padding: 10px 20px; border-radius: 50px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow-sm); font-weight: 850; font-size: 1.1rem; color: var(--text-main); width: fit-content;">
+                <img src="https://flagcdn.com/w40/in.png" style="width: 24px; border-radius: 3px;" alt="India">
+                <span>{{ user.phone }}</span>
+            </div>
+        </div>
+        <span style="display: inline-block; margin-top: 1rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 6px 16px; border-radius: 50px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">
+            Premium Member 🌟
+        </span>
+    </div>
+
+    <!-- Stats Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div style="background: var(--bg-card); border-radius: 20px; padding: 1.5rem; border: 1px solid var(--glass-border); text-align: center;">
+            <div style="color: var(--primary); font-size: 1.8rem; font-weight: 900; margin-bottom: 4px;">{{ total_bookings }}</div>
+            <div style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;" data-i18n="total_bookings">Total Bookings</div>
+        </div>
+        <div style="background: var(--bg-card); border-radius: 20px; padding: 1.5rem; border: 1px solid var(--glass-border); text-align: center;">
+            <div style="color: #10b981; font-size: 1.8rem; font-weight: 900; margin-bottom: 4px;">{{ completed }}</div>
+            <div style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;" data-i18n="completed">Completed</div>
+        </div>
+        <div style="background: var(--bg-card); border-radius: 20px; padding: 1.5rem; border: 1px solid var(--glass-border); text-align: center;">
+            <div style="color: var(--primary); font-size: 1.8rem; font-weight: 900; margin-bottom: 4px;">₹{{ "%.0f"|format(total_spent) }}</div>
+            <div style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;" data-i18n="total_spent">Total Spent</div>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="reveal" style="background: var(--bg-card); border-radius: 24px; border: 1px solid var(--glass-border); overflow: hidden; margin-bottom: 2rem;">
+        <a href="{{ url_for('user_portal.my_bookings') }}" style="display: flex; align-items: center; gap: 1.25rem; padding: 1.25rem 1.5rem; text-decoration: none; color: inherit; border-bottom: 1px solid var(--glass-border); transition: all 0.2s;" onmouseover="this.style.background='var(--bg-main)'" onmouseout="this.style.background='transparent'">
+            <div style="width: 45px; height: 45px; background: rgba(99, 102, 241, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                <i class="fas fa-history"></i>
+            </div>
+            <div style="flex: 1;">
+                <h4 style="font-weight: 800; font-size: 1rem; margin: 0;" data-i18n="booking_history">Booking History</h4>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;" data-i18n="view_history_desc">View all your past appointments</p>
+            </div>
+            <i class="fas fa-chevron-right" style="color: var(--text-muted); font-size: 0.8rem;"></i>
+        </a>
+        <a href="{{ url_for('user_portal.settings') }}" style="display: flex; align-items: center; gap: 1.25rem; padding: 1.25rem 1.5rem; text-decoration: none; color: inherit; transition: all 0.2s;" onmouseover="this.style.background='var(--bg-main)'" onmouseout="this.style.background='transparent'">
+            <div style="width: 45px; height: 45px; background: #f1f5f9; color: #475569; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                <i class="fas fa-user-edit"></i>
+            </div>
+            <div style="flex: 1;">
+                <h4 style="font-weight: 800; font-size: 1rem; margin: 0;" data-i18n="account_settings">Account Settings</h4>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;" data-i18n="view_settings_desc">Update your personal information</p>
+            </div>
+            <i class="fas fa-chevron-right" style="color: var(--text-muted); font-size: 0.8rem;"></i>
+        </a>
+    </div>
+
+    <a href="{{ url_for('user_portal.logout') }}" style="display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 1.25rem; background: #fef2f2; color: #dc2626; border-radius: 20px; text-decoration: none; font-weight: 800; border: 1px solid #fee2e2; transition: all 0.2s;">
+        <i class="fas fa-power-off"></i> <span data-i18n="sign_out">Sign Out</span>
     </a>
-    <a href="{{ url_for('user_portal.home') }}"
-        style="display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; text-decoration: none; border-bottom: 1px solid #f1f5f9; transition: background 0.2s;"
-        onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background='white'">
-        <div
-            style="width: 40px; height: 40px; background: rgba(251,146,60,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--orange); font-size: 1.1rem;">
-            <i class="fas fa-search"></i></div>
-        <div style="flex: 1;">
-            <p style="font-weight: 700; color: var(--text-main); margin: 0; font-size: 0.9rem;">Discover Salons</p>
-            <p style="font-size: 0.75rem; color: var(--text-muted); margin: 2px 0 0 0;">Browse & book new salons</p>
-        </div>
-        <i class="fas fa-chevron-right" style="color: var(--text-muted); font-size: 0.8rem;"></i>
-    </a>
-    <div
-        style="display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9;">
-        <div
-            style="width: 40px; height: 40px; background: rgba(99,102,241,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #6366f1; font-size: 1.1rem;">
-            <i class="fas fa-phone"></i></div>
-        <div style="flex: 1;">
-            <p style="font-weight: 700; color: var(--text-main); margin: 0; font-size: 0.9rem;">Phone Number</p>
-            <p style="font-size: 0.75rem; color: var(--text-muted); margin: 2px 0 0 0;">{{ user.phone }}</p>
-        </div>
-    </div>
-    <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem;">
-        <div
-            style="width: 40px; height: 40px; background: rgba(16,185,129,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #10b981; font-size: 1.1rem;">
-            <i class="fas fa-cash-register"></i></div>
-        <div style="flex: 1;">
-            <p style="font-weight: 700; color: var(--text-main); margin: 0; font-size: 0.9rem;">Payment Mode</p>
-            <p style="font-size: 0.75rem; color: var(--text-muted); margin: 2px 0 0 0;">💵 Cash at Salon</p>
-        </div>
-    </div>
 </div>
-
-<!-- Logout -->
-<a href="{{ url_for('user_portal.logout') }}"
-    style="display: block; text-align: center; background: rgba(239,68,68,0.08); color: #dc2626; padding: 0.85rem; border-radius: 16px; font-weight: 800; text-decoration: none; font-size: 0.9rem; border: 1px solid rgba(239,68,68,0.15);">
-    <i class="fas fa-sign-out-alt" style="margin-right: 6px;"></i>Logout
-</a>
 {% endblock %}

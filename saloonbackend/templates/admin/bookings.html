@@ -1,0 +1,76 @@
+{% extends 'admin/layout.html' %}
+
+{% block page_title %}Global Booking Insights{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h3>Platform-Wide Appointments</h3>
+        <div style="display: flex; gap: 1rem;">
+            <div style="background: rgba(255,255,255,0.05); padding: 5px 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); font-size: 0.8rem;">
+                <span style="color: var(--text-muted);">Total:</span> <strong>{{ bookings|length }}</strong>
+            </div>
+        </div>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Booking ID</th>
+                <th>Customer</th>
+                <th>Service & Salon</th>
+                <th>Specialist</th>
+                <th>Time Slot</th>
+                <th>Status</th>
+                <th>Revenue</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if bookings %}
+                {% for booking in bookings %}
+                <tr>
+                    <td><span style="font-family: monospace; color: var(--primary);">#BK-{{ booking.id }}</span></td>
+                    <td>
+                        <div style="font-weight: 700;">{{ booking.user.name if booking.user else 'Deleted User' }}</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">{{ booking.user.phone if booking.user else '' }}</div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 600;">{{ booking.service.name if booking.service else 'Service Removed' }}</div>
+                        <div style="font-size: 0.7rem; color: var(--primary);">@ {{ booking.salon.name if booking.salon else 'Unknown Salon' }}</div>
+                    </td>
+                    <td>
+                        <div style="font-size: 0.85rem;">{{ booking.worker.name if booking.worker else 'Not Assigned' }}</div>
+                    </td>
+                    <td>
+                        <div style="font-size: 0.85rem; font-weight: 600;">{{ booking.slot_time.strftime('%d %b, %Y') }}</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">{{ booking.slot_time.strftime('%I:%M %p') }}</div>
+                    </td>
+                    <td>
+                        {% set status_colors = {
+                            'pending': '#fbbf24',
+                            'accepted': '#6366f1',
+                            'completed': '#10b981',
+                            'cancelled': '#ef4444',
+                            'rejected': '#ef4444'
+                        } %}
+                        <span style="background: {{ status_colors.get(booking.status, '#94a3b8') }}20; color: {{ status_colors.get(booking.status, '#94a3b8') }}; padding: 4px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">
+                            {{ booking.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="font-weight: 800; color: #10b981;">₹{{ booking.service.price if booking.service else '0' }}</div>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 4rem;">
+                        <i class="fas fa-calendar-times" style="font-size: 3rem; color: #334155; margin-bottom: 1rem; display: block;"></i>
+                        <p>No bookings found in the platform history.</p>
+                    </td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

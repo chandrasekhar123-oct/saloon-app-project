@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Saloon Essy | Universal Gateway</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -131,6 +132,24 @@
             filter: brightness(1.2);
         }
 
+        .lang-switcher-nav {
+            position: relative;
+            margin-right: 1rem;
+        }
+
+        .lang-btn {
+            background: rgba(99, 102, 241, 0.1); color: var(--primary); border: 1px solid rgba(99, 102, 241, 0.2);
+            padding: 0.6rem 1.2rem; border-radius: 50px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.85rem;
+        }
+
+        .lang-dropdown {
+            position: absolute; top: 100%; right: 0; margin-top: 8px; background: white; border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: none; overflow: hidden; min-width: 140px; z-index: 2000;
+        }
+
+        .lang-option { padding: 12px 16px; color: #1e293b; cursor: pointer; font-weight: 600; transition: background 0.2s; font-size: 0.85rem; }
+        .lang-option:hover { background: #f1f5f9; }
+
         /* --- 3D Hero Structure --- */
         .hero {
             padding: 120px 5% 60px 5%;
@@ -181,16 +200,17 @@
         .logo-giant {
             width: 150px;
             height: 150px;
-            background: var(--primary-gradient);
-            border-radius: 40px;
+            background: #0f172a;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 5rem;
-            color: white;
             margin-bottom: 2rem;
-            box-shadow: 0 25px 50px rgba(99, 102, 241, 0.4);
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
             animation: bounce-slow 4s infinite ease-in-out;
+            border: 4px solid rgba(226, 232, 240, 0.1);
         }
 
         .face-front h1 {
@@ -230,35 +250,57 @@
             -webkit-text-fill-color: transparent;
         }
 
-        /* --- Trust Metrics --- */
-        .metrics-bar {
+        /* --- Platform Features Bar --- */
+        .features-bar {
             width: 100%;
-            padding: 4rem 5%;
+            padding: 5rem 5%;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            background: rgba(255, 255, 255, 0.4);
-            backdrop-filter: blur(5px);
-            border-top: 1px solid rgba(226, 232, 240, 0.5);
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 2.5rem;
+            background: white;
+            border-top: 1px solid rgba(226, 232, 240, 0.8);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
         }
 
-        .metric-item {
-            text-align: center;
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 1rem;
+            transition: 0.3s;
         }
 
-        .metric-val {
-            font-size: 2.5rem;
-            font-weight: 900;
+        .feature-icon-box {
+            width: 55px;
+            height: 55px;
+            background: #f8fafc;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
             color: var(--primary);
-            margin-bottom: 0.5rem;
+            flex-shrink: 0;
+            transition: 0.3s;
         }
 
-        .metric-label {
-            font-size: 0.9rem;
-            font-weight: 600;
+        .feature-item:hover .feature-icon-box {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.1) rotate(-5deg);
+        }
+
+        .feature-text h4 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+            color: var(--text-main);
+        }
+
+        .feature-text p {
+            font-size: 0.85rem;
             color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            font-weight: 600;
         }
 
         /* --- Visual Experience Section --- */
@@ -402,7 +444,11 @@
 </head>
 
 <body>
-    <!-- Background Floating Decorations -->
+    <!-- Background Floating Decorations & Watermark -->
+    <div
+        style="position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: -2; opacity: 0.04; pointer-events: none; filter: grayscale(1);">
+        <img src="{{ url_for('static', filename='images/logo.png', v=3) }}" style="width: 60vw; max-width: 800px;">
+    </div>
     <i class="fas fa-scissors bg-icon" style="top: 15%; left: 10%; animation-delay: 0s;"></i>
     <i class="fas fa-spray-can bg-icon" style="top: 40%; right: 5%; animation-delay: -5s;"></i>
     <i class="fas fa-comb bg-icon" style="bottom: 20%; left: 15%; animation-delay: -10s;"></i>
@@ -411,17 +457,31 @@
     <!-- Navbar -->
     <nav class="navbar">
         <a href="/" class="nav-logo">
-            <i class="fas fa-scissors"></i> Saloon Essy
+            <img src="{{ url_for('static', filename='images/logo.png', v=3) }}" alt="Saloon Essy"
+                style="height: 50px; width: 50px; background: #0f172a; border-radius: 50%; object-fit: cover;">
+            <span style="font-weight: 950; font-size: 1.5rem;" data-i18n="app_name">Saloon Essy</span>
         </a>
         <div class="nav-links">
+            <div class="lang-switcher-nav">
+                <div class="lang-btn" onclick="toggleLangMenu()">
+                    <i class="fas fa-globe"></i>
+                    <span id="currentLang">English</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="lang-dropdown" id="langDropdown">
+                    <div class="lang-option" onclick="changeLang('en', 'English')">English</div>
+                    <div class="lang-option" onclick="changeLang('te', 'తెలుగు')">తెలుగు</div>
+                    <div class="lang-option" onclick="changeLang('hi', 'हिंदी')">हिंदी</div>
+                </div>
+            </div>
             <a href="{{ url_for('owner.login') }}" class="nav-btn btn-owner">
-                <i class="fas fa-chart-line"></i> <span>Merchant Portal</span>
+                <i class="fas fa-chart-line"></i> <span data-i18n="owner_hub">Owner Hub</span>
             </a>
             <a href="{{ url_for('worker_panel.login') }}" class="nav-btn btn-worker">
-                <i class="fas fa-id-badge"></i> <span>Artist Access</span>
+                <i class="fas fa-id-badge"></i> <span data-i18n="artist_access">Artist Access</span>
             </a>
             <a href="{{ url_for('user_portal.login') }}" class="nav-btn btn-user">
-                <i class="fas fa-sparkles"></i> <span>Book Now</span>
+                <i class="fas fa-sparkles"></i> <span data-i18n="book_now">Book Now</span>
             </a>
         </div>
     </nav>
@@ -431,17 +491,24 @@
         <div class="main-stage">
             <!-- FRONT -->
             <div class="stage-face face-front">
-                <div class="logo-giant"><i class="fas fa-scissors"></i></div>
-                <h1>Saloon Essy</h1>
-                <p style="color: var(--text-muted); font-size: 1.1rem; margin-top: 1rem; font-weight: 500;">Premium
-                    Grooming Ecosystem</p>
+                <div class="logo-giant">
+                    <img src="{{ url_for('static', filename='images/logo.png', v=3) }}" alt="Saloon Essy"
+                        style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; transform: scale(1.1);">
+                </div>
+                <h1 data-i18n="hero_title">Saloon Essy</h1>
+                <p style="color: var(--text-muted); font-size: 1.1rem; margin-top: 1rem; font-weight: 500;" data-i18n="hero_sub">Book Your Look</p>
                 <div class="scroll-hint"><i class="fas fa-mouse"></i><br>Hover to flip</div>
             </div>
 
             <!-- BACK -->
             <div class="stage-face face-back">
-                <h2 class="accent-header">Our Vision</h2>
-                <p style="font-size: 1.4rem; line-height: 1.8; opacity: 0.9; max-width: 600px;">
+                <div
+                    style="width: 100px; height: 100px; background: #0f172a; border-radius: 50%; margin-bottom: 2rem; box-shadow: 0 15px 35px rgba(0,0,0,0.4); overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                    <img src="{{ url_for('static', filename='images/logo.png', v=3) }}" alt="Saloon Essy"
+                        style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; transform: scale(1.1);">
+                </div>
+                <h2 class="accent-header" data-i18n="vision_title">Our Vision</h2>
+                <p style="font-size: 1.4rem; line-height: 1.8; opacity: 0.9; max-width: 600px;" data-i18n="vision_desc">
                     We are redefining professional grooming by combining traditional craft with modern automation.
                     Manage, Discover, and Experience style like never before.
                 </p>
@@ -457,23 +524,35 @@
         </div>
     </section>
 
-    <!-- Trust Metrics Bar -->
-    <section class="metrics-bar">
-        <div class="metric-item">
-            <div class="metric-val">120+</div>
-            <div class="metric-label">Elite Salons</div>
+    <!-- Core Platform Features -->
+    <section class="features-bar">
+        <div class="feature-item">
+            <div class="feature-icon-box"><i class="fas fa-bolt"></i></div>
+            <div class="feature-text">
+                <h4>Instant Booking</h4>
+                <p>Secure slots in real-time.</p>
+            </div>
         </div>
-        <div class="metric-item">
-            <div class="metric-val">5500+</div>
-            <div class="metric-label">Style Humans</div>
+        <div class="feature-item">
+            <div class="feature-icon-box"><i class="fas fa-wallet"></i></div>
+            <div class="feature-text">
+                <h4>Digital Wallet</h4>
+                <p>Secure & fast payouts.</p>
+            </div>
         </div>
-        <div class="metric-item">
-            <div class="metric-val">15k+</div>
-            <div class="metric-label">Bookings Made</div>
+        <div class="feature-item">
+            <div class="feature-icon-box"><i class="fas fa-shield-check"></i></div>
+            <div class="feature-text">
+                <h4>Dual OTP</h4>
+                <p>Verified job completion.</p>
+            </div>
         </div>
-        <div class="metric-item">
-            <div class="metric-val">4.9/5</div>
-            <div class="metric-label">User Satisfaction</div>
+        <div class="feature-item">
+            <div class="feature-icon-box"><i class="fas fa-chart-pie"></i></div>
+            <div class="feature-text">
+                <h4>Smart Analytics</h4>
+                <p>Grow your style business.</p>
+            </div>
         </div>
     </section>
 
@@ -485,20 +564,19 @@
         <div class="exp-grid">
             <div class="exp-card">
                 <div class="exp-icon"><i class="fas fa-search-location"></i></div>
-                <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Discover</h3>
+                <h3 style="font-size: 1.5rem; margin-bottom: 1rem;" data-i18n="discover">Discover</h3>
                 <p style="color: var(--text-muted); line-height: 1.6;">Browse top-rated salons based on your precise
                     location and category preference.</p>
             </div>
             <div class="exp-card">
                 <div class="exp-icon"><i class="fas fa-calendar-check"></i></div>
-                <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Book</h3>
+                <h3 style="font-size: 1.5rem; margin-bottom: 1rem;" data-i18n="book">Book</h3>
                 <p style="color: var(--text-muted); line-height: 1.6;">Select your favorite artist and secure your slot
                     instantly with real-time updates.</p>
             </div>
             <div class="exp-card">
                 <div class="exp-icon"><i class="fas fa-medal"></i></div>
-                <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Relax</h3>
-                <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Relax</h3>
+                <h3 style="font-size: 1.5rem; margin-bottom: 1rem;" data-i18n="relax">Relax</h3>
                 <p style="color: var(--text-muted); line-height: 1.6;">Enjoy premium service and verify completion with
                     our secure dual-OTP system.</p>
             </div>
@@ -563,137 +641,132 @@
         </div>
     </section>
 
-    <!-- Testimonials Section -->
-    <section style="padding: 8rem 5%; background: var(--bg); overflow: hidden;">
-        <div style="text-align: center; margin-bottom: 5rem;">
-            <div
-                style="display: flex; justify-content: center; gap: 5px; color: #fb923c; margin-bottom: 1.5rem; font-size: 1.2rem;">
-                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
-                    class="fas fa-star"></i><i class="fas fa-star"></i>
-            </div>
-            <h2 style="font-size: 2.8rem; font-weight: 850;">Trusted by 5,000+ Humans</h2>
-            <p style="color: var(--text-muted); margin-top: 1rem;">Real experiences from our thriving style community.
-            </p>
+    <!-- Platform Advantages Section -->
+    <section style="padding: 10rem 5%; background: var(--bg); position: relative; overflow: hidden;">
+        <div style="text-align: center; margin-bottom: 7rem;">
+            <h2 style="font-size: clamp(2.5rem, 8vw, 3.8rem); font-weight: 950; letter-spacing: -2px;">Why Humans Love
+                Us</h2>
+            <p style="color: var(--text-muted); font-size: 1.3rem; margin-top: 1rem;">Beyond booking: A complete
+                grooming lifestyle.</p>
         </div>
 
         <div
-            style="display: flex; gap: 2.5rem; overflow-x: auto; padding: 2rem 5% 4rem 5%; scrollbar-width: none; -ms-overflow-style: none;">
-            <!-- Message from the Founder -->
-            <div
-                style="min-width: 280px; max-width: 420px; flex: 1; background: white; padding: clamp(1.5rem, 4vw, 3.5rem); border-radius: 50px; box-shadow: 0 40px 80px rgba(99, 102, 241, 0.1); border: 2px solid rgba(99, 102, 241, 0.2); position: relative;">
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 3rem; max-width: 1400px; margin: 0 auto;">
+            <!-- Advantage 1 -->
+            <div style="background: white; padding: 4rem 3rem; border-radius: 50px; box-shadow: 0 30px 60px rgba(0,0,0,0.05); transition: 0.4s;"
+                onmouseover="this.style.transform='translateY(-15px)'"
+                onmouseout="this.style.transform='translateY(0)'">
                 <div
-                    style="position: absolute; top: 1.5rem; right: 2rem; background: var(--primary-gradient); color: white; padding: 0.5rem 1.2rem; border-radius: 50px; font-size: 0.8rem; font-weight: 850; letter-spacing: 1px;">
-                    THE FOUNDER</div>
-                <i class="fas fa-quote-left"
-                    style="font-size: 2.5rem; color: var(--primary); opacity: 0.15; margin-bottom: 1.5rem;"></i>
-                <p
-                    style="font-size: clamp(1rem, 3vw, 1.25rem); line-height: 1.7; color: var(--text-main); font-weight: 600; margin-bottom: 2.5rem;">
-                    "We built Saloon Essy to empower local artisans and business owners with the same technology used by
-                    global chains. Our goal is to bring a premium, stress-free grooming experience to every human."</p>
-                <div style="display: flex; align-items: center; gap: 1.5rem;">
-                    <div
-                        style="width: 60px; height: 60px; background: var(--primary-gradient); border-radius: 25px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 900; font-size: 1.2rem;">
-                        C</div>
-                    <div>
-                        <h5 style="margin: 0; font-size: 1.4rem; font-weight: 950; color: var(--primary);">Chandrasekhar
-                            Reddy
-                        </h5>
-                        <small
-                            style="color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Founder
-                            & Lead Architect</small>
-                    </div>
+                    style="width: 70px; height: 70px; background: rgba(99, 102, 241, 0.1); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--primary); margin-bottom: 2.5rem;">
+                    <i class="fas fa-brain"></i>
                 </div>
+                <h3 style="font-size: 1.6rem; font-weight: 900; margin-bottom: 1.2rem;">AI-Style Match</h3>
+                <p style="color: var(--text-muted); line-height: 1.8; font-weight: 500;">Our smart engine analyzes your
+                    preferences to match you with the perfect artist who specializes in your specific look.</p>
             </div>
-            <!-- Co-Founder -->
-            <div
-                style="min-width: 280px; max-width: 420px; flex: 1; background: white; padding: clamp(1.5rem, 4vw, 3.5rem); border-radius: 50px; box-shadow: 0 20px 50px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.02); position: relative;">
+
+            <!-- Advantage 2 -->
+            <div style="background: white; padding: 4rem 3rem; border-radius: 50px; box-shadow: 0 30px 60px rgba(0,0,0,0.05); transition: 0.4s;"
+                onmouseover="this.style.transform='translateY(-15px)'"
+                onmouseout="this.style.transform='translateY(0)'">
                 <div
-                    style="position: absolute; top: 1.5rem; right: 2rem; background: var(--user-gradient); color: white; padding: 0.5rem 1.2rem; border-radius: 50px; font-size: 0.8rem; font-weight: 850; letter-spacing: 1px;">
-                    CO-FOUNDER</div>
-                <i class="fas fa-quote-left"
-                    style="font-size: 2.5rem; color: #fb923c; opacity: 0.15; margin-bottom: 1.5rem;"></i>
-                <p
-                    style="font-size: clamp(1rem, 3vw, 1.25rem); line-height: 1.7; color: var(--text-main); font-weight: 600; margin-bottom: 2.5rem;">
-                    "Our platform is built on the foundation of trust and accessibility. We believe every salon,
-                    regardless of size, deserves world-class management tools."</p>
-                <div style="display: flex; align-items: center; gap: 1.5rem;">
-                    <div
-                        style="width: 60px; height: 60px; background: var(--user-gradient); border-radius: 25px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 900; font-size: 1.2rem;">
-                        M</div>
-                    <div>
-                        <h5 style="margin: 0; font-size: 1.4rem; font-weight: 950; color: #fb923c;">Marthanda</h5>
-                        <small
-                            style="color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Co-Founder
-                            & Operations</small>
-                    </div>
+                    style="width: 70px; height: 70px; background: rgba(244, 63, 94, 0.1); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #f43f5e; margin-bottom: 2.5rem;">
+                    <i class="fas fa-images"></i>
                 </div>
+                <h3 style="font-size: 1.6rem; font-weight: 900; margin-bottom: 1.2rem;">Style Vault</h3>
+                <p style="color: var(--text-muted); line-height: 1.8; font-weight: 500;">Never forget a look. Keep a
+                    high-definition digital history of every haircut and treatment for perfect consistency every time.
+                </p>
+            </div>
+
+            <!-- Advantage 3 -->
+            <div style="background: white; padding: 4rem 3rem; border-radius: 50px; box-shadow: 0 30px 60px rgba(0,0,0,0.05); transition: 0.4s;"
+                onmouseover="this.style.transform='translateY(-15px)'"
+                onmouseout="this.style.transform='translateY(0)'">
+                <div
+                    style="width: 70px; height: 70px; background: rgba(16, 185, 129, 0.1); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #10b981; margin-bottom: 2.5rem;">
+                    <i class="fas fa-gift"></i>
+                </div>
+                <h3 style="font-size: 1.6rem; font-weight: 900; margin-bottom: 1.2rem;">Elite Rewards</h3>
+                <p style="color: var(--text-muted); line-height: 1.8; font-weight: 500;">Earn "Essy Points" with every
+                    booking. Redeem them for exclusive salon upgrades, products, and priority slot access.</p>
             </div>
         </div>
     </section>
 
-    <!-- Role-Specific Global Value -->
+    <!-- Exclusive Intelligence Features -->
     <section style="padding: 10rem 5%; background: #ffffff;">
-        <div style="text-align: center; margin-bottom: 6rem;">
-            <h2 style="font-size: 3.5rem; font-weight: 950; letter-spacing: -2px;">The Complete Style Lifecycle</h2>
-            <p style="color: var(--text-muted); font-size: 1.3rem;">Dedicated features for every human in our ecosystem.
-            </p>
+        <div style="text-align: center; margin-bottom: 7rem;">
+            <div
+                style="display: inline-block; padding: 0.5rem 1.5rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); border-radius: 50px; font-weight: 800; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 2rem;">
+                Advanced Tech
+            </div>
+            <h2 style="font-size: clamp(2.5rem, 8vw, 3.5rem); font-weight: 950; letter-spacing: -2px;">The Intelligence
+                Behind the Style</h2>
         </div>
+
         <div
-            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 3rem; max-width: 1350px; margin: 0 auto;">
-            <!-- Clients -->
-            <div
-                style="padding: 4rem; border-radius: 60px; background: rgba(244, 63, 94, 0.03); border: 1px solid rgba(244, 63, 94, 0.1); position: relative; overflow: hidden;">
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 4rem; max-width: 1400px; margin: 0 auto;">
+            <!-- Smart Queue -->
+            <div style="display: flex; gap: 2rem; align-items: flex-start; padding: 2.5rem; border-radius: 45px; background: #f8fafc; border: 1px solid #f1f5f9; transition: 0.4s;"
+                onmouseover="this.style.background='white'; this.style.boxShadow='0 30px 60px rgba(0,0,0,0.08)'"
+                onmouseout="this.style.background='#f8fafc'; this.style.boxShadow='none'">
                 <div
-                    style="position: absolute; top: -40px; right: -40px; font-size: 12rem; opacity: 0.03; color: #f43f5e;">
-                    <i class="fas fa-heart"></i>
+                    style="width: 80px; height: 80px; background: white; border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #6366f1; box-shadow: 0 10px 20px rgba(0,0,0,0.05); flex-shrink: 0;">
+                    <i class="fas fa-hourglass-half"></i>
                 </div>
-                <h3 style="font-size: 2rem; font-weight: 900; color: #f43f5e; margin-bottom: 1.5rem;">For Humans</h3>
-                <ul
-                    style="list-style: none; color: var(--text-muted); line-height: 2.6; font-weight: 500; font-size: 1.1rem;">
-                    <li><i class="fas fa-check-circle" style="color: #f43f5e; margin-right: 15px;"></i> Find Top
-                        Artisans Nearby</li>
-                    <li><i class="fas fa-check-circle" style="color: #f43f5e; margin-right: 15px;"></i> Instant 24/7
-                        Slot Booking</li>
-                    <li><i class="fas fa-check-circle" style="color: #f43f5e; margin-right: 15px;"></i> Secure OTP
-                        Verified Service</li>
-                </ul>
+                <div>
+                    <h3 style="font-size: 1.4rem; font-weight: 900; margin-bottom: 1rem;">Zero-Wait Queuing</h3>
+                    <p style="color: var(--text-muted); line-height: 1.7; font-weight: 600;">Track your place in line in
+                        real-time. Our system calculates travel time and notifies you exactly when to leave home.</p>
+                </div>
             </div>
-            <!-- Owners -->
-            <div
-                style="padding: 4rem; border-radius: 60px; background: rgba(30, 41, 59, 0.03); border: 1px solid rgba(30, 41, 59, 0.1); position: relative; overflow: hidden;">
+
+            <!-- Virtual Consultation -->
+            <div style="display: flex; gap: 2rem; align-items: flex-start; padding: 2.5rem; border-radius: 45px; background: #f8fafc; border: 1px solid #f1f5f9; transition: 0.4s;"
+                onmouseover="this.style.background='white'; this.style.boxShadow='0 30px 60px rgba(0,0,0,0.08)'"
+                onmouseout="this.style.background='#f8fafc'; this.style.boxShadow='none'">
                 <div
-                    style="position: absolute; top: -40px; right: -40px; font-size: 12rem; opacity: 0.03; color: #1e293b;">
-                    <i class="fas fa-building"></i>
+                    style="width: 80px; height: 80px; background: white; border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #f43f5e; box-shadow: 0 10px 20px rgba(0,0,0,0.05); flex-shrink: 0;">
+                    <i class="fas fa-video"></i>
                 </div>
-                <h3 style="font-size: 2rem; font-weight: 900; color: #1e293b; margin-bottom: 1.5rem;">For Business</h3>
-                <ul
-                    style="list-style: none; color: var(--text-muted); line-height: 2.6; font-weight: 500; font-size: 1.1rem;">
-                    <li><i class="fas fa-check-circle" style="color: #1e293b; margin-right: 15px;"></i> Automate Staff
-                        Schedules</li>
-                    <li><i class="fas fa-check-circle" style="color: #1e293b; margin-right: 15px;"></i> Real-Time
-                        Revenue Tracking</li>
-                    <li><i class="fas fa-check-circle" style="color: #1e293b; margin-right: 15px;"></i> Professional
-                        Shop Profiles</li>
-                </ul>
+                <div>
+                    <h3 style="font-size: 1.4rem; font-weight: 900; margin-bottom: 1rem;">Smart Consultations</h3>
+                    <p style="color: var(--text-muted); line-height: 1.7; font-weight: 600;">Upload photos and chat with
+                        your artist before you even arrive. Get pricing and time estimates for complex style
+                        transformations.</p>
+                </div>
             </div>
-            <!-- Artists -->
-            <div
-                style="padding: 4rem; border-radius: 60px; background: rgba(16, 185, 129, 0.03); border: 1px solid rgba(16, 185, 129, 0.1); position: relative; overflow: hidden;">
+
+            <!-- Dynamic Pricing -->
+            <div style="display: flex; gap: 2rem; align-items: flex-start; padding: 2.5rem; border-radius: 45px; background: #f8fafc; border: 1px solid #f1f5f9; transition: 0.4s;"
+                onmouseover="this.style.background='white'; this.style.boxShadow='0 30px 60px rgba(0,0,0,0.08)'"
+                onmouseout="this.style.background='#f8fafc'; this.style.boxShadow='none'">
                 <div
-                    style="position: absolute; top: -40px; right: -40px; font-size: 12rem; opacity: 0.03; color: #10b981;">
-                    <i class="fas fa-magic"></i>
+                    style="width: 80px; height: 80px; background: white; border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #10b981; box-shadow: 0 10px 20px rgba(0,0,0,0.05); flex-shrink: 0;">
+                    <i class="fas fa-tags"></i>
                 </div>
-                <h3 style="font-size: 2rem; font-weight: 900; color: #10b981; margin-bottom: 1.5rem;">For Professional
-                    Artists</h3>
-                <ul
-                    style="list-style: none; color: var(--text-muted); line-height: 2.6; font-weight: 500; font-size: 1.1rem;">
-                    <li><i class="fas fa-check-circle" style="color: #10b981; margin-right: 15px;"></i> Manage Personal
-                        Portfolio</li>
-                    <li><i class="fas fa-check-circle" style="color: #10b981; margin-right: 15px;"></i> Live Schedule
-                        Visibility</li>
-                    <li><i class="fas fa-check-circle" style="color: #10b981; margin-right: 15px;"></i> Multi-Specialty
-                        Analytics</li>
-                </ul>
+                <div>
+                    <h3 style="font-size: 1.4rem; font-weight: 900; margin-bottom: 1rem;">Market Pricing</h3>
+                    <p style="color: var(--text-muted); line-height: 1.7; font-weight: 600;">Automated happy hours and
+                        off-peak discounts. Save up to 40% by booking during a salon's quieter windows.</p>
+                </div>
+            </div>
+
+            <!-- Business Growth -->
+            <div style="display: flex; gap: 2rem; align-items: flex-start; padding: 2.5rem; border-radius: 45px; background: #f8fafc; border: 1px solid #f1f5f9; transition: 0.4s;"
+                onmouseover="this.style.background='white'; this.style.boxShadow='0 30px 60px rgba(0,0,0,0.08)'"
+                onmouseout="this.style.background='#f8fafc'; this.style.boxShadow='none'">
+                <div
+                    style="width: 80px; height: 80px; background: white; border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #1e293b; box-shadow: 0 10px 20px rgba(0,0,0,0.05); flex-shrink: 0;">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.4rem; font-weight: 900; margin-bottom: 1rem;">Saloon Growth Hub</h3>
+                    <p style="color: var(--text-muted); line-height: 1.7; font-weight: 600;">Exclusive tools for salon
+                        owners to track staff performance, automate inventory, and launch targeted local marketing
+                        campaigns.</p>
+                </div>
             </div>
         </div>
     </section>
@@ -724,11 +797,9 @@
                 </div>
                 <div style="padding: 4rem 2rem; height: 100%; background: #ffffff;">
                     <div
-                        style="background: var(--primary-gradient); height: 140px; border-radius: 30px; margin-bottom: 2.5rem; position: relative; overflow: hidden;">
-                        <div
-                            style="position: absolute; right: -20px; bottom: -20px; font-size: 8rem; color: white; opacity: 0.1;">
-                            <i class="fas fa-scissors"></i>
-                        </div>
+                        style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #0f172a; padding: 20px;">
+                        <img src="{{ url_for('static', filename='images/logo.png', v=3) }}" alt="Saloon Essy"
+                            style="width: 120px; height: 120px; background: #0f172a; border-radius: 50%; object-fit: cover; transform: scale(1.1); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 15px 40px rgba(0,0,0,0.4);">
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                         <div style="background: #f1f5f9; height: 100px; border-radius: 25px;"></div>
@@ -776,10 +847,11 @@
             <i class="fab fa-twitter" style="cursor: pointer; color: #1da1f2;"></i>
             <i class="fab fa-linkedin" style="cursor: pointer; color: #0077b5;"></i>
         </div>
-        <div style="margin-bottom: 2rem;">
-            <a href="/"
-                style="font-weight: 950; font-size: 2rem; color: var(--text-main); text-decoration: none; letter-spacing: -1.5px;">Saloon
-                Essy</a>
+        <div style="margin-bottom: 2rem; display: flex; justify-content: center;">
+            <a href="/" style="text-decoration: none;">
+                <img src="{{ url_for('static', filename='images/logo.png', v=3) }}" alt="Saloon Essy"
+                    style="height: 60px; width: 60px; background: #0f172a; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); transform: scale(1.1);">
+            </a>
         </div>
         <p style="color: var(--text-muted); font-weight: 600; font-size: 1rem; line-height: 1.6;">
             &copy; 2026 Professional Grooming Platform.<br>
@@ -794,6 +866,84 @@
         </div>
         </p>
     </footer>
+    <script>
+        const i18n = {
+            'en': {
+                'app_name': 'Saloon Essy',
+                'owner_hub': 'Owner Hub',
+                'artist_access': 'Artist Access',
+                'book_now': 'Book Now',
+                'hero_title': 'Saloon Essy',
+                'hero_sub': 'Book Your Look',
+                'vision_title': 'Our Vision',
+                'vision_desc': 'We are redefining professional grooming by combining traditional craft with modern automation. Manage, Discover, and Experience style like never before.',
+                'discover': 'Discover',
+                'book': 'Book',
+                'relax': 'Relax'
+            },
+            'te': {
+                'app_name': 'సలూన్ ఎస్సీ',
+                'owner_hub': 'ఓనర్ హబ్',
+                'artist_access': 'ఆర్టిస్ట్ యాక్సెస్',
+                'book_now': 'ఇప్పుడే బుక్ చేయండి',
+                'hero_title': 'సలూన్ ఎస్సీ',
+                'hero_sub': 'మీ అందం, మా గుర్తింపు',
+                'vision_title': 'మా దార్శనికత',
+                'vision_desc': 'మేము సాంప్రదాయ కళను ఆధునిక సాంకేతికతతో కలపడం ద్వారా వృత్తిపరమైన అందం సేవలను పునర్నిర్వచిస్తున్నాము. మునుపెన్నడూ లేని విధంగా శైలిని నిర్వహించండి మరియు అనుభవించండి.',
+                'discover': 'అన్వేషించండి',
+                'book': 'బుక్ చేయండి',
+                'relax': 'విశ్రాంతి తీసుకోండి'
+            },
+            'hi': {
+                'app_name': 'सैलून एस्सी',
+                'owner_hub': 'ओनर हब',
+                'artist_access': 'कलाकार पहुंच',
+                'book_now': 'अभी बुक करें',
+                'hero_title': 'सैलून एस्सी',
+                'hero_sub': 'अपना लुक बुक करें',
+                'vision_title': 'हमारा दृष्टिकोण',
+                'vision_desc': 'हम आधुनिक स्वचालन के साथ पारंपरिक शिल्प को जोड़कर पेशेवर ग्रूमिंग को फिर से परिभाषित कर रहे हैं। प्रबंधन और अनुभव शैली जैसा पहले कभी नहीं था।',
+                'discover': 'खोजें',
+                'book': 'बुक करें',
+                'relax': 'आराम करें'
+            }
+        };
+
+        function updateTranslations(lang) {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18n[lang] && i18n[lang][key]) {
+                    el.innerText = i18n[lang][key];
+                }
+            });
+        }
+
+        function toggleLangMenu() {
+            const menu = document.getElementById('langDropdown');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function changeLang(lang, label) {
+            localStorage.setItem('lang', lang);
+            document.getElementById('currentLang').innerText = label;
+            updateTranslations(lang);
+            document.getElementById('langDropdown').style.display = 'none';
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const lang = localStorage.getItem('lang') || 'en';
+            const labels = {'en': 'English', 'te': 'తెలుగు', 'hi': 'हिंदी'};
+            document.getElementById('currentLang').innerText = labels[lang] || 'English';
+            updateTranslations(lang);
+
+            window.onclick = function(event) {
+                if (!event.target.closest('.lang-switcher-nav')) {
+                    const menu = document.getElementById('langDropdown');
+                    if (menu) menu.style.display = 'none';
+                }
+            }
+        });
+    </script>
 </body>
 
 </html>

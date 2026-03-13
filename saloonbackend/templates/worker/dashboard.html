@@ -30,6 +30,46 @@
     .approval-banner {
         animation: slideDown 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
     }
+
+    .earnings-bar {
+        width: 12%;
+        background: rgba(16, 185, 129, 0.2);
+        border-radius: 4px;
+        position: relative;
+        transition: 0.3s;
+        cursor: pointer;
+    }
+
+    .earnings-bar:hover {
+        background: var(--primary);
+        transform: scaleY(1.1);
+    }
+
+    .earnings-bar::after {
+        content: attr(data-val);
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.6rem;
+        font-weight: 800;
+        color: var(--primary);
+        opacity: 0;
+        transition: 0.2s;
+    }
+
+    .earnings-bar:hover::after {
+        opacity: 1;
+    }
+
+    .status-active {
+        color: #10b981 !important;
+    }
+
+    .status-inactive {
+        color: #ef4444 !important;
+    }
+
 </style>
 {% endblock %}
 
@@ -38,167 +78,213 @@
 {% if show_approval_notif %}
 <!-- ✅ Approval Notification Banner -->
 <div class="approval-banner" id="approvalBanner"
-    style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 24px; padding: 1.5rem; margin-bottom: 1.5rem; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(16,185,129,0.35);">
-
-    <!-- Decorative blobs -->
-    <div
-        style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.08); border-radius: 50%;">
-    </div>
-    <div
-        style="position: absolute; bottom: -30px; left: 30px; width: 80px; height: 80px; background: rgba(255,255,255,0.06); border-radius: 50%;">
-    </div>
-
-    <!-- Close Button -->
+    style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 24px; padding: 1.5rem; margin-bottom: 2rem; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(16,185,129,0.35);">
     <button onclick="document.getElementById('approvalBanner').style.display='none'"
-        style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(255,255,255,0.2); border: none; color: white; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; line-height: 1;">✕</button>
-
+        style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(255,255,255,0.2); border: none; color: white; width: 28px; height: 28px; border-radius: 50%; cursor: pointer;">✕</button>
     <div style="display: flex; align-items: center; gap: 1rem; position: relative; z-index: 1;">
-        <!-- Animated Check Circle -->
         <div style="position: relative; flex-shrink: 0;">
             <div
                 style="position: absolute; inset: 0; background: rgba(255,255,255,0.3); border-radius: 50%; animation: pulse-ring 1.5s ease-out infinite;">
             </div>
             <div
-                style="width: 56px; height: 56px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; position: relative; z-index: 1; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-                ✅
-            </div>
+                style="width: 56px; height: 56px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; position: relative; z-index: 1;">
+                ✅</div>
         </div>
-        <!-- Text -->
         <div>
             <p
-                style="color: rgba(255,255,255,0.85); font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 3px 0;">
+                style="color: rgba(255,255,255,0.8); font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;">
                 Account Approved</p>
-            <h3 style="color: white; font-weight: 900; font-size: 1.15rem; margin: 0 0 4px 0;">You're officially part of
-                the team! 🎉</h3>
-            <p style="color: rgba(255,255,255,0.8); font-size: 0.8rem; margin: 0;">
-                {% if salon %}The owner of <strong>{{ salon.name }}</strong> has approved your account.{% else %}Your
-                account has been approved by the salon owner.{% endif %}
-                Start accepting jobs from the Jobs tab below.
+            <h3 style="color: white; font-weight: 950; font-size: 1.2rem;">You're officially an Artist! 🎉</h3>
+            <p style="color: rgba(255,255,255,0.9); font-size: 0.8rem;">Start taking bookings at <strong>{{ salon.name
+                    if salon else 'Saloon Essy' }}</strong>.</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="fade-in"
+    style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; padding: 1rem 0;">
+    <div>
+        <p
+            style="color: var(--primary); font-weight: 900; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 0.5rem;">
+            ARTIST HUB</p>
+        <h2 id="greeting"
+            style="font-weight: 950; font-size: 2.2rem; color: var(--text-main); margin: 0; letter-spacing: -1.5px;">
+            Good Evening👋</h2>
+        <p style="font-size: 0.95rem; color: var(--text-muted); font-weight: 600; margin-top: 5px;">
+            {{ worker.name }} · {{ salon.category or 'Professional' }}
+            {% if worker.is_owner %}
+            <span style="display: block; font-size: 0.75rem; color: var(--primary); margin-top: 4px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">
+                <i class="fas fa-crown"></i> Shop Owner (Master Artist)
+            </span>
+            {% endif %}
+        </p>
+    </div>
+    {% set default_img = 'https://ui-avatars.com/api/?name=' + worker.name + '&background=10b981&color=fff&size=150' %}
+    <img src="{{ worker.image_url if worker.image_url and 'ui-avatars' not in worker.image_url else default_img }}"
+        alt="Profile"
+        style="width: 65px; height: 65px; border-radius: 22px; object-fit: cover; border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
+</div>
+
+<!-- 🟢 Live Status (Availability Toggle) - Moved to Top -->
+<div
+    style="background: white; border-radius: 28px; padding: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--glass-border); box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <div style="position: relative;">
+            <div id="statusPulse" style="position: absolute; inset: 0; border-radius: 50%; opacity: 0.3; animation: pulse-ring 2s infinite; background: {{ '#10b981' if worker.is_active else '#ef4444' }};"></div>
+            <div id="statusDot" style="width: 12px; height: 12px; border-radius: 50%; position: relative; z-index: 1; background: {{ '#10b981' if worker.is_active else '#ef4444' }};"></div>
+        </div>
+        <div>
+            <p style="color: var(--text-muted); font-size: 0.65rem; font-weight: 900; margin: 0; text-transform: uppercase; letter-spacing: 2px;">LIVE STATUS</p>
+            <p id="statusLabel" class="{{ 'status-active' if worker.is_active else 'status-inactive' }}"
+                style="font-weight: 950; font-size: 1.4rem; margin-top: 2px; letter-spacing: -0.5px;">
+                {{ 'ACTIVE' if worker.is_active else 'INACTIVE' }}
             </p>
         </div>
     </div>
-
-    <!-- CTA -->
-    <a href="{{ url_for('worker_panel.my_bookings') }}"
-        style="display: block; margin-top: 1rem; background: white; color: #059669; text-align: center; padding: 0.65rem; border-radius: 14px; font-weight: 800; font-size: 0.85rem; text-decoration: none; position: relative; z-index: 1; transition: transform 0.2s;"
-        onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-        <i class="fas fa-briefcase" style="margin-right: 6px;"></i>View My Jobs
-    </a>
+    <label class="switch" style="transform: scale(1.1);">
+        <input type="checkbox" id="statusToggle" {{ 'checked' if worker.is_active else '' }} onchange="toggleStatus()">
+        <span class="slider round"></span>
+    </label>
 </div>
-{% endif %}
 
-
-<div class="fade-in"
-    style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-start;">
-    <div>
-        <p
-            style="color: var(--primary); font-weight: 800; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.25rem;">
-            WORKER PORTAL</p>
-        <h2 id="greeting" style="font-weight: 800; font-size: 1.6rem; color: var(--text-main); margin: 0;">Good Evening
-            👋
-        </h2>
-        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">{{ worker.name }} · {{ salon.name if
-            salon else 'Awaiting Assignment' }}</p>
+<!-- 📊 Premium Insights Section -->
+    <!-- Today's Cash Collection -->
+    <div style="background: #fff7ed; border-radius: 24px; padding: 1.5rem; border: 1px solid #ffedd5; box-shadow: 0 4px 15px rgba(249,115,22,0.05); height: 100%;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 1rem;">
+            <i class="fas fa-money-bill-wave" style="color: #f97316; font-size: 0.8rem;"></i>
+            <span style="font-weight: 950; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #f97316;">Today's Cash</span>
+        </div>
+        <h3 style="font-size: 2rem; font-weight: 950; color: #9a3412; margin: 0;">₹{{ "%.0f"|format(today_cash_collection or 0) }}</h3>
+        <p style="font-size: 0.65rem; color: #f97316; font-weight: 800; text-transform: uppercase; margin-top: 5px;">Hand over to Owner</p>
     </div>
 </div>
 
-<!-- 🔔 NEW JOB ALERT (Visible only if there are pending requests) -->
-{% if pending_count > 0 %}
-<div class="fade-in" style="margin-bottom: 1.5rem;">
-    <div
-        style="background: #fffbeb; border: 2px solid #fcd34d; border-radius: 20px; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; position: relative;">
-        <div
-            style="width: 50px; height: 50px; background: #fbbf24; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; animation: bounce 1s infinite; box-shadow: 0 4px 10px rgba(251,191,36,0.2);">
-            🔔
+<!-- 📈 Real Earnings Chart -->
+<a href="{{ url_for('worker_panel.insights') }}" style="text-decoration: none; display: block; transition: 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+    <div style="background: white; border-radius: 28px; padding: 1.5rem; border: 1px solid var(--glass-border); margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <div>
+                <h3 style="font-weight: 950; font-size: 1.1rem; color: var(--text-main); margin: 0;">Weekly Activity</h3>
+                <p style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin-top: 3px;">Last 7 Days Revenue</p>
+            </div>
+            <div style="text-align: right;">
+                <span style="font-size: 1.25rem; font-weight: 950; color: var(--primary);">₹{{ "%.0f"|format(today_earnings) }}</span>
+                <p style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase;">Earned Today</p>
+            </div>
         </div>
-        <div style="flex: 1;">
-            <h4 style="margin: 0; font-size: 1rem; font-weight: 850; color: #92400e;">New Job Request!</h4>
-            <p style="margin: 3px 0 0 0; font-size: 0.8rem; font-weight: 600; color: #b45309;">You have {{ pending_count
-                }} pending booking request(s) waiting for your approval.</p>
+        <div style="height: 140px; display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; padding-top: 10px; margin-bottom: 10px;">
+            {% for day in weekly_earnings %}
+            <div class="earnings-bar" style="height: {{ day.percent }}%; min-width: 12%; border-radius: 8px;" data-val="₹{{ day.amount }}"></div>
+            {% endfor %}
         </div>
-        <a href="{{ url_for('worker_panel.my_bookings', status='pending') }}"
-            style="background: #fbbf24; color: #92400e; padding: 0.6rem 1rem; border-radius: 12px; font-weight: 800; font-size: 0.75rem; text-decoration: none;">
-            Accept Now
-        </a>
-    </div>
-</div>
-
-<style>
-    @keyframes bounce {
-
-        0%,
-        100% {
-            transform: translateY(0);
-        }
-
-        50% {
-            transform: translateY(-5px);
-        }
-    }
-</style>
-{% endif %}
-
-<!-- Flipkart Style Ad for Workers -->
-<div class="fade-in" style="margin-bottom: 2rem;">
-    <div
-        style="background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); border-radius: 20px; padding: 1.25rem; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden; box-shadow: 0 10px 25px rgba(16,185,129,0.25);">
-        <div
-            style="position: absolute; right: -15px; top: -15px; width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%;">
-        </div>
-        <div style="position: relative; z-index: 1;">
-            <span
-                style="background: #ffffff; color: #059669; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.6rem; font-weight: 900; text-transform: uppercase;">SKILL
-                UP</span>
-            <h3 style="color: #ffffff; font-weight: 900; font-size: 1.15rem; margin: 8px 0 4px 0;">Master Class: Hair
-                Coloring</h3>
-            <p style="color: rgba(255,255,255,0.9); font-size: 0.8rem; margin: 0; font-weight: 600;">Get certified by
-                top artists. Join now!</p>
-            <button
-                style="margin-top: 12px; background: #ffffff; color: #059669; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 800; font-size: 0.75rem; cursor: pointer;">Learn
-                More</button>
-        </div>
-        <div
-            style="font-size: 4rem; position: relative; z-index: 1; transform: rotate(-10deg); filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1));">
-            🎓
+        <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-muted); font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; border-top: 1px solid #f1f5f9; padding-top: 10px;">
+            {% for day in weekly_earnings %}
+            <span>{{ day.day }}</span>
+            {% endfor %}
         </div>
     </div>
-</div>
+</a>
 
-{% set default_img = 'https://ui-avatars.com/api/?name=' + worker.name + '&background=10b981&color=fff&size=150' %}
-<img src="{{ worker.image_url if worker.image_url and 'ui-avatars' not in worker.image_url else default_img }}"
-    alt="Profile Photo"
-    style="width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-</div>
 
-<!-- Availability Toggle -->
+
+<!-- 📣 Referral Banner -->
 <div
-    style="background: var(--bg-card); border-radius: 20px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--glass-border); box-shadow: var(--shadow-sm);">
-    <div>
-        <p
-            style="color: var(--text-muted); font-size: 0.72rem; font-weight: 700; margin: 0; text-transform: uppercase; letter-spacing: 1px;">
-            Availability Status</p>
-        <p id="statusLabel"
-            style="color: {{ '#10b981' if worker.is_active else '#ef4444' }}; font-weight: 800; font-size: 1.2rem; margin: 2px 0 0 0;">
-            {{ '● Online' if worker.is_active else '○ Offline' }}
-        </p>
-    </div>
-    <div style="display: flex; align-items: center; gap: 10px;">
-        <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">{{ 'Avilable' if worker.is_active
-            else 'Away' }}</span>
-        <label class="switch">
-            <input type="checkbox" id="statusToggle" {{ 'checked' if worker.is_active else '' }}
-                onchange="toggleStatus()">
-            <span class="slider round"></span>
-        </label>
+    style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 24px; padding: 1.5rem; margin-bottom: 2rem; position: relative; overflow: hidden;">
+    <div
+        style="position: absolute; right: -20px; top: -20px; font-size: 5rem; opacity: 0.15; transform: rotate(15deg);">
+        💎</div>
+    <div style="position: relative; z-index: 1;">
+        <span
+            style="background: var(--primary); color: white; padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.6rem; font-weight: 900;">NEW
+            OPPORTUNITY</span>
+        <h3 style="color: white; font-weight: 900; font-size: 1.2rem; margin: 10px 0 5px 0;">Refer an Artist</h3>
+        <p style="color: rgba(255,255,255,0.7); font-size: 0.8rem; margin: 0 0 15px 0;">Earn ₹500 for every professional
+            you invite.</p>
+        <button
+            style="background: white; color: #0f172a; border: none; padding: 0.6rem 1.2rem; border-radius: 12px; font-weight: 900; font-size: 0.75rem; cursor: pointer;">Share
+            Invite Code</button>
     </div>
 </div>
+
+<!-- Upcoming Bookings Heading -->
+<a href="{{ url_for('worker_panel.my_bookings') }}" style="text-decoration: none; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 0 5px; cursor: pointer;">
+    <h3 style="font-weight: 950; font-size: 1.25rem; color: var(--text-main); margin: 0; letter-spacing: -0.5px;">Upcoming Jobs</h3>
+    <span style="color: var(--primary); font-size: 0.8rem; font-weight: 800; text-decoration: none;">View Timeline →</span>
+</a>
+
+{% if upcoming_bookings %}
+<div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem;">
+    {% for b in upcoming_bookings[:3] %}
+    <div style="background: white; border-radius: 24px; border: 1px solid var(--glass-border); padding: 1.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.02); position: relative; overflow: hidden;">
+        <!-- Status Indicator -->
+        <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; 
+             background: {{ '#10b981' if b.status == 'accepted' else '#f59e0b' }};"></div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+            <div>
+                <span style="font-size: 0.65rem; font-weight: 800; color: {{ '#10b981' if b.status == 'accepted' else '#f59e0b' }}; text-transform: uppercase; letter-spacing: 1px;">
+                    {{ b.status|upper }}
+                </span>
+                <h3 style="font-weight: 900; color: var(--text-main); margin: 5px 0 0 0; font-size: 1.1rem;">{{ b.service.name if b.service else 'Service' }}</h3>
+                <p style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; margin-top: 2px;">
+                    {{ b.user.name }} · {{ b.slot_time.strftime('%I:%M %p') }} · 
+                    <span style="color: {{ '#10b981' if b.payment_method == 'Online' else '#f59e0b' }};">
+                        {{ b.payment_method or 'Pay at Salon' }}
+                    </span>
+                </p>
+            </div>
+            <div style="text-align: right;">
+                <p style="font-weight: 950; color: #10b981; font-size: 1.1rem; margin: 0;">
+                    {% if worker.is_owner or worker.payment_type == 'salary' %}
+                       ₹0
+                    {% else %}
+                       ₹{{ "%.0f"|format(b.service.price * (worker.commission_rate/100.0)) }}
+                    {% endif %}
+                </p>
+                <p style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase;">
+                    {% if worker.is_owner %} Owner Share {% elif worker.payment_type == 'salary' %} Salaried {% else %} Your Share {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        {% if b.status == 'pending' %}
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 1rem;">
+            <form action="{{ url_for('worker_panel.accept_booking', id=b.id) }}" method="POST" style="margin: 0;">
+                <button type="submit" style="width: 100%; background: var(--primary); color: white; border: none; padding: 10px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer;">Accept</button>
+            </form>
+            <form action="{{ url_for('worker_panel.reject_booking', id=b.id) }}" method="POST" style="margin: 0;">
+                <button type="submit" style="width: 100%; background: #fee2e2; color: #ef4444; border: none; padding: 10px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer;">Decline</button>
+            </form>
+        </div>
+        {% elif b.status == 'accepted' %}
+        <div style="background: #f8fafc; border-radius: 16px; padding: 1rem; margin-top: 0.5rem;">
+            <p style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;">Verify Job (OTP)</p>
+            <form action="{{ url_for('worker_panel.verify_otp', id=b.id) }}" method="POST" style="display: flex; gap: 8px;">
+                <input type="text" name="otp" placeholder="Enter 6-digit OTP" required class="verify-input"
+                       style="flex: 1; padding: 10px 15px; border-radius: 10px; border: 2px solid #e2e8f0; font-size: 0.9rem; font-weight: 700; outline: none;">
+                <button type="submit" style="background: #0f172a; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 800; font-size: 0.85rem; cursor: pointer;">Verify</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div
+    style="text-align: center; padding: 3rem; background: white; border-radius: 28px; border: 2px dashed #e2e8f0; margin-bottom: 2rem;">
+    <p style="font-size: 2.5rem; margin-bottom: 1rem;">✨</p>
+    <p style="color: var(--text-muted); font-size: 0.9rem; font-weight: 700;">No schedule for now. Enjoy your break!</p>
+</div>
+{% endif %}
 
 <style>
     .switch {
         position: relative;
         display: inline-block;
-        width: 50px;
-        height: 26px;
+        width: 60px;
+        height: 32px;
     }
 
     .switch input {
@@ -210,23 +296,23 @@
     .slider {
         position: absolute;
         cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: #ccc;
+        inset: 0;
+        background-color: #e2e8f0;
         transition: .4s;
+        border-radius: 34px;
     }
 
     .slider:before {
         position: absolute;
         content: "";
-        height: 18px;
-        width: 18px;
+        height: 24px;
+        width: 24px;
         left: 4px;
         bottom: 4px;
         background-color: white;
         transition: .4s;
+        border-radius: 50%;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
 
     input:checked+.slider {
@@ -234,136 +320,23 @@
     }
 
     input:checked+.slider:before {
-        transform: translateX(24px);
-    }
-
-    .slider.round {
-        border-radius: 34px;
-    }
-
-    .slider.round:before {
-        border-radius: 50%;
+        transform: translateX(28px);
     }
 </style>
 
 <script>
     function toggleStatus() {
-        const statusLabel = document.getElementById('statusLabel');
-        const toggler = document.getElementById('statusToggle');
-
-        fetch("{{ url_for('worker_panel.toggle_status') }}", {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    statusLabel.innerText = data.is_active ? '● Online' : '○ Offline';
-                    statusLabel.style.color = data.is_active ? '#10b981' : '#ef4444';
+        const lbl = document.getElementById('statusLabel');
+        fetch("{{ url_for('worker_panel.toggle_status') }}", { method: 'POST' })
+            .then(r => r.json()).then(d => {
+                if (d.success) {
+                    lbl.innerText = d.is_active ? '● ACTIVE' : '○ INACTIVE';
+                    lbl.style.color = d.is_active ? '#10b981' : '#ef4444';
                 }
-            })
-            .catch(err => {
-                console.error('Error toggling status:', err);
-                toggler.checked = !toggler.checked;
             });
     }
-</script>
-
-<!-- Quick Stats -->
-<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.5rem;">
-    <a href="{{ url_for('worker_panel.my_bookings', status='pending') }}" style="text-decoration: none;">
-        <div style="background: var(--bg-card); border-radius: 16px; padding: 1rem; text-align: center; border: 1px solid var(--glass-border); transition: transform 0.2s;"
-            onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
-            <p style="font-size: 1.6rem; font-weight: 900; color: #f59e0b; margin: 0;">{{ pending_count }}</p>
-            <p style="font-size: 0.68rem; color: var(--text-muted); margin: 2px 0 0 0; font-weight: 700;">Pending</p>
-        </div>
-    </a>
-    <a href="{{ url_for('worker_panel.my_bookings', status='completed') }}" style="text-decoration: none;">
-        <div style="background: var(--bg-card); border-radius: 16px; padding: 1rem; text-align: center; border: 1px solid var(--glass-border); transition: transform 0.2s;"
-            onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
-            <p style="font-size: 1.6rem; font-weight: 900; color: #10b981; margin: 0;">{{ completed_count }}</p>
-            <p style="font-size: 0.68rem; color: var(--text-muted); margin: 2px 0 0 0; font-weight: 700;">Completed</p>
-        </div>
-    </a>
-    <a href="{{ url_for('worker_panel.insights') }}" style="text-decoration: none;">
-        <div style="background: var(--bg-card); border-radius: 16px; padding: 1rem; text-align: center; border: 1px solid var(--glass-border); transition: transform 0.2s;"
-            onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
-            <p style="font-size: 1.4rem; font-weight: 900; color: #6366f1; margin: 0;">₹{{ "%.0f"|format(today_earnings)
-                }}</p>
-            <p style="font-size: 0.68rem; color: var(--text-muted); margin: 2px 0 0 0; font-weight: 700;">Earnings</p>
-        </div>
-    </a>
-</div>
-
-<!-- Worker Skills Card -->
-<div
-    style="background: var(--bg-card); border-radius: 20px; padding: 1.25rem; margin-bottom: 1.5rem; border: 1px solid var(--glass-border);">
-    <h3 style="font-weight: 800; font-size: 0.9rem; color: var(--text-main); margin: 0 0 0.75rem 0;"><i
-            class="fas fa-star" style="color: #f59e0b; margin-right: 6px;"></i>My Skills</h3>
-    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-        {% if worker.skill %}
-        {% for skill in worker.skill.split(',') %}
-        <span
-            style="background: rgba(99,102,241,0.1); color: var(--primary); padding: 0.3rem 0.85rem; border-radius: 50px; font-size: 0.75rem; font-weight: 700;">{{
-            skill.strip() }}</span>
-        {% endfor %}
-        {% else %}
-        <span style="color: var(--text-muted); font-size: 0.85rem;">No skills listed yet</span>
-        {% endif %}
-    </div>
-</div>
-
-<!-- Upcoming Bookings -->
-<div
-    style="background: var(--bg-card); border-radius: 20px; border: 1px solid var(--glass-border); overflow: hidden; margin-bottom: 2rem;">
-    <div
-        style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="font-weight: 800; font-size: 0.95rem; margin: 0; color: var(--text-main);">Upcoming Jobs</h3>
-        <a href="{{ url_for('worker_panel.my_bookings') }}"
-            style="color: var(--primary); font-size: 0.75rem; font-weight: 700; text-decoration: none;">View All</a>
-    </div>
-    {% if upcoming_bookings %}
-    {% for b in upcoming_bookings[:4] %}
-    <div
-        style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
-        <div>
-            <p style="font-weight: 700; color: var(--text-main); margin: 0; font-size: 0.9rem;">{{ b.service.name if
-                b.service else 'Deleted Service' }}</p>
-            <p style="font-size: 0.78rem; color: var(--text-muted); margin: 3px 0 0 0;">
-                <i class="fas fa-user" style="margin-right: 3px; color: var(--primary);"></i>{{ b.user.name if b.user
-                else 'Deleted User' }}
-                &nbsp;·&nbsp;
-                {% set days_diff = (b.slot_time.date() - now.date()).days %}
-                {% if days_diff == 0 %}
-                <span style="color: #ef4444; font-weight: 850;">TODAY</span> at {{ b.slot_time.strftime('%I:%M %p') }}
-                {% elif days_diff == 1 %}
-                <span style="color: #f59e0b; font-weight: 850;">TOMORROW</span> at {{ b.slot_time.strftime('%I:%M %p')
-                }}
-                {% else %}
-                {{ b.slot_time.strftime('%d %b, %I:%M %p') }}
-                {% endif %}
-            </p>
-        </div>
-        {% if b.status == 'pending' %}
-        <span
-            style="background: rgba(245,158,11,0.1); color: #f59e0b; padding: 0.25rem 0.6rem; border-radius: 50px; font-size: 0.68rem; font-weight: 800;">Pending</span>
-        {% elif b.status == 'accepted' %}
-        <span
-            style="background: rgba(99,102,241,0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 50px; font-size: 0.68rem; font-weight: 800;">Accepted</span>
-        {% endif %}
-    </div>
-    {% endfor %}
-    {% else %}
-    <div style="text-align: center; padding: 2rem;">
-        <p style="font-size: 2rem; margin-bottom: 0.5rem;">📋</p>
-        <p style="color: var(--text-muted); font-size: 0.85rem;">No upcoming jobs right now.</p>
-    </div>
-    {% endif %}
-</div>
-
-<script>
-    const hour = new Date().getHours();
-    const greet = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
-    document.getElementById('greeting').innerText = `${greet} 👋`;
+    const hr = new Date().getHours();
+    const g = hr < 12 ? 'Good Morning' : hr < 17 ? 'Good Afternoon' : 'Good Evening';
+    document.getElementById('greeting').innerText = `${g} 👋`;
 </script>
 {% endblock %}

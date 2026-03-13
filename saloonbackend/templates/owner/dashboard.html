@@ -3,346 +3,359 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<!-- Premium Welcome & Shop Status Header -->
-<div class="fade-in" style="margin-bottom: 2rem;">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+<!-- Hidden Data Sink for JS -->
+<div id="dashboardData"
+     style="display: none;"
+     data-revenue-trend='{{ revenue_trend|tojson|safe }}'
+     data-top-services='{{ top_services|tojson|safe }}'
+     data-is-active="{{ 'true' if shop.is_active else 'false' }}">
+</div>
+
+<div class="fade-in">
+    <!-- Top Header: Business Status & Time -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2.5rem;">
         <div>
-            <p id="greetingTime"
-                style="color: var(--primary); font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem;">
-                Welcome Back,</p>
-            <h2 id="customGreeting" style="font-weight: 800; font-size: 1.75rem; color: var(--text-main); margin: 0;">
-                {{ shop.name }}
-            </h2>
-            <div style="display: flex; align-items: center; gap: 8px; margin-top: 6px;">
-                <span
-                    style="background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.2rem 0.6rem; border-radius: 50px; font-size: 0.7rem; font-weight: 850; letter-spacing: 0.5px; text-transform: uppercase;">
-                    <i class="fas fa-tag" style="margin-right: 4px;"></i>{{ shop.category or 'Barber Shop' }}
-                </span>
-                <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">
-                    <i class="fas fa-map-marker-alt" style="margin-right: 4px;"></i>{{ shop.location or 'Location not
-                    set' }}
-                </span>
-            </div>
+            <h1 style="font-size: 1.75rem; font-weight: 800; color: #0f172a; margin: 0;">Good Morning, {{ current_user.name }}!</h1>
+            <p style="color: #64748b; font-size: 0.95rem; margin: 5px 0 0 0; font-weight: 500;">Here's what's happening at <span style="color: var(--primary); font-weight: 700;">{{ shop.name }}</span> today.</p>
         </div>
-        <!-- Interactive Shop Status Toggle -->
+        
+        <!-- Live Status Toggle (Saloon Style) -->
         <div onclick="fastToggleStatus()" id="dashboardStatusToggle"
-            style="background: var(--bg-card); padding: 0.6rem 1rem; border-radius: 50px; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--glass-border); cursor: pointer; transition: 0.3s;"
+            style="background: #ffffff; padding: 0.75rem 1.25rem; border-radius: 16px; display: flex; align-items: center; gap: 12px; border: 1px solid #e2e8f0; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.03);"
             data-active="{{ 'true' if shop.is_active else 'false' }}">
-            <div id="statusDot"
-                style="width: 10px; height: 10px; border-radius: 50%; transition: 0.3s;
-                background: {{ '#10b981' if shop.is_active else '#ef4444' }}; box-shadow: 0 0 10px {{ '#10b981' if shop.is_active else '#ef4444' }};">
-            </div>
-            <span id="statusLabel" style="font-weight: 700; font-size: 0.8rem; color: var(--text-main);">Shop is {{
-                'Open' if shop.is_active else 'Closed' }}</span>
-            <div id="statusTrack" style="width: 36px; height: 20px; border-radius: 20px; position: relative; transition: 0.3s;
-                background: {{ '#10b981' if shop.is_active else '#e2e8f0' }};">
-                <div id="statusThumb" style="width: 16px; height: 16px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s;
-                    transform: {{ 'translateX(16px)' if shop.is_active else 'translateX(0)' }};">
-                </div>
+            <div id="statusDot" style="width: 10px; height: 10px; border-radius: 50%; transition: 0.3s;"></div>
+            <span id="statusLabel" style="font-weight: 700; font-size: 0.9rem; color: #1e293b;"></span>
+            <div id="statusTrack" style="width: 36px; height: 20px; border-radius: 20px; position: relative; transition: 0.3s; background: #cbd5e1;">
+                <div id="statusThumb" style="width: 16px; height: 16px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.1);"></div>
             </div>
         </div>
     </div>
-</div>
 
-{% if pending_staff_count > 0 %}
-<!-- 🚨 Pending Staff Action Alert -->
-<div class="fade-in" style="margin-bottom: 2rem;">
-    <a href="{{ url_for('owner.notifications') }}" style="text-decoration: none;">
-        <div
-            style="background: #eff6ff; border: 2px solid #3b82f6; border-radius: 20px; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; position: relative; overflow: hidden; animation: pulse-border 2s infinite;">
-            <div
-                style="width: 50px; height: 50px; background: #3b82f6; color: white; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
-                <i class="fas fa-user-clock"></i>
-            </div>
-            <div style="flex: 1;">
-                <h4 style="margin: 0; font-size: 1rem; font-weight: 800; color: #1e40af;">New Join Request</h4>
-                <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: #3b82f6; font-weight: 600;">
-                    You have {{ pending_staff_count }} staff member(s) waiting for your approval.
-                </p>
-            </div>
-            <i class="fas fa-chevron-right" style="color: #3b82f6; opacity: 0.5;"></i>
-
-            <!-- Animated background element -->
-            <div
-                style="position: absolute; right: -10px; top: -10px; width: 60px; height: 60px; background: rgba(59, 130, 246, 0.05); border-radius: 50%;">
-            </div>
-        </div>
-    </a>
-</div>
-
-<style>
-    @keyframes pulse-border {
-        0% {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
-        }
-
-        70% {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
-        }
-
-        100% {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
-        }
-    }
-</style>
-{% endif %}
-
-<!-- Quick Actions Hub -->
-<div class="card fade-in"
-    style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); border: none; padding: 1.5rem; border-radius: 24px; position: relative; overflow: hidden; margin-bottom: 2rem;">
-    <div style="position: absolute; right: -20px; bottom: -20px; opacity: 0.1; font-size: 8rem; color: white;">
-        <i class="fas fa-scissors"></i>
-    </div>
-    <div
-        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; position: relative; z-index: 1;">
-        <h3 style="color: white; font-weight: 800; font-size: 1.1rem; margin: 0;">Quick Control Center</h3>
-        <span
-            style="font-size: 0.65rem; background: rgba(255,255,255,0.2); color: white; padding: 0.3rem 0.6rem; border-radius: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Fast
-            Access</span>
-    </div>
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; position: relative; z-index: 1;">
-        <a href="{{ url_for('owner.manage_services') }}"
-            style="background: rgba(255,255,255,0.1); padding: 1.25rem 0.5rem; border-radius: 20px; text-decoration: none; text-align: center; backdrop-filter: blur(10px); transition: all 0.2s; border: 1px solid rgba(255,255,255,0.1);">
-            <i class="fas fa-plus-circle"
-                style="color: white; font-size: 1.5rem; display: block; margin-bottom: 0.6rem;"></i>
-            <span style="color: white; font-size: 0.75rem; font-weight: 700;">Add Service</span>
-        </a>
-        <a href="{{ url_for('owner.manage_workers') }}"
-            style="background: rgba(255,255,255,0.1); padding: 1.25rem 0.5rem; border-radius: 20px; text-decoration: none; text-align: center; backdrop-filter: blur(10px); transition: all 0.2s; border: 1px solid rgba(255,255,255,0.1);">
-            <i class="fas fa-user-plus"
-                style="color: white; font-size: 1.5rem; display: block; margin-bottom: 0.6rem;"></i>
-            <span style="color: white; font-size: 0.75rem; font-weight: 700;">Add Expert</span>
-        </a>
-        <a href="{{ url_for('owner.settings') }}"
-            style="background: rgba(255,255,255,0.1); padding: 1.25rem 0.5rem; border-radius: 20px; text-decoration: none; text-align: center; backdrop-filter: blur(10px); transition: all 0.2s; border: 1px solid rgba(255,255,255,0.1);">
-            <i class="fas fa-qrcode"
-                style="color: white; font-size: 1.5rem; display: block; margin-bottom: 0.6rem;"></i>
-            <span style="color: white; font-size: 0.75rem; font-weight: 700;">QR Codes</span>
-        </a>
-    </div>
-</div>
-
-<!-- Premium Stats Grid -->
-<div class="stats-grid fade-in"
-    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
-    <a href="{{ url_for('owner.bookings') }}" style="text-decoration: none;">
-        <div class="stat-card"
-            style="background: var(--bg-card); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"
-            onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 20px rgba(217,119,6,0.15)';"
-            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
-            <div>
-                <h3
-                    style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; margin: 0;">
-                    Pending</h3>
-                <p style="color: #d97706; font-size: 1.5rem; font-weight: 800; margin: 5px 0 0 0;">{{
-                    stats.pending_bookings
-                    }}</p>
-            </div>
-            <div
-                style="background: #fffbeb; color: #d97706; width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-clock"></i>
-            </div>
-        </div>
-    </a>
-    <a href="{{ url_for('owner.bookings') }}" style="text-decoration: none;">
-        <div class="stat-card"
-            style="background: var(--bg-card); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"
-            onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 20px rgba(5,150,105,0.15)';"
-            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
-            <div>
-                <h3
-                    style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; margin: 0;">
-                    Success</h3>
-                <p style="color: #059669; font-size: 1.5rem; font-weight: 800; margin: 5px 0 0 0;">{{
-                    stats.completed_services }}</p>
-            </div>
-            <div
-                style="background: #f0fdf4; color: #059669; width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-check-circle"></i>
-            </div>
-        </div>
-    </a>
-    <a href="{{ url_for('owner.manage_workers') }}" style="text-decoration: none;">
-        <div class="stat-card"
-            style="background: var(--bg-card); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"
-            onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 20px rgba(37,99,235,0.15)';"
-            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
-            <div>
-                <h3
-                    style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; margin: 0;">
-                    Team</h3>
-                <p style="color: #2563eb; font-size: 1.5rem; font-weight: 800; margin: 5px 0 0 0;">{{
-                    stats.active_workers
-                    }}</p>
-            </div>
-            <div
-                style="background: #eff6ff; color: #2563eb; width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-users"></i>
-            </div>
-        </div>
-    </a>
-    <a href="{{ url_for('owner.earnings') }}" style="text-decoration: none;">
-        <div class="stat-card"
-            style="background: var(--bg-card); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"
-            onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 20px rgba(190,24,93,0.15)';"
-            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
-            <div>
-                <h3
-                    style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; margin: 0;">
-                    Revenue</h3>
-                <p style="color: #be185d; font-size: 1.5rem; font-weight: 800; margin: 5px 0 0 0;">₹{{
-                    stats.today_earnings
-                    }}</p>
-            </div>
-            <div
-                style="background: #fdf2f8; color: #be185d; width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-wallet"></i>
-            </div>
-        </div>
-    </a>
-</div>
-
-<!-- Flipkart Style Ad Carousel/Banner -->
-<div class="fade-in" style="margin-bottom: 2rem;">
-    <div
-        style="background: linear-gradient(135deg, #FF9900 0%, #FFCC00 100%); border-radius: 20px; padding: 1.25rem; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden; box-shadow: 0 10px 25px rgba(255,153,0,0.25);">
-        <div
-            style="position: absolute; left: -20px; top: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.2); border-radius: 50%;">
-        </div>
-        <div style="position: relative; z-index: 1;">
-            <span
-                style="background: white; color: #FF9900; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.6rem; font-weight: 900; text-transform: uppercase;">SPONSORED</span>
-            <h3 style="color: #442200; font-weight: 900; font-size: 1.15rem; margin: 8px 0 4px 0;">Premium Barber Kits
-            </h3>
-            <p style="color: #664400; font-size: 0.8rem; margin: 0; font-weight: 600;">Flat 40% OFF on professional
-                shears & trimmers!</p>
-            <button
-                style="margin-top: 12px; background: #442200; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 800; font-size: 0.75rem; cursor: pointer;">Shop
-                Now</button>
-        </div>
-        <div
-            style="font-size: 4rem; position: relative; z-index: 1; transform: rotate(15deg); filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1));">
-            ✂️
-        </div>
-    </div>
-</div>
-
-<div class="fade-in" style="margin-top: 2rem; margin-bottom: 6rem;">
-    <!-- Recent Bookings -->
-    <div class="card"
-        style="border: none; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background: var(--bg-card); border: 1px solid var(--glass-border);">
-        <div
-            style="border-bottom: 1px solid var(--glass-border); padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-            <h3 style="font-weight: 800; font-size: 1rem; margin: 0; color: var(--text-main);">Recent Bookings</h3>
-            <a href="{{ url_for('owner.bookings') }}"
-                style="color: var(--primary); font-size: 0.75rem; font-weight: 700; text-decoration: none;">View All</a>
-        </div>
-        <div style="padding: 1.25rem;">
-            {% for apt in appointments[:5] %}
-            <div
-                style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--glass-border);">
-                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <div
-                        style="width: 40px; height: 40px; border-radius: 12px; background: var(--bg-main); display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--text-muted); font-size: 0.9rem; border: 1px solid var(--glass-border);">
-                        {{ apt.user_name[0]|upper if apt.user_name else 'C' }}
-                    </div>
-                    <div>
-                        <h4 style="font-size: 0.85rem; font-weight: 700; margin: 0; color: var(--text-main);">{{
-                            apt.user_name or 'Walk-in' }}</h4>
-                        <p style="font-size: 0.7rem; color: var(--text-muted); margin: 0;">
-                            {{ apt.service.name if apt.service else 'Deleted Service' }} • {{
-                            apt.slot_time.strftime('%I:%M %p') }}
-                        </p>
+    <!-- Core Metrics Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+        <!-- Orders Card -->
+        <a href="{{ url_for('owner.bookings') }}" style="text-decoration: none; display: block; transition: 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+            <div class="stat-card" style="background: #ffffff; padding: 1.75rem; border-radius: 24px; border: 1px solid #e2e8f0; position: relative; overflow: hidden; height: 100%;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <span style="color: #64748b; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Today's Bookings</span>
+                    <div style="width: 40px; height: 40px; background: rgba(99, 102, 241, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-calendar-check"></i>
                     </div>
                 </div>
-                <span
-                    style="font-size: 0.65rem; font-weight: 800; padding: 4px 10px; border-radius: 50px; background: rgba(99, 102, 241, 0.1); color: var(--primary); text-transform: uppercase;">
-                    {{ apt.status }}
-                </span>
+                <div style="display: flex; align-items: flex-end; gap: 10px;">
+                    <h2 style="font-size: 2.25rem; font-weight: 900; color: #0f172a; margin: 0;">{{ stats.today_bookings or 0 }}</h2>
+                    <span style="color: #10b981; font-size: 0.85rem; font-weight: 700; margin-bottom: 8px;">
+                        <i class="fas fa-arrow-up"></i> 12%
+                    </span>
+                </div>
             </div>
-            {% else %}
-            <p style="text-align: center; color: var(--text-muted); font-size: 0.8rem; padding: 1rem;">No recent
-                bookings.</p>
+        </a>
+
+<!-- Today's Revenue Card -->
+<a href="{{ url_for('owner.earnings') }}" style="text-decoration: none; display: block; transition: 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+    <div class="stat-card" style="background: #ffffff; padding: 1.75rem; border-radius: 24px; border: 1px solid #e2e8f0; height: 100%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <span style="color: #64748b; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Today's Revenue (Net)</span>
+            <div style="width: 40px; height: 40px; background: rgba(16, 185, 129, 0.1); color: #10b981; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-indian-rupee-sign"></i>
+            </div>
+        </div>
+        <div style="display: flex; align-items: flex-end; gap: 10px;">
+            <h2 style="font-size: 2.25rem; font-weight: 900; color: #0f172a; margin: 0;">₹{{ stats.today_earnings or 0 }}</h2>
+            <span style="color: #64748b; font-size: 0.8rem; font-weight: 600; margin-bottom: 8px;">from ₹{{ stats.today_revenue or 0 }} total</span>
+        </div>
+    </div>
+</a>
+
+        <!-- Completion Card -->
+        <div class="stat-card" style="background: #ffffff; padding: 1.75rem; border-radius: 24px; border: 1px solid #e2e8f0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <span style="color: #64748b; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Success Rate</span>
+                <div style="width: 40px; height: 40px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+            </div>
+            <div style="display: flex; align-items: flex-end; gap: 10px;">
+                <h2 style="font-size: 2.25rem; font-weight: 900; color: #0f172a; margin: 0;">{{ stats.success_rate or '98%' }}</h2>
+                <span style="color: #f59e0b; font-size: 0.85rem; font-weight: 700; margin-bottom: 8px;">Excellent</span>
+            </div>
+        </div>
+
+        <!-- Pending Notification Card -->
+        {% if pending_staff_count > 0 %}
+        <a href="{{ url_for('owner.notifications') }}" style="text-decoration: none;">
+            <div style="background: #eff6ff; padding: 1.75rem; border-radius: 24px; border: 2px solid #3b82f6; position: relative; animation: shadow-pulse 2s infinite;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 0.5rem;">
+                    <div style="width: 32px; height: 32px; background: #3b82f6; color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #1e40af;">Staff Request</h4>
+                </div>
+                <p style="margin: 0; font-size: 0.85rem; color: #3b82f6; font-weight: 700;">{{ pending_staff_count }} Application(s) Pending</p>
+                <i class="fas fa-chevron-right" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: #3b82f6; opacity: 0.5;"></i>
+            </div>
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Daily Cash Reconciliation Section -->
+    {% if today_cash_data %}
+    <div style="background: #ffffff; padding: 1.5rem 2rem; border-radius: 28px; border: 1px solid #e2e8f0; margin-bottom: 2.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <div>
+                <h3 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0;">End-of-Day Cash Settlement</h3>
+                <p style="color: #64748b; font-size: 0.8rem; margin: 4px 0 0 0; font-weight: 600;">Handover details from staff members today</p>
+            </div>
+            <div style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 6px 14px; border-radius: 50px; font-size: 0.75rem; font-weight: 800; display: flex; align-items: center; gap: 6px;">
+                <i class="fas fa-coins"></i> CASH RECONCILIATION
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem;">
+            {% for item in today_cash_data %}
+            <div style="background: #f8fafc; padding: 1.25rem; border-radius: 20px; border: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <p style="font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 5px 0;">Collector</p>
+                    <p style="font-weight: 800; color: #1e293b; margin: 0; font-size: 0.95rem;">
+                        {{ item.name }}
+                        {% if item.is_owner %}<i class="fas fa-crown" style="color: #f59e0b; font-size: 0.7rem; margin-left: 4px;"></i>{% endif %}
+                    </p>
+                </div>
+                <div style="text-align: right;">
+                    <p style="font-size: 0.65rem; font-weight: 800; color: #10b981; text-transform: uppercase; margin: 0 0 5px 0;">Total Cash</p>
+                    <p style="font-weight: 950; color: #10b981; margin: 0; font-size: 1.1rem;">₹{{ "%.0f"|format(item.amount) }}</p>
+                </div>
+            </div>
             {% endfor %}
         </div>
     </div>
+    {% endif %}
+
+    <!-- Analytics & Activity Section -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2.5rem;">
+        <!-- Left: Revenue Graph -->
+        <div style="background: #ffffff; padding: 2rem; border-radius: 28px; border: 1px solid #e2e8f0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h3 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0;">Revenue Overview</h3>
+                <div style="display: flex; gap: 10px;">
+                    <button style="padding: 6px 12px; background: #f1f5f9; border: none; border-radius: 8px; font-size: 0.75rem; font-weight: 700; color: #64748b; cursor: pointer;">WEEK</button>
+                    <button style="padding: 6px 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.75rem; font-weight: 700; color: #64748b; cursor: pointer;">MONTH</button>
+                </div>
+            </div>
+            <div style="height: 300px;">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Right: Recent Activity / Quick Actions -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <!-- Service Popularity -->
+            <div style="background: #ffffff; padding: 1.5rem; border-radius: 28px; border: 1px solid #e2e8f0; flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1rem; font-weight: 800; color: #0f172a; margin: 0;">Popular Services</h3>
+                    <a href="{{ url_for('owner.manage_services') }}" style="color: var(--primary); font-size: 0.75rem; font-weight: 700; text-decoration: none;">Manage</a>
+                </div>
+                <div style="height: 180px;">
+                    <canvas id="serviceChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Quick Tip Card -->
+            <div style="background: #0f172a; padding: 1.5rem; border-radius: 28px; position: relative; overflow: hidden; color: white;">
+                <h4 style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: #6366f1; letter-spacing: 1px; margin-bottom: 10px;">Pro Tip</h4>
+                <p id="dailyQuote" style="font-size: 0.9rem; font-weight: 500; line-height: 1.5; margin: 0; opacity: 0.9;">"Excellence is not a skill. It is an attitude."</p>
+                <i class="fas fa-lightbulb" style="position: absolute; right: -10px; bottom: -10px; font-size: 5rem; color: rgba(255,255,255,0.05);"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Appointments Table -->
+    <div style="background: #ffffff; border-radius: 28px; border: 1px solid #e2e8f0; overflow: hidden;">
+        <div style="padding: 1.75rem 2rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0;">Recent Bookings</h3>
+            <a href="{{ url_for('owner.bookings') }}" style="color: var(--primary); font-size: 0.85rem; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 5px;">
+                View All <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="background: #f8fafc;">
+                        <th style="padding: 1rem 2rem; color: #64748b; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">Customer</th>
+                        <th style="padding: 1rem 2rem; color: #64748b; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">Service</th>
+                        <th style="padding: 1rem 2rem; color: #64748b; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">Apt Time</th>
+                        <th style="padding: 1rem 2rem; color: #64748b; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">Amount</th>
+                        <th style="padding: 1rem 2rem; color: #64748b; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">Status</th>
+                        <th style="padding: 1rem 2rem; color: #64748b; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for apt in appointments[:5] %}
+                    <tr style="border-bottom: 1px solid #f1f5f9; transition: 0.2s;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='transparent';">
+                        <td style="padding: 1.25rem 2rem;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 36px; height: 36px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--primary); font-size: 0.8rem;">
+                                    {{ apt.user_name[0]|upper if apt.user_name else 'W' }}
+                                </div>
+                                <span style="font-weight: 700; color: #1e293b; font-size: 0.9rem;">{{ apt.user_name or 'Walk-in' }}</span>
+                            </div>
+                        </td>
+                        <td style="padding: 1.25rem 2rem; font-weight: 600; color: #475569; font-size: 0.9rem;">{{ apt.service.name if apt.service else 'Service' }}</td>
+                        <td style="padding: 1.25rem 2rem; font-weight: 600; color: #475569; font-size: 0.9rem;">{{ apt.slot_time.strftime('%I:%M %p') }}</td>
+                        <td style="padding: 1.25rem 2rem; font-weight: 800; color: #0f172a; font-size: 0.9rem;">₹{{ apt.service.price if apt.service else '0' }}</td>
+                        <td style="padding: 1.25rem 2rem;">
+                            <span class="badge {{ 'badge-success' if apt.status == 'completed' else 'badge-pending' if apt.status == 'pending' else 'badge-danger' }}" style="font-size: 0.7rem;">
+                                {{ apt.status|upper }}
+                            </span>
+                        </td>
+                        <td style="padding: 1.25rem 2rem;">
+                            {% if apt.status == 'pending' %}
+                            <form action="{{ url_for('owner.accept_booking', id=apt.id) }}" method="POST" style="margin: 0;">
+                                <button type="submit" style="background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Accept</button>
+                            </form>
+                            {% else %}
+                            <a href="{{ url_for('owner.bookings') }}" style="color: var(--primary); font-size: 0.75rem; font-weight: 700; text-decoration: none;">View</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" style="padding: 4rem; text-align: center; color: #64748b; font-weight: 600;">No appointments for today yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
 </div>
 
-<script>
-    // Quotes System
-    const quotes = [
-        "Success is not just about what you accomplish, it's about what you inspire others to do.",
-        "Your passion is the fuel for your salon's success.",
-        "Quality is remembered long after the price is forgotten.",
-        "The best way to predict the future is to create it.",
-        "Excellence is not a skill. It is an attitude.",
-        "Great things are done by a series of small things brought together."
-    ];
-
-    function updateGreeting() {
-        const hour = new Date().getHours();
-        const greetingTime = document.getElementById('greetingTime');
-        const customGreeting = document.getElementById('customGreeting');
-        const dailyQuote = document.getElementById('dailyQuote');
-
-        let timeGreet = "";
-        if (hour < 12) timeGreet = "Good Morning";
-        else if (hour < 17) timeGreet = "Good Afternoon";
-        else timeGreet = "Good Evening";
-
-        greetingTime.innerText = `Welcome Back,`;
-        customGreeting.innerText = `${timeGreet} 👋`;
-
-        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-        dailyQuote.innerText = `"${randomQuote}"`;
+<style>
+    @keyframes shadow-pulse {
+        0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
     }
+</style>
 
-    updateGreeting();
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const dataSink = document.getElementById('dashboardData');
+        const rawRevenueTrend = JSON.parse(dataSink.getAttribute('data-revenue-trend') || '[]');
+        const rawTopServices = JSON.parse(dataSink.getAttribute('data-top-services') || '[]');
+        const shopIsActive = dataSink.getAttribute('data-is-active') === 'true';
 
-    function fastToggleStatus() {
-        const toggle = document.getElementById('dashboardStatusToggle');
+        // Revenue Chart
+        const revCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revCtx, {
+            type: 'line',
+            data: {
+                labels: rawRevenueTrend.map(d => d.day),
+                datasets: [{
+                    label: 'Revenue',
+                    data: rawRevenueTrend.map(d => d.amount),
+                    borderColor: '#6366f1',
+                    borderWidth: 3,
+                    backgroundColor: 'rgba(99, 102, 241, 0.05)',
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#6366f1',
+                    pointBorderWidth: 2,
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' }, border: { display: false } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Service Chart
+        const svcCtx = document.getElementById('serviceChart').getContext('2d');
+        new Chart(svcCtx, {
+            type: 'doughnut',
+            data: {
+                labels: rawTopServices.map(s => s.name),
+                datasets: [{
+                    data: rawTopServices.map(s => s.count),
+                    backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444'],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10, weight: 'bold' } } }
+                },
+                cutout: '75%'
+            }
+        });
+
+        syncStatusUI(shopIsActive);
+    });
+
+    function syncStatusUI(isActive) {
         const dot = document.getElementById('statusDot');
         const label = document.getElementById('statusLabel');
         const track = document.getElementById('statusTrack');
         const thumb = document.getElementById('statusThumb');
+        
+        if (isActive) {
+            dot.style.background = '#10b981';
+            label.innerText = 'Online';
+            label.style.color = '#10b981';
+            track.style.background = '#10b981';
+            thumb.style.transform = 'translateX(16px)';
+        } else {
+            dot.style.background = '#ef4444';
+            label.innerText = 'Offline';
+            label.style.color = '#ef4444';
+            track.style.background = '#cbd5e1';
+            thumb.style.transform = 'translateX(0px)';
+        }
+    }
 
+    function fastToggleStatus() {
+        const toggle = document.getElementById('dashboardStatusToggle');
         if (toggle.style.pointerEvents === 'none') return;
         toggle.style.pointerEvents = 'none';
-        toggle.style.opacity = '0.7';
+        toggle.style.opacity = '0.6';
 
         fetch("{{ url_for('owner.toggle_status') }}", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const isActive = data.is_active;
-                    toggle.setAttribute('data-active', isActive);
-
-                    if (isActive) {
-                        dot.style.background = '#10b981';
-                        dot.style.boxShadow = '0 0 10px #10b981';
-                        label.innerText = 'Shop is Open';
-                        track.style.background = '#10b981';
-                        thumb.style.transform = 'translateX(16px)';
-                    } else {
-                        dot.style.background = '#ef4444';
-                        dot.style.boxShadow = '0 0 10px #ef4444';
-                        label.innerText = 'Shop is Closed';
-                        track.style.background = '#e2e8f0';
-                        thumb.style.transform = 'translateX(0px)';
-                    }
-                }
-            })
-            .catch(err => console.error('Error toggling status:', err))
-            .finally(() => {
-                toggle.style.pointerEvents = 'auto';
-                toggle.style.opacity = '1';
-            });
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                toggle.setAttribute('data-active', data.is_active);
+                syncStatusUI(data.is_active);
+            }
+        })
+        .catch(err => console.error('Error:', err))
+        .finally(() => {
+            toggle.style.pointerEvents = 'auto';
+            toggle.style.opacity = '1';
+        });
     }
+
+    const quotes = [
+        "Excellence is not a skill. It is an attitude.",
+        "Quality is remembered long after the price is forgotten.",
+        "Your passion is the fuel for your salon's success.",
+        "Success is a series of small wins brought together.",
+        "Consistency is the key to building a loyal customer base."
+    ];
+    document.getElementById('dailyQuote').innerText = `${quotes[Math.floor(Math.random() * quotes.length)]}`;
 </script>
 {% endblock %}

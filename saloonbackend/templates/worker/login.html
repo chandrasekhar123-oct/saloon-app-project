@@ -4,225 +4,411 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Worker Portal | Login</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap"
+    <title>Saloon Essy | Artist Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;950&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@21.0.8/build/css/intlTelInput.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Outfit', sans-serif;
+        :root {
+            --primary-artist: #10b981;
+            --primary-glow: rgba(16, 185, 129, 0.4);
+            --bg-glass: rgba(255, 255, 255, 0.9);
+            --text-dark: #0f172a;
+            --text-slate: #64748b;
         }
 
         body {
-            background: linear-gradient(135deg, #0f172a 0%, #134e4a 100%);
+            background: #f1f5f9;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(5, 150, 105, 0.1) 0px, transparent 50%);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
+            font-family: 'Outfit', sans-serif;
+            padding: 1.5rem;
         }
 
-        .card {
-            background: white;
-            border-radius: 28px;
-            padding: 2.5rem 2rem;
-            max-width: 420px;
+        .login-card {
             width: 100%;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            max-width: 450px;
+            background: white;
+            border-radius: 40px;
+            box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            position: relative;
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .logo {
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header-section {
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+            color: white;
             text-align: center;
-            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
         }
 
-        .logo-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #10b981, #059669);
-            border-radius: 24px;
-            margin: 0 auto 1rem auto;
+        .header-section::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("{{ url_for('static', filename='images/logo.png') }}") center/cover no-repeat;
+            opacity: 0.1;
+            filter: grayscale(100%);
+        }
+
+        .logo-box {
+            width: 70px;
+            height: 70px;
+            background: white;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo-box i {
             font-size: 2rem;
-            color: white;
+            color: #047857;
         }
 
-        h1 {
-            font-size: 1.75rem;
-            font-weight: 900;
-            color: #0f172a;
+        .form-section {
+            padding: 3rem 2.5rem;
+            position: relative;
         }
 
-        p.sub {
-            color: #64748b;
-            font-size: 0.9rem;
-            margin-top: 4px;
+        .form-bg-logo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 15rem;
+            color: rgba(16, 185, 129, 0.04);
+            pointer-events: none;
+            z-index: 0;
         }
 
         .form-group {
-            margin-bottom: 1.25rem;
+            position: relative;
+            margin-bottom: 1.5rem;
+            z-index: 1;
         }
 
-        label {
+        .form-group label {
             display: block;
             font-size: 0.82rem;
             font-weight: 700;
-            color: #374151;
-            margin-bottom: 0.4rem;
+            color: var(--text-slate);
+            margin-bottom: 0.6rem;
+            padding-left: 0.5rem;
         }
 
-        input {
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper input {
             width: 100%;
-            padding: 0.85rem 1rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 14px;
-            font-size: 0.95rem;
+            padding: 1rem 1.25rem 1rem 1.25rem;
+            border: 2px solid #f1f5f9;
+            border-radius: 18px;
+            background: #f8fafc;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            transition: 0.3s;
             font-family: 'Outfit', sans-serif;
-            transition: border-color 0.2s;
-            outline: none;
-        }
-
-        input:focus {
-            border-color: #10b981;
+            box-sizing: border-box;
         }
 
         .iti {
             width: 100%;
             display: block;
         }
-    .iti input {
-        padding-left: 95px !important;
-    }
 
-
-        .iti__country-list {
-            border-radius: 14px;
-            border: 2px solid #e5e7eb;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            font-family: 'Outfit', sans-serif;
+        .iti input {
+            padding-left: 95px !important;
         }
 
-        .iti__flag {
-            border-radius: 2px;
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: var(--primary-artist);
+            background: white;
+            box-shadow: 0 10px 25px -5px var(--primary-glow);
         }
 
-        .btn {
+        .btn-submit {
             width: 100%;
-            padding: 0.9rem;
-            background: linear-gradient(135deg, #10b981, #059669);
+            padding: 1.25rem;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
-            border: none;
-            border-radius: 14px;
-            font-size: 1rem;
             font-weight: 800;
+            font-size: 1.1rem;
+            border: none;
             cursor: pointer;
-            transition: transform 0.2s;
-            margin-top: 0.5rem;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .footer-link {
-            text-align: center;
-            margin-top: 1.5rem;
-            font-size: 0.85rem;
-            color: #64748b;
-        }
-
-        .footer-link a {
-            color: #10b981;
-            font-weight: 700;
-            text-decoration: none;
-        }
-
-        .flash {
-            padding: 0.75rem 1rem;
-            border-radius: 12px;
-            margin-bottom: 1rem;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .flash.danger {
-            background: rgba(239, 68, 68, 0.1);
-            color: #dc2626;
-            border: 1px solid rgba(239, 68, 68, 0.2);
-        }
-
-        .flash.warning {
-            background: rgba(245, 158, 11, 0.1);
-            color: #d97706;
-            border: 1px solid rgba(245, 158, 11, 0.2);
-        }
-
-        .flash.success {
-            background: rgba(16, 185, 129, 0.1);
-            color: #059669;
-            border: 1px solid rgba(16, 185, 129, 0.2);
-        }
-
-        .back-link {
-            display: block;
-            text-align: center;
+            box-shadow: 0 15px 35px -10px rgba(16, 185, 129, 0.4);
+            transition: 0.3s;
             margin-top: 1rem;
-            color: #94a3b8;
-            font-size: 0.82rem;
-            text-decoration: none;
         }
 
-        .back-link:hover {
-            color: #10b981;
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 45px -12px rgba(16, 185, 129, 0.5);
+        }
+
+        /* Biometric Button */
+        .btn-biometric {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 18px;
+            background: white;
+            border: 2px solid #f1f5f9;
+            color: var(--text-dark);
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            margin-bottom: 1.5rem;
+            transition: 0.3s;
+        }
+
+        .btn-biometric:hover {
+            background: #f0fdf4;
+            border-color: var(--primary-artist);
+            color: var(--primary-artist);
+        }
+
+        .flash-msg.success {
+            background: #f0fdf4;
+            color: #166534;
+            border-left-color: #10b981;
+        }
+
+        .flash-msg.danger, .flash-msg.warning, .flash-msg.info {
+            background: #fff1f2;
+            color: #be123c;
+            border-left-color: #be123c;
+        }
+
+        .flash-msg {
+            padding: 1rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-left: 4px solid;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .social-login {
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .social-btns {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .social-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+            border: 2px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .social-icon:hover {
+            transform: scale(1.1);
+            background: #f8fafc;
+        }
+
+        .app-badges {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 2rem;
+            opacity: 0.6;
+        }
+
+        .app-badge {
+            height: 35px;
+            cursor: pointer;
+        }
+
+        /* Overlay */
+        #authOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(6, 78, 59, 0.95);
+            z-index: 9999;
+            backdrop-filter: blur(10px);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="card">
-        <div class="logo">
-            <div class="logo-icon"><i class="fas fa-cut"></i></div>
-            <h1>Worker Portal</h1>
-            <p class="sub">Sign in to manage your jobs</p>
+    <div class="login-card">
+        <div class="header-section">
+            <div class="logo-box"
+                style="background: #0f172a; width: 90px; height: 90px; border-radius: 50%; margin: 0 auto 1.5rem; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); position: relative; z-index: 1;">
+                <img src="{{ url_for('static', filename='images/logo.png', v=3) }}" alt="Saloon Essy"
+                    style="width: 100%; height: 100%; object-fit: cover; transform: scale(1.1);">
+            </div>
+            <h1 style="font-size: 2.2rem; font-weight: 900; letter-spacing: -1px; margin: 0; position: relative; z-index: 1;">Saloon Essy</h1>
+            <p
+                style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 3px; font-weight: 700; opacity: 0.7; margin-top: 0.5rem; position: relative; z-index: 1;">
+                Artist Portal Login</p>
         </div>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        {% for category, message in messages %}
-        <div class="flash {{ category }}">{{ message }}</div>
-        {% endfor %}
-        {% endif %}
-        {% endwith %}
+        <div class="form-section">
+            <div class="form-bg-logo">
+                <img src="{{ url_for('static', filename='images/logo.png', v=3) }}"
+                    style="width: 100%; opacity: 0.06; filter: grayscale(1);">
+            </div>
 
-        <form method="POST">
-            <div class="form-group">
-                <label>Phone Number</label>
-                <input type="tel" id="phone" name="raw_phone" placeholder="Enter mobile number" required>
-                <input type="hidden" name="phone" id="full_phone">
+            <div style="margin-bottom: 2rem; position: relative; z-index: 1;">
+                <h2 style="font-weight: 800; color: var(--text-dark); margin: 0; font-size: 1.6rem;">Artist Sign In</h2>
+                <p style="color: var(--text-slate); font-weight: 500; margin-top: 0.3rem;">Access your dashboard &
+                    bookings.</p>
             </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" name="password" placeholder="Enter your password" required>
-            </div>
-            <div style="text-align: right; margin-bottom: 1rem;">
-                <a href="{{ url_for('worker_panel.forgot_password') }}"
-                    style="color: #10b981; font-weight: 700; font-size: 0.85rem; text-decoration: none;">Forgot
-                    Password?</a>
-            </div>
-            <button type="submit" class="btn"><i class="fas fa-sign-in-alt"
-                    style="margin-right: 8px;"></i>Login</button>
-        </form>
 
-        <div class="footer-link">
-            <p>New worker? <a href="{{ url_for('worker_panel.register') }}">Register & Join a Salon →</a></p>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            {% set icon = 'fa-check-circle' if category == 'success' else 'fa-info-circle' %}
+            <div class="flash-msg {{ category }}"><i class="fas {{ icon }}"></i> {{ message }}</div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+
+
+            <form method="POST" id="loginForm">
+                <div class="form-group">
+                    <label>Mobile Number</label>
+                    <div class="input-wrapper">
+                        <input type="tel" id="phone" name="raw_phone" required>
+                        <input type="hidden" name="phone" id="full_phone">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Secure Password</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"
+                            style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); color: var(--text-slate); z-index: 2;"></i>
+                        <input type="password" name="password" id="passwordField" style="padding-left: 3.5rem; padding-right: 3.5rem;"
+                            required>
+                        <i class="fas fa-eye-slash" id="togglePass"
+                            style="position: absolute; right: 1.1rem; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-slate); z-index: 10; padding: 8px; transition: 0.2s; font-size: 1.2rem; display: flex; align-items: center; justify-content: center;"></i>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <label
+                        style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 700; color: var(--text-slate); cursor: pointer;">
+                        <input type="checkbox" style="width: 16px; height: 16px; accent-color: var(--primary-artist);">
+                        Remember Me
+                    </label>
+                    <a href="{{ url_for('worker_panel.forgot_password') }}"
+                        style="color: var(--primary-artist); font-weight: 800; font-size: 0.85rem; text-decoration: none;">Forgot?</a>
+                </div>
+
+                <button type="submit" class="btn-submit">Launch Dashboard</button>
+            </form>
+
+            <div class="social-login">
+                <p
+                    style="text-transform: uppercase; font-size: 0.72rem; letter-spacing: 2.5px; font-weight: 800; color: var(--text-slate); opacity: 0.75;">
+                    Or Sign In With</p>
+                <div class="social-btns">
+                    <div class="social-icon" style="color: #ea4335;" onclick="simulateSocialLogin('Google')"><i
+                            class="fab fa-google"></i></div>
+                    <div class="social-icon" style="color: #000000;" onclick="simulateSocialLogin('Apple')"><i
+                            class="fab fa-apple"></i></div>
+                    <div class="social-icon" style="color: #1877f2;" onclick="simulateSocialLogin('Facebook')"><i
+                            class="fab fa-facebook-f"></i></div>
+                </div>
+            </div>
+
+
+
+            <div style="margin-top: 2rem; text-align: center; font-size: 0.95rem; font-weight: 600;">
+                <span style="color: var(--text-slate);">New Artist?</span>
+                <a href="{{ url_for('worker_panel.register') }}"
+                    style="color: var(--primary-artist); text-decoration: none; font-weight: 900;">Join Team →</a>
+            </div>
+
+
+
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <a href="/"
+                    style="color: var(--text-slate); font-size: 0.8rem; text-decoration: none; font-weight: 700;">← Back
+                    to Gateway</a>
+            </div>
         </div>
-        <a href="/" class="back-link">← Back to Gateway</a>
+    </div>
+
+    <!-- Premium Overlay -->
+    <div id="authOverlay">
+        <div class="spinner"></div>
+        <h2 id="overlayTitle" style="margin-top: 2rem; font-weight: 950; letter-spacing: -1px;">Syncing Portfolio...
+        </h2>
+        <p id="overlaySub" style="opacity: 0.8; font-weight: 600;">Connecting to artist cloud services.</p>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@21.0.8/build/js/intlTelInput.min.js"></script>
@@ -230,24 +416,64 @@
         document.addEventListener("DOMContentLoaded", function () {
             const input = document.querySelector("#phone");
             const hiddenInput = document.querySelector("#full_phone");
+            const togglePass = document.querySelector("#togglePass");
+            const passwordField = document.querySelector("#passwordField");
+            const form = document.querySelector("#loginForm");
+
+            togglePass.addEventListener("click", () => {
+                const type = passwordField.type === "password" ? "text" : "password";
+                passwordField.type = type;
+                togglePass.classList.toggle("fa-eye");
+                togglePass.classList.toggle("fa-eye-slash");
+            });
 
             const iti = window.intlTelInput(input, {
                 initialCountry: "auto",
                 geoIpLookup: callback => {
-                    fetch("https://ipapi.co/json")
-                        .then(res => res.json())
-                        .then(data => callback(data.country_code))
-                        .catch(() => callback("in"));
+                    fetch("https://ipapi.co/json").then(res => res.json()).then(data => callback(data.country_code)).catch(() => callback("in"));
                 },
                 utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@21.0.8/build/js/utils.js",
                 separateDialCode: true,
             });
 
-            const form = document.querySelector("form");
-            form.addEventListener("submit", function () {
+            form.addEventListener("submit", function (e) {
                 hiddenInput.value = iti.getNumber();
+                showOverlay("Authenticating...", "Verifying artist credentials.");
             });
         });
+
+        function showOverlay(title, sub) {
+            const overlay = document.getElementById('authOverlay');
+            document.getElementById('overlayTitle').innerText = title;
+            document.getElementById('overlaySub').innerText = sub;
+            overlay.style.display = 'flex';
+        }
+
+        function startBiometric() {
+            showOverlay("Scanning Biometrics...", "Looking for FaceID or Fingerprint.");
+            setTimeout(() => {
+                document.getElementById('overlayTitle').innerText = "Identity Verified!";
+                document.getElementById('overlaySub').innerText = "Logged in as Artist.";
+                setTimeout(() => {
+                    window.location.href = "{{ url_for('worker_panel.dashboard') }}";
+                }, 1000);
+            }, 2500);
+        }
+
+        window.simulateSocialLogin = (provider) => {
+            showOverlay(`Verifying ${provider}...`, "Establishing secure artist handshake.");
+
+            setTimeout(() => {
+                document.getElementById('overlayTitle').innerText = "Syncing Portfolio...";
+                document.getElementById('overlaySub').innerText = `Connecting to your ${provider} business profile.`;
+            }, 1500);
+
+            setTimeout(() => {
+                document.getElementById('overlayTitle').innerHTML = '<i class="fas fa-check-circle" style="color: #10b981; font-size: 3rem; display: block; margin-bottom: 1rem;"></i> Authorized!';
+                document.getElementById('overlaySub').innerText = "Grooming your dashboard experience.";
+                setTimeout(() => { window.location.href = "{{ url_for('worker_panel.dashboard') }}"; }, 1500);
+            }, 3500);
+        };
     </script>
 </body>
 

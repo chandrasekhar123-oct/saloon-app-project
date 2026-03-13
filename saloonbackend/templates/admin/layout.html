@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Saloon Essy | Super Admin</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -236,7 +238,11 @@
 
 <body>
     <aside class="sidebar">
-        <div class="logo"><i class="fas fa-crown"></i> Saloon Essy Admin</div>
+        <div class="logo">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Saloon Essy"
+                style="height: 45px; width: 45px; background: white; border-radius: 50%; padding: 3px; object-fit: cover;">
+            <span style="font-size: 0.9rem; opacity: 0.8; margin-left: -5px;">Admin</span>
+        </div>
         <nav>
             <ul class="nav-links">
                 <li class="nav-item">
@@ -245,23 +251,7 @@
                         <i class="fas fa-th-large"></i> Dashboard
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="{{ url_for('admin.salons') }}" class="nav-link {{ 'active' if active_page == 'salons' }}">
-                        <i class="fas fa-store"></i> Manage Salons
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ url_for('admin.users') }}" class="nav-link {{ 'active' if active_page == 'users' }}">
-                        <i class="fas fa-users"></i> All Users
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ url_for('admin.workers') }}"
-                        class="nav-link {{ 'active' if active_page == 'workers' }}">
-                        <i class="fas fa-id-badge"></i> Specialists
-                    </a>
-                </li>
-                <li class="nav-item" style="margin-top: 5rem;">
+                <li class="nav-item" style="margin-top: 3rem;">
                     <a href="{{ url_for('admin.logout') }}" class="nav-link" style="color: #ef4444;">
                         <i class="fas fa-sign-out-alt"></i> Logout
                     </a>
@@ -289,6 +279,8 @@
 
         {% block content %}{% endblock %}
     </main>
+    <div id="notification-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;"></div>
+
     <script>
         const sidebar = document.querySelector('.sidebar');
         const toggleBtn = document.getElementById('sidebarToggle');
@@ -307,6 +299,53 @@
                 }
             }
         });
+
+        // Global Toast Notification System
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('notification-container');
+            const toast = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'rgba(16, 185, 129, 0.95)' : 'rgba(239, 68, 68, 0.95)';
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            
+            toast.style.cssText = `
+                background: ${bgColor};
+                color: white;
+                padding: 12px 24px;
+                border-radius: 12px;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                min-width: 250px;
+                animation: slideIn 0.3s ease forwards;
+                font-weight: 600;
+                backdrop-filter: blur(5px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            `;
+            
+            toast.innerHTML = `<i class="fas ${icon}"></i> <span>${message}</span>`;
+            
+            const style = document.createElement('style');
+            style.innerHTML = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes fadeOut {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'fadeOut 0.3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
     </script>
 </body>
 

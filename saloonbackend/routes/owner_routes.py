@@ -24,6 +24,50 @@ def get_salon_bookings_api(salon_id):
         })
     return jsonify(result)
 
+# ─── HELPERS ──────────────────────────────────────────────────────
+
+def get_salon_stats(salon):
+    bookings_list = Booking.query.filter_by(salon_id=salon.id).all()
+    today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    total_bookings = len(bookings_list)
+    completed_bookings = [b for b in bookings_list if b.status == 'completed']
+    success_rate = f"{int((len(completed_bookings) / total_bookings * 100)) if total_bookings > 0 else 100}%"
+    
+    # Calculate Total Revenue vs Owner Share
+    total_revenue = sum(b.service.price for b in completed_bookings if b.service)
+    
+    # Precise calculation based on applied commissions or default 50%
+    owner_earnings = 0.0
+    for b in completed_bookings:
+        if not b.service: continue
+        if b.commission_applied:
+            owner_earnings += b.owner_share
+        else:
+            # Fallback estimation if commission wasn't explicitly recorded
+            if b.worker and b.worker.is_owner:
+                owner_earnings += b.service.price
+            else:
+                owner_earnings += (b.service.price * 0.5)
+    
+    today_completed = [b for b in completed_bookings if b.slot_time >= today]
+    today_owner_earnings = sum(b.owner_share if b.commission_applied else (b.service.price * 0.5) for b in today_completed if b.service)
+
+    return {
+        'total_bookings': total_bookings,
+        'today_bookings': len([b for b in bookings_list if b.slot_time >= today]),
+        'completed_services': len(completed_bookings),
+        'pending_bookings': len([b for b in bookings_list if b.status == 'pending']),
+        'today_revenue': sum(b.service.price for b in today_completed if b.service),
+        'today_earnings': today_owner_earnings, # Owner's share
+        'total_revenue': total_revenue,
+        'owner_total': owner_earnings,
+        'active_workers': Worker.query.filter_by(salon_id=salon.id).count(),
+        'service_count': Service.query.filter_by(salon_id=salon.id).count(),
+        'client_count': len(set([b.user_id for b in bookings_list])),
+        'success_rate': success_rate
+    }
+
 # ─── WEB INTERFACE (HTML) ──────────────────────────────────────────
 
 @owner_bp.route('/login', methods=['GET', 'POST'])
@@ -41,6 +85,8 @@ def login():
             password = data.get('password')
             owner = Owner.query.filter_by(phone=phone).first()
             if owner and check_password_hash(owner.password, password):
+                if not owner.is_active:
+                    return jsonify({"message": "Your account has been suspended. Please contact the Super Admin.", "status": "suspended"}), 403
                 return jsonify({"message": "Owner login successful", "status": "success", "owner_id": owner.id})
             return jsonify({"message": "Invalid credentials", "status": "error"}), 401
         else:
@@ -48,6 +94,9 @@ def login():
             password = request.form.get('password')
             owner = Owner.query.filter_by(email=email).first()
             if owner and check_password_hash(owner.password, password):
+                if not owner.is_active:
+                    flash('Your account has been suspended. Please contact the Super Admin.', 'danger')
+                    return redirect(url_for('owner.login'))
                 login_user(owner)
                 return redirect(url_for('owner.dashboard'))
             flash('Invalid email or password', 'danger')
@@ -149,30 +198,28 @@ def dashboard():
     if not salon:
         return "Please register a salon first." 
         
-    # Get all relevant data
-    today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    stats = get_salon_stats(salon)
     bookings_list = Booking.query.filter_by(salon_id=salon.id).all()
+    today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
     
-    # 1. Basic Stats
-    stats = {
-        'total_bookings': len(bookings_list),
-        'completed_services': len([b for b in bookings_list if b.status == 'completed' and b.service]),
-        'pending_bookings': len([b for b in bookings_list if b.status == 'pending']),
-        'today_earnings': sum(b.service.price for b in bookings_list if b.status == 'completed' and b.service and b.slot_time >= today),
-        'active_workers': len(Worker.query.filter_by(salon_id=salon.id).all())
-    }
-    
-    # 2. 7-Day Revenue Trend
+    # 2. 7-Day Revenue Trend (Owner's Share)
     revenue_trend = []
     days_short = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
     for i in range(6, -1, -1):
         target_date = today - timedelta(days=i)
-        day_total = sum(b.service.price for b in bookings_list 
-                        if b.status == 'completed' and b.service and
-                        b.slot_time.date() == target_date.date())
+        day_total = 0.0
+        for b in bookings_list:
+            if b.status == 'completed' and b.service and b.slot_time.date() == target_date.date():
+                if b.commission_applied:
+                    day_total += b.owner_share
+                elif b.worker and b.worker.is_owner:
+                    day_total += b.service.price
+                else:
+                    day_total += (b.service.price * 0.5)
+        
         revenue_trend.append({
             'day': days_short[target_date.weekday()],
-            'amount': day_total
+            'amount': round(day_total, 2)
         })
 
     # 3. Top Popular Services
@@ -183,6 +230,15 @@ def dashboard():
     # 4. Filtered lists for the UI
     recent_bookings = sorted([b for b in bookings_list], key=lambda x: x.slot_time, reverse=True)[:5]
     workers = Worker.query.filter_by(salon_id=salon.id).all()
+
+    # 5. Today's Cash Collection by Worker
+    cash_data = []
+    for w in workers:
+        w_cash = sum(float(b.service.price) for b in bookings_list if b.worker_id == w.id 
+                     and b.status == 'completed' and b.payment_method == 'Cash' 
+                     and b.slot_time.date() == today.date() and b.service)
+        if w_cash > 0:
+            cash_data.append({'name': w.name, 'amount': w_cash, 'is_owner': w.is_owner})
     
     return render_template('owner/dashboard.html', 
                            stats=stats, 
@@ -190,6 +246,7 @@ def dashboard():
                            top_services=top_services,
                            appointments=recent_bookings, 
                            workers=workers,
+                           today_cash_data=cash_data,
                            shop=salon,
                            active_page='dashboard')
 
@@ -219,8 +276,19 @@ def accept_booking(id):
     otp = ''.join(random.choices(string.digits, k=6))
     booking.status = 'accepted'
     booking.otp = otp
+    
+    # Create notification for user
+    from models import Notification
+    notif = Notification(
+        user_id=booking.user_id,
+        title="Booking Confirmed! ✅",
+        message=f"Your booking for {booking.service.name} at {salon.name} has been accepted. Show OTP {otp} at the salon.",
+        type='booking'
+    )
+    db.session.add(notif)
+    
     db.session.commit()
-    flash(f'Booking accepted! OTP {otp} has been generated for the customer.', 'success')
+    flash(f'Booking accepted! The customer has received their OTP to start the service.', 'success')
     return redirect(url_for('owner.bookings'))
 
 @owner_bp.route('/bookings/<int:id>/reject', methods=['POST'])
@@ -247,8 +315,37 @@ def verify_otp(id):
         return redirect(url_for('owner.bookings'))
         
     otp = request.form.get('otp')
+    pay_method = request.form.get('payment_method', 'Cash') # Default to Cash if not provided
     if booking.otp == otp:
         booking.status = 'completed'
+        booking.payment_method = pay_method
+        booking.payment_status = 'Paid'
+        
+        # Calculate revenue split
+        if booking.service:
+            total_price = float(booking.service.price)
+            worker_amt = 0.0
+            
+            # If a worker is assigned
+            if booking.worker:
+                # Case 1: The worker IS the owner (100% to owner)
+                if booking.worker.is_owner:
+                    worker_amt = 0.0
+                # Case 2: Worker is on Salary (usually 0% commission unless bonus)
+                elif booking.worker.payment_type == 'salary':
+                    worker_amt = 0.0
+                # Case 3: Worker is on Commission (standard split)
+                else:
+                    rate = booking.worker.commission_rate or 50.0
+                    worker_amt = (rate / 100.0) * total_price
+                
+                booking.worker_share = worker_amt
+                booking.worker.total_earnings = (booking.worker.total_earnings or 0.0) + worker_amt
+                booking.worker.current_balance = (booking.worker.current_balance or 0.0) + worker_amt
+            
+            booking.owner_share = total_price - worker_amt
+            booking.commission_applied = True
+        
         db.session.commit()
         flash('OTP verified! Booking marked as completed. 🎉', 'success')
     else:
@@ -359,6 +456,9 @@ def manage_workers():
         phone = request.form.get('phone')
         experience = request.form.get('experience')
         skills = request.form.get('skills')
+        commission_rate = request.form.get('commission_rate', 50.0) # Default to 50%
+        payment_type = request.form.get('payment_type', 'commission')
+        salary_amount = request.form.get('salary_amount', 0.0)
         selected_services = request.form.getlist('services_list')
         assigned_services = ", ".join(selected_services)
         
@@ -373,6 +473,9 @@ def manage_workers():
             phone=phone,
             experience=int(experience),
             skill=skills,
+            payment_type=payment_type,
+            salary_amount=float(salary_amount) if salary_amount else 0.0,
+            commission_rate=float(commission_rate) if commission_rate else 50.0,
             is_approved=True, # Owners manual additions are approved by default
             password=generate_password_hash("worker123") # Default password
         )
@@ -403,7 +506,12 @@ def manage_workers():
         if len(today_bookings) > 0 or worker.status == 'online':
             total_working_today += 1
             
-        revenue = sum(b.service.price for b in completed_bookings if b.service)
+        # Revenue is the owner's net share
+        revenue = sum(b.owner_share if b.commission_applied else (b.service.price * 0.5) 
+                      for b in completed_bookings if b.service)
+        
+        # Total shop intake from this worker
+        total_intake = sum(b.service.price for b in completed_bookings if b.service)
         
         service_breakdown = {}
         for b in completed_bookings:
@@ -418,6 +526,7 @@ def manage_workers():
             'total_today': len(today_bookings),
             'completed': len(completed_bookings),
             'revenue': revenue,
+            'total_intake': total_intake,
             'service_breakdown': service_breakdown
         })
         
@@ -472,6 +581,8 @@ def add_self_worker():
         experience=5,
         skill=auto_skill,
         is_approved=True,
+        is_owner=True, # Explicitly mark as owner-worker
+        payment_type='salary', # Owners don't pay themselves commission usually
         password=current_user.password,
         image_url=current_user.profile_image or "https://i.pravatar.cc/300"
     )
@@ -542,6 +653,22 @@ def reject_worker(worker_id):
         
     return redirect(request.referrer or url_for('owner.manage_workers'))
 
+@owner_bp.route('/workers/payout/<int:worker_id>', methods=['POST'])
+@login_required
+def payout_worker(worker_id):
+    salon = Salon.query.filter_by(owner_id=current_user.id).first()
+    worker = Worker.query.filter_by(id=worker_id, salon_id=salon.id).first()
+    
+    if worker:
+        payout_amount = worker.current_balance or 0.0
+        worker.current_balance = 0.0
+        db.session.commit()
+        flash(f'Successfully recorded ₹{int(payout_amount)} payout for {worker.name}! 💸', 'success')
+    else:
+        flash('Worker not found or unauthorized', 'danger')
+        
+    return redirect(url_for('owner.manage_workers'))
+
 
 
 
@@ -549,7 +676,12 @@ def reject_worker(worker_id):
 @login_required
 def profile():
     salon = Salon.query.filter_by(owner_id=current_user.id).first()
-    return render_template('owner/profile.html', shop=salon, active_page='profile')
+    if not salon:
+        flash('Please register a salon first.', 'warning')
+        return redirect(url_for('owner.dashboard'))
+    
+    stats = get_salon_stats(salon)
+    return render_template('owner/profile.html', shop=salon, stats=stats, active_page='profile')
 
 @owner_bp.route('/notifications')
 @login_required
@@ -593,6 +725,7 @@ def settings():
         # 2. Update Shop Details (if linked)
         if salon:
             salon.name = request.form.get('shop_name')
+            salon.category = request.form.get('shop_category') # NEW: Allow category change
             salon.address = request.form.get('shop_address')
             salon.state = request.form.get('state')
             salon.location = request.form.get('city') # the city
@@ -611,6 +744,10 @@ def settings():
                 salon.qr_code_url = f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={safe_upi}"
             
             salon.is_active = True if request.form.get('is_active') == 'on' else False
+            
+            # Save Excellence Categories
+            excellence_list = request.form.getlist('excellence_list')
+            salon.excellence_categories = ",".join(excellence_list) if excellence_list else None
             
             # Shop Logo Upload
             logo_file = request.files.get('shop_logo_file')
@@ -672,16 +809,24 @@ def earnings():
         flash('Please register a salon first.', 'warning')
         return redirect(url_for('owner.dashboard'))
     
-    all_bookings = Booking.query.filter_by(salon_id=salon.id).all()
+    all_bookings = Booking.query.filter_by(salon_id=salon.id).order_by(Booking.slot_time.desc()).all()
     completed = [b for b in all_bookings if b.status == 'completed']
+    
     total_revenue = sum(b.service.price for b in completed if b.service)
+    owner_total = sum(b.owner_share if b.commission_applied else (b.service.price * 0.5) for b in completed if b.service)
+    worker_payouts = total_revenue - owner_total
+
     today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
     today_revenue = sum(b.service.price for b in completed if b.service and b.slot_time >= today)
+    today_owner = sum(b.owner_share if b.commission_applied else (b.service.price * 0.5) for b in completed if b.service and b.slot_time >= today)
     
     return render_template('owner/earnings.html',
                            shop=salon,
                            total_revenue=total_revenue,
+                           owner_income=owner_total,
+                           worker_payouts=worker_payouts,
                            today_revenue=today_revenue,
+                           today_owner=today_owner,
                            completed_bookings=completed,
                            all_bookings=all_bookings,
                            active_page='earnings')
@@ -719,6 +864,19 @@ def manage_offers():
             offer.image_url = url_for('static', filename=f'uploads/offers/{filename}')
         
         db.session.add(offer)
+        
+        # Notify all users about the new offer
+        from models import User, Notification
+        users = User.query.all()
+        for u in users:
+            notif = Notification(
+                user_id=u.id,
+                title=f"New Offer at {salon.name}! 🎁",
+                message=f"{offer.title}: {offer.description or 'Check it out now!'}",
+                type='offer'
+            )
+            db.session.add(notif)
+            
         db.session.commit()
         flash('New offer added successfully! 🎁', 'success')
         return redirect(url_for('owner.manage_offers'))

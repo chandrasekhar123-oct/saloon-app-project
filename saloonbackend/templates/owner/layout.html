@@ -12,6 +12,7 @@
             document.documentElement.setAttribute('data-theme', theme);
         })();
     </script>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
@@ -20,125 +21,146 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='owner/css/style.css') }}">
     {% block styles %}{% endblock %}
     <style>
-        /* Modern Mobile Layout - No fixed Desktop Frame */
+        /* Master Layout Structure */
         body {
-            background: var(--bg-main);
-            color: var(--text-main);
+            background: #f1f5f9;
+            color: #1e293b;
             margin: 0;
-            display: flex;
-            justify-content: center;
+            overflow-x: hidden;
         }
 
         .mobile-container {
-            width: 100%;
-            max-width: 600px;
-            min-height: 100vh;
-            background: var(--bg-main);
-            position: relative;
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.05);
             display: flex;
             flex-direction: column;
-            transition: max-width 0.3s ease;
+            min-height: 100vh;
+            width: 100%;
         }
 
-        @media (min-width: 1024px) {
-            .mobile-container {
-                max-width: 1100px;
-                flex-direction: row;
-            }
-
-            .header {
-                display: none !important;
-            }
-
-            .bottom-nav {
-                height: 100vh;
-                width: 240px;
-                flex-direction: column;
-                justify-content: flex-start;
-                padding-top: 3rem;
-                left: 0;
-                transform: none;
-                border-top: none;
-                border-right: 1px solid var(--glass-border);
-                position: sticky;
-                top: 0;
-            }
-
-            .bottom-nav-item {
-                flex-direction: row;
-                width: 90%;
-                justify-content: flex-start;
-                padding: 1rem 1.5rem;
-                gap: 1rem;
-                font-size: 0.9rem;
-            }
-
-            .bottom-nav-item i {
-                font-size: 1.5rem;
-            }
-
-            .main-content {
-                padding: 3rem;
-                flex: 1;
-            }
-
-            .desktop-owner-header {
-                display: flex !important;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 2rem;
-            }
-        }
-
-        .desktop-owner-header {
-            display: none;
-        }
-
-        /* Updated Bottom Nav to be fixed to screen bottom, mimicking a real app */
-        .bottom-nav {
+        /* Unified Navigation Structure (Always at Downside) */
+        .app-nav {
             position: fixed;
             bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
+            left: 0;
             width: 100%;
-            max-width: 600px;
-            height: 70px;
-            background-color: var(--bg-card);
+            height: 75px;
+            background: #ffffff;
             display: flex;
             justify-content: space-around;
             align-items: center;
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+            border-top: 1px solid #e2e8f0;
             z-index: 2000;
-            padding: 0 0.5rem;
-            border-top: 1px solid var(--glass-border);
+            box-shadow: 0 -8px 25px rgba(0,0,0,0.05);
+            padding: 0 10px;
         }
 
-        .profile-badge-plus {
+        .main-content {
+            padding: 1.5rem;
+            padding-bottom: 100px; /* Essential space for bottom buttons */
+            width: 100%;
+            flex: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .bottom-nav-item {
             display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 0.75rem;
+            font-weight: 700;
+            transition: 0.2s;
+            flex: 1;
         }
 
-        .profile-badge-plus.has-image {
-            display: none;
+        .bottom-nav-item.active {
+            color: var(--primary);
+        }
+
+        .bottom-nav-item i {
+            font-size: 1.4rem;
+            margin-bottom: 4px;
+        }
+
+        /* Desktop Adjustments used only for header prominence */
+        @media (min-width: 768px) {
+            .mobile-container {
+                flex-direction: column; /* Keep column to show nav at bottom */
+            }
+            .desktop-owner-header {
+                display: flex !important;
+                align-items: center;
+                justify-content: space-between;
+                margin-top: 1rem;
+                margin-bottom: 2rem;
+            }
+            .header {
+                display: none !important;
+            }
+        }
+
+        /* Reset some styles for mobile top bar if needed, but we used fixed bottom */
+        .header {
+            padding: 1.5rem;
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
         }
     </style>
 </head>
 
 <body>
     <div class="mobile-container">
+        <!-- Sidebar / Top Nav -->
+        <div class="app-nav">
+            <a href="{{ url_for('owner.dashboard') }}"
+                class="bottom-nav-item {% if active_page == 'dashboard' %}active{% endif %}">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </a>
+            <a href="{{ url_for('owner.bookings') }}"
+                class="bottom-nav-item {% if active_page == 'bookings' %}active{% endif %}">
+                <i class="fas fa-list-check"></i>
+                <span>Bookings</span>
+            </a>
+            <a href="{{ url_for('owner.manage_services') }}"
+                class="bottom-nav-item {% if active_page == 'services' %}active{% endif %}">
+                <i class="fas fa-scissors"></i>
+                <span>Menu</span>
+            </a>
+            <a href="{{ url_for('owner.manage_offers') }}"
+                class="bottom-nav-item {% if active_page == 'offers' %}active{% endif %}">
+                <i class="fas fa-tags"></i>
+                <span>Offers</span>
+            </a>
+            <a href="{{ url_for('owner.manage_workers') }}"
+                class="bottom-nav-item {% if active_page == 'workers' %}active{% endif %}" style="position: relative;">
+                <i class="fas fa-users"></i>
+                <span>Team</span>
+                {% if pending_staff_count > 0 %}
+                <span
+                    style="position: absolute; top: 5px; right: 15px; background: #ef4444; color: white; font-size: 0.6rem; font-weight: 800; padding: 2px 5px; border-radius: 50%; border: 1.5px solid white;">{{
+                    pending_staff_count }}</span>
+                {% endif %}
+            </a>
+            <a href="{{ url_for('owner.profile') }}"
+                class="bottom-nav-item {% if active_page == 'profile' %}active{% endif %}">
+                <i class="fas fa-user-circle"></i>
+                <span>Profile</span>
+            </a>
+        </div>
 
-        <!-- Header -->
+        <div class="content-stack">
+            <!-- Header -->
         <div class="header fade-in"
             style="display: flex; flex-direction: column; align-items: center; margin-top: 1rem; margin-bottom: 2rem; gap: 1rem;">
             <div style="display: flex; align-items: center; gap: 0.8rem;">
-                <i class="fas fa-scissors" style="font-size: 2rem; color: var(--primary);"></i>
-                <h1 style="font-weight: 800; font-size: 2rem; color: var(--text-main); margin: 0; line-height: 1;">
-                    SalonHub</h1>
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Saloon Essy"
+                    style="height: 55px; width: 55px; background: white; border-radius: 50%; padding: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); object-fit: cover;">
             </div>
             <div style="display: flex; gap: 8px;">
-                <span
-                    style="background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.2rem 0.6rem; border-radius: 50px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Partner
-                    App</span>
+                <span style="background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.2rem 0.6rem; border-radius: 50px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Management
+                    Hub</span>
                 <a href="/"
                     style="background: #f8fafc; color: #64748b; padding: 0.2rem 0.6rem; border-radius: 50px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border: 1px solid #e2e8f0;">
                     <i class="fas fa-exchange-alt" style="margin-right: 3px;"></i>Switch Mode
@@ -162,13 +184,11 @@
                         onmouseover="this.style.transform='translateY(-2px)'"
                         onmouseout="this.style.transform='translateY(0)'">
 
-                        <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; margin-right: 10px;">
+                            <span id="liveClock" style="font-size: 0.65rem; color: var(--primary); font-weight: 800; letter-spacing: 0.5px; margin-bottom: 2px;">00:00:00 AM</span>
                             <span
                                 style="font-weight: 850; font-size: 0.75rem; color: var(--text-main); line-height: 1;">{{
                                 current_user.name }}</span>
-                            <span style="font-size: 0.6rem; color: var(--primary); font-weight: 700; margin-top: 2px;">
-                                <i class="fas fa-magic"></i> Manager
-                            </span>
                         </div>
 
                         <!-- Instagram Style Avatar with Gradient Ring -->
@@ -219,11 +239,13 @@
         <div class="main-content">
             <div class="desktop-owner-header">
                 <div style="display: flex; align-items: center; gap: 0.8rem;">
-                    <i class="fas fa-scissors" style="font-size: 2rem; color: var(--primary);"></i>
-                    <h1 style="font-weight: 800; font-size: 2rem; color: var(--text-main); margin: 0; line-height: 1;">
-                        SalonHub</h1>
+                    <img src="{{ url_for('static', filename='images/logo.png', v=3) }}" alt="Saloon Essy"
+                        style="height: 60px; width: 60px; background: #0f172a; border-radius: 50%; object-fit: cover; transform: scale(1.1); box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
                 </div>
                 <div style="display: flex; align-items: center; gap: 1.5rem;">
+                    <div id="desktopClock" style="font-family: 'monospace'; font-weight: 800; color: var(--primary); background: var(--bg-card); padding: 5px 15px; border-radius: 50px; border: 1px solid var(--glass-border); font-size: 0.9rem;">
+                        00:00:00 AM
+                    </div>
                     <a href="{{ url_for('owner.notifications') }}"
                         style="color: var(--text-muted); position: relative; font-size: 1.3rem;">
                         <i class="fas fa-bell"></i>
@@ -232,68 +254,34 @@
                             style="position: absolute; top: -5px; right: -5px; width: 10px; height: 10px; background: #ef4444; border-radius: 50%; border: 2px solid white;"></span>
                         {% endif %}
                     </a>
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <div style="text-align: right;">
-                            <div style="font-weight: 800; font-size: 0.9rem;">{{ current_user.name }}</div>
-                            <div style="font-size: 0.7rem; color: var(--primary); font-weight: 700;">Owner Portal</div>
-                        </div>
-                        <div
-                            style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; border: 2px solid var(--primary);">
-                            {% if current_user.profile_image %}
-                            <img src="{{ current_user.profile_image }}"
-                                style="width: 100%; height: 100%; object-fit: cover;">
-                            {% else %}
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <a href="{{ url_for('owner.logout') }}" style="color: #ef4444; text-decoration: none; font-size: 0.8rem; font-weight: 800; display: flex; align-items: center; gap: 5px; background: rgba(239, 68, 68, 0.05); padding: 8px 15px; border-radius: 50px; border: 1px solid rgba(239, 68, 68, 0.1);">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="text-align: right;">
+                                <div style="font-weight: 800; font-size: 0.9rem;">{{ current_user.name }}</div>
+                                <div style="font-size: 0.7rem; color: var(--primary); font-weight: 700;">Management Hub</div>
+                            </div>
                             <div
-                                style="width: 100%; height: 100%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-weight: 800;">
-                                {{ current_user.name[0] }}</div>
-                            {% endif %}
+                                style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; border: 2px solid var(--primary);">
+                                {% if current_user.profile_image %}
+                                <img src="{{ current_user.profile_image }}"
+                                    style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                <div
+                                    style="width: 100%; height: 100%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-weight: 800;">
+                                    {{ current_user.name[0] }}</div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             {% block content %}{% endblock %}
         </div>
-
-        <!-- Bottom Navigation Bar -->
-        <div class="bottom-nav">
-            <a href="{{ url_for('owner.dashboard') }}"
-                class="bottom-nav-item {% if active_page == 'dashboard' %}active{% endif %}">
-                <i class="fas fa-grip-horizontal"></i>
-                <span>Home</span>
-            </a>
-            <a href="{{ url_for('owner.bookings') }}"
-                class="bottom-nav-item {% if active_page == 'bookings' %}active{% endif %}">
-                <i class="fas fa-list-check"></i>
-                <span>Orders</span>
-            </a>
-            <a href="{{ url_for('owner.manage_services') }}"
-                class="bottom-nav-item {% if active_page == 'services' %}active{% endif %}">
-                <i class="fas fa-scissors"></i>
-                <span>Menu</span>
-            </a>
-            <a href="{{ url_for('owner.manage_offers') }}"
-                class="bottom-nav-item {% if active_page == 'offers' %}active{% endif %}">
-                <i class="fas fa-tags"></i>
-                <span>Offers</span>
-            </a>
-            <a href="{{ url_for('owner.manage_workers') }}"
-                class="bottom-nav-item {% if active_page == 'workers' %}active{% endif %}" style="position: relative;">
-                <i class="fas fa-users"></i>
-                <span>Team</span>
-                {% if pending_staff_count > 0 %}
-                <span
-                    style="position: absolute; top: 5px; right: 15px; background: #ef4444; color: white; font-size: 0.6rem; font-weight: 800; padding: 2px 5px; border-radius: 50%; border: 1.5px solid white;">{{
-                    pending_staff_count }}</span>
-                {% endif %}
-            </a>
-            <a href="{{ url_for('owner.settings') }}"
-                class="bottom-nav-item {% if active_page == 'settings' %}active{% endif %}">
-                <i class="fas fa-user-gear"></i>
-                <span>Profile</span>
-            </a>
-        </div>
-
-    </div> <!-- End mobile-container -->
+    </div> <!-- End content-stack -->
+</div> <!-- End mobile-container -->
 
     <style>
         .flash-container {
@@ -321,6 +309,16 @@
         }
     </style>
 
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            if (document.getElementById('liveClock')) document.getElementById('liveClock').innerText = timeString;
+            if (document.getElementById('desktopClock')) document.getElementById('desktopClock').innerText = timeString;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
     {% block scripts_extra %}{% endblock %}
 </body>
 

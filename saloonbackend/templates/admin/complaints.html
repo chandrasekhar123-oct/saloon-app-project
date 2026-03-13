@@ -1,0 +1,153 @@
+{% extends 'admin/layout.html' %}
+
+{% block page_title %}Grievance Management{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h3>User Complaints & Feedback</h3>
+        <div style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 5px 15px; border-radius: 10px; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.8rem;">
+            Pending: <strong>{{ complaints|selectattr('status', 'equalto', 'pending')|list|length }}</strong>
+        </div>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Reporter</th>
+                <th>Target (Specialist/Owner)</th>
+                <th>Subject</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if complaints %}
+                {% for c in complaints %}
+                <tr>
+                    <td>#{{ c.id }}</td>
+                    <td>
+                        <div style="font-weight: 700;">{{ c.reporter.name }}</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">{{ c.reporter.phone }}</div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 700; color: var(--primary);">{{ c.target_name }}</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">{{ c.target_type|capitalize }} • {{ c.target_phone }}</div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 600;">{{ c.subject }}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ c.description }}">
+                            {{ c.description }}
+                        </div>
+                    </td>
+                    <td>
+                        {% set colors = {
+                            'pending': '#fbbf24',
+                            'warned': '#6366f1',
+                            'blocked': '#ef4444',
+                            'resolved': '#10b981'
+                        } %}
+                        <span id="status-{{ c.id }}" style="background: {{ colors.get(c.status, '#94a3b8') }}20; color: {{ colors.get(c.status, '#94a3b8') }}; padding: 4px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">
+                            {{ c.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 8px;">
+                            {% if c.status == 'pending' %}
+                            <button onclick="warnTarget({{ c.id }})" id="warn-btn-{{ c.id }}" class="btn" style="padding: 6px 12px; border-radius: 10px; font-size: 0.7rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); border: 1px solid rgba(99, 102, 241, 0.2);">
+                                Send Warning
+                            </button>
+                            {% endif %}
+                            
+                            <button onclick="resolveComplaint({{ c.id }})" class="btn" style="padding: 6px 12px; border-radius: 10px; font-size: 0.7rem; background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2);">
+                                Resolve
+                            </button>
+                            
+                            <button onclick="blockTarget('{{ c.target_type }}', {{ c.target_id }}, {{ c.id }})" class="btn" style="padding: 6px 12px; border-radius: 10px; font-size: 0.7rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2);">
+                                Block Account
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 4rem;">
+                        <i class="fas fa-check-circle" style="font-size: 3rem; color: #10b981; margin-bottom: 1rem; display: block; opacity: 0.5;"></i>
+                        <p>No active complaints. Everything looks great!</p>
+                    </td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+function warnTarget(complaintId) {
+    if(!confirm('Are you sure you want to send a warning SMS to this person?')) return;
+    
+    fetch(`/superadmin/complaint/${complaintId}/warn`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Warning SMS sent successfully!');
+            const statusLabel = document.getElementById(`status-${complaintId}`);
+            statusLabel.innerText = 'WARNED';
+            statusLabel.style.background = '#6366f120';
+            statusLabel.style.color = '#6366f1';
+            document.getElementById(`warn-btn-${complaintId}`).style.display = 'none';
+        } else {
+            alert('Error: ' + data.message);
+        }
+    });
+}
+
+function resolveComplaint(complaintId) {
+    fetch(`/superadmin/complaint/${complaintId}/resolve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const statusLabel = document.getElementById(`status-${complaintId}`);
+            statusLabel.innerText = 'RESOLVED';
+            statusLabel.style.background = '#10b98120';
+            statusLabel.style.color = '#10b981';
+            const warnBtn = document.getElementById(`warn-btn-${complaintId}`);
+            if(warnBtn) warnBtn.style.display = 'none';
+        }
+    });
+}
+
+function blockTarget(type, id, complaintId) {
+    if(!confirm(`Are you sure you want to BLOCK this ${type} permanently?`)) return;
+    
+    // Call the existing toggle route for owner/worker
+    fetch(`/superadmin/${type}/${id}/toggle`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`${type.toUpperCase()} has been blocked.`);
+            // Update complaint status to blocked
+            fetch(`/superadmin/complaint/${complaintId}/resolve`, { // Custom status update would be better but reusing resolve for now or adding a dedicated status
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            }).then(() => {
+                const statusLabel = document.getElementById(`status-${complaintId}`);
+                statusLabel.innerText = 'BLOCKED';
+                statusLabel.style.background = '#ef444420';
+                statusLabel.style.color = '#ef4444';
+            });
+        }
+    });
+}
+</script>
+{% endblock %}

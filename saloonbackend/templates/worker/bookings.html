@@ -1,276 +1,248 @@
 {% extends "worker/layout.html" %}
-{% block title %}My Jobs{% endblock %}
+{% block title %}Saloon Essy | Job Management{% endblock %}
 
 {% block content %}
-<div class="fade-in" style="margin-bottom: 1.5rem;">
-    <p
-        style="color: var(--primary); font-weight: 800; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.25rem;">
-        MANAGE</p>
-    <h2 style="font-weight: 800; font-size: 1.6rem; color: var(--text-main); margin: 0;">My Jobs</h2>
+<div class="fade-in" style="margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+            <p
+                style="color: var(--primary); font-weight: 900; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 0.4rem; opacity: 0.8;">
+                OPERATIONS</p>
+            <h2 style="font-weight: 950; font-size: 2rem; color: var(--text-main); margin: 0; letter-spacing: -1px;">My
+                Bookings</h2>
+        </div>
+        <div style="text-align: right;">
+            <p style="font-size: 1.25rem; font-weight: 950; color: var(--primary); margin: 0;">{{ bookings|length }}</p>
+            <p style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase;">Total
+            </p>
+        </div>
+    </div>
 </div>
 
 <style>
     .ftab {
-        padding: 0.45rem 1.1rem;
-        border-radius: 50px;
-        border: 2px solid var(--glass-border);
+        padding: 0.6rem 1.25rem;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
         background: white;
-        color: var(--text-muted);
-        font-size: 0.78rem;
-        font-weight: 700;
+        color: #64748b;
+        font-size: 0.8rem;
+        font-weight: 800;
         cursor: pointer;
-        white-space: nowrap;
-        transition: all 0.2s;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
     }
 
     .ftab.active {
-        border-color: var(--primary);
-        background: var(--primary);
+        background: var(--text-main);
         color: white;
+        border-color: var(--text-main);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .job-card {
+        background: white;
+        border-radius: 28px;
+        padding: 1.5rem;
+        margin-bottom: 1.25rem;
+        border: 1px solid #f1f5f9;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.03);
+        transition: 0.3s;
+    }
+
+    .job-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.06);
+    }
+
+    .status-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .timeline-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #e2e8f0;
+        position: relative;
+    }
+
+    .timeline-dot.active {
+        background: #10b981;
+        box-shadow: 0 0 10px #10b981;
+    }
+
+    .timeline-dot.pending {
+        background: #f59e0b;
     }
 </style>
 
-<!-- Filter Tabs -->
-<div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 4px;">
-    {% for tab in ['All', 'Pending', 'Accepted', 'Completed'] %}
-    <button onclick="filterJobs('{{ tab.lower() }}')" id="tab-{{ tab.lower() }}"
-        class="ftab {% if loop.first %}active{% endif %}">
-        {{ tab }}
-    </button>
-    {% endfor %}
+<!-- Filter Navigation -->
+<div
+    style="display: flex; gap: 0.6rem; margin-bottom: 2rem; overflow-x: auto; padding: 5px 0 15px 0; -ms-overflow-style: none; scrollbar-width: none;">
+    <button onclick="filterJobs('all')" id="tab-all" class="ftab active">All Jobs</button>
+    <button onclick="filterJobs('pending')" id="tab-pending" class="ftab">Incoming</button>
+    <button onclick="filterJobs('accepted')" id="tab-accepted" class="ftab">Active</button>
+    <button onclick="filterJobs('completed')" id="tab-completed" class="ftab">History</button>
 </div>
 
-<!-- Jobs List -->
+<!-- Bookings Container -->
 <div id="jobs-container">
     {% if bookings %}
     {% for b in bookings %}
-    <div class="job-card fade-in" data-status="{{ b.status }}"
-        style="background: white; border-radius: 20px; padding: 1.25rem; margin-bottom: 1rem; border: 1px solid var(--glass-border); box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
-        <!-- Existing Card Content -->
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
-            <div>
-                <p style="font-weight: 800; font-size: 1rem; color: var(--text-main); margin: 0;">
-                    {{ b.service.name if b.service else 'Deleted Service' }}
-                    <span
-                        style="font-size: 0.7rem; color: var(--primary); background: rgba(244,63,94,0.05); padding: 2px 6px; border-radius: 4px; margin-left: 6px;">
-                        <i class="fas fa-clock" style="font-size: 0.6rem;"></i> {{ (b.service.duration if b.service else
-                        30) or 30 }}m
-                    </span>
-                </p>
+    <div class="job-card fade-in" data-status="{{ b.status }}">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+            <div style="display: flex; gap: 1rem; align-items: center;">
                 <div
-                    style="font-size: 0.8rem; color: var(--text-muted); margin: 3px 0 0 0; display: flex; flex-direction: column; gap: 2px;">
-                    <span style="font-weight: 700; color: var(--text-main);"><i class="fas fa-user"
-                            style="color: var(--primary); margin-right: 5px;"></i>{{ b.user.name if b.user else 'Deleted
-                        User' }}</span>
-                    <span><i class="fas fa-phone-alt" style="color: #10b981; margin-right: 5px;"></i>{{ b.user.phone if
-                        b.user else 'N/A'
-                        }}</span>
+                    style="width: 50px; height: 50px; border-radius: 18px; background: #f8fafc; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--primary);">
+                    {% if 'hair' in (b.service.name|lower or '') %}<i class="fas fa-cut"></i>
+                    {% elif 'facial' in (b.service.name|lower or '') %}<i class="fas fa-face-smile"></i>
+                    {% elif 'massage' in (b.service.name|lower or '') %}<i class="fas fa-spa"></i>
+                    {% else %}<i class="fas fa-concierge-bell"></i>{% endif %}
+                </div>
+                <div>
+                    <h3 style="font-weight: 900; font-size: 1.1rem; color: var(--text-main); margin: 0;">{{
+                        b.service.name }}</h3>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; margin-top: 2px;">
+                        <i class="fas fa-stopwatch" style="margin-right: 4px;"></i>{{ b.service.duration or 30 }} mins •
+                        ₹{{ b.service.price }} • 
+                        <span style="color: {{ '#10b981' if b.payment_method == 'Online' else '#f59e0b' }};">
+                            <i class="fas {{ 'fa-credit-card' if b.payment_method == 'Online' else 'fa-coins' }}"></i>
+                            {{ b.payment_method or 'Pay at Salon' }}
+                        </span>
+                    </p>
                 </div>
             </div>
 
-            <!-- RAPIDO SOUND FOR NEW REQUESTS -->
             {% if b.status == 'pending' %}
-            <script>
-                // This will only run once per pending job found in list
-                window.addEventListener('load', () => {
-                    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-                    // Play if browser allows (usually requires one user click anywhere first)
-                    audio.play().catch(e => console.log("Sound blocked: Need click first"));
-                });
-            </script>
-            {% endif %}
-            {% if b.status == 'pending' %}
-            {% set has_active = bookings|selectattr('status', 'equalto', 'accepted')|list|length > 0 %}
-            {% if has_active %}
-            <span
-                style="background: rgba(99,102,241,0.1); color: var(--primary); padding: 0.3rem 0.75rem; border-radius: 50px; font-size: 0.7rem; font-weight: 800;">📋
-                In Queue</span>
-            {% else %}
-            <span
-                style="background: rgba(245,158,11,0.1); color: #f59e0b; padding: 0.3rem 0.75rem; border-radius: 50px; font-size: 0.7rem; font-weight: 800;">⏳
-                New Request</span>
-            {% endif %}
+            <span class="status-badge" style="background: #fef3c7; color: #92400e;">Incoming</span>
             {% elif b.status == 'accepted' %}
-            <span
-                style="background: #eef2ff; color: #6366f1; border: 1.5px solid #6366f1; padding: 0.3rem 0.75rem; border-radius: 50px; font-size: 0.7rem; font-weight: 800; animation: pulse-light 2s infinite;">⚡
-                Active Job</span>
+            <span class="status-badge"
+                style="background: #ecfdf5; color: #065f46; animation: pulse-light 2s infinite;">Live Now</span>
             {% elif b.status == 'completed' %}
-            <span
-                style="background: rgba(16,185,129,0.1); color: #10b981; padding: 0.3rem 0.75rem; border-radius: 50px; font-size: 0.7rem; font-weight: 800;">✓
-                Done</span>
+            <span class="status-badge" style="background: #f1f5f9; color: #475569;">Finished</span>
             {% elif b.status == 'rejected' %}
-            <span
-                style="background: rgba(239,68,68,0.1); color: #ef4444; padding: 0.3rem 0.75rem; border-radius: 50px; font-size: 0.7rem; font-weight: 800;">✗
-                Rejected</span>
+            <span class="status-badge" style="background: #fff1f2; color: #9f1239;">Declined</span>
             {% endif %}
         </div>
 
+        <!-- Customer Detail Section -->
         <div
-            style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">
-            <div><i class="fas fa-calendar-alt" style="color: var(--primary); margin-right: 4px;"></i>{{
-                b.slot_time.strftime('%d %b %Y') }}</div>
-            <div><i class="fas fa-clock" style="color: var(--primary); margin-right: 4px;"></i>{{
-                b.slot_time.strftime('%I:%M %p') }}</div>
-            <div><i class="fas fa-rupee-sign" style="color: var(--primary); margin-right: 4px;"></i>₹{{ b.service.price
-                }}</div>
+            style="background: #f8fafc; border-radius: 20px; padding: 1.25rem; margin-bottom: 1.25rem; border: 1px solid #f1f5f9;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div
+                        style="width: 36px; height: 36px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--primary); border: 1px solid #e2e8f0;">
+                        {{ b.user.name[0].upper() if b.user else 'U' }}
+                    </div>
+                    <div>
+                        <p style="font-weight: 800; font-size: 0.85rem; color: var(--text-main); margin: 0;">{{
+                            b.user.name if b.user else 'Guest User' }}</p>
+                        <p style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600; margin-top: 1px;">ID:
+                            #ES-{{ b.id }}</p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <a href="tel:{{ b.user.phone if b.user else '' }}"
+                        style="width: 32px; height: 32px; border-radius: 10px; background: white; display: flex; align-items: center; justify-content: center; color: #10b981; border: 1px solid #e2e8f0; text-decoration: none;"><i
+                            class="fas fa-phone-alt" style="font-size: 0.8rem;"></i></a>
+                    <a href="https://wa.me/{{ b.user.phone if b.user else '' }}"
+                        style="width: 32px; height: 32px; border-radius: 10px; background: white; display: flex; align-items: center; justify-content: center; color: #25d366; border: 1px solid #e2e8f0; text-decoration: none;"><i
+                            class="fab fa-whatsapp" style="font-size: 0.9rem;"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 1.5rem; margin-bottom: 1.25rem; padding-left: 5px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-calendar" style="color: #64748b; font-size: 0.8rem;"></i>
+                <span style="font-size: 0.8rem; font-weight: 800; color: #475569;">{{ b.slot_time.strftime('%b %d, %Y')
+                    }}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-clock" style="color: #64748b; font-size: 0.8rem;"></i>
+                <span style="font-size: 0.8rem; font-weight: 800; color: #475569;">{{ b.slot_time.strftime('%I:%M %p')
+                    }}</span>
+            </div>
         </div>
 
         {% if b.status == 'pending' %}
-        <div style="display: flex; gap: 0.5rem; padding-top: 0.75rem; border-top: 1px solid var(--glass-border);">
-            <form method="POST" action="{{ url_for('worker_panel.reject_booking', id=b.id) }}" style="flex: 1;">
-                <button type="submit"
-                    style="width: 100%; padding: 0.6rem; background: rgba(239,68,68,0.1); color: #ef4444; border: none; border-radius: 12px; font-weight: 700; font-size: 0.8rem; cursor: pointer;">Reject</button>
+        <div style="margin-top: 1rem; background: #f8fafc; border-radius: 20px; padding: 1rem; border: 1px solid #e2e8f0;">
+            <p style="font-size: 0.7rem; font-weight: 850; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">Accept with Message (Optional)</p>
+            <form method="POST" action="{{ url_for('worker_panel.accept_booking', id=b.id) }}">
+                <input type="text" name="message" placeholder="e.g. Please come in 10 mins, I am ready!" 
+                       style="width: 100%; padding: 0.8rem; border-radius: 12px; border: 1px solid #cbd5e1; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.75rem; outline: none; transition: border 0.3s;"
+                       onfocus="this.style.borderColor='var(--primary)'">
+                <div style="display: flex; gap: 0.75rem;">
+                    <button type="submit"
+                        style="flex: 2; padding: 0.8rem; background: var(--text-main); color: white; border: none; border-radius: 14px; font-weight: 900; font-size: 0.85rem; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">Accept & Send</button>
+                    <button form="reject-form-{{b.id}}" type="submit"
+                        style="flex: 1; padding: 0.8rem; background: #fff1f2; color: #e11d48; border: none; border-radius: 14px; font-weight: 900; font-size: 0.85rem; cursor: pointer;">Decline</button>
+                </div>
             </form>
-            <form method="POST" action="{{ url_for('worker_panel.accept_booking', id=b.id) }}" style="flex: 1;">
-                <button type="submit"
-                    style="width: 100%; padding: 0.6rem; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 0.8rem; cursor: pointer;">Accept</button>
-            </form>
+            <form id="reject-form-{{b.id}}" method="POST" action="{{ url_for('worker_panel.reject_booking', id=b.id) }}" style="display: none;"></form>
         </div>
         {% elif b.status == 'accepted' %}
-        <div style="padding-top: 0.75rem; border-top: 1px solid var(--glass-border);">
-            {# Logic to check if this is the FIRST accepted job in the list (Active) #}
-            {% set active_jobs = bookings|selectattr('status', 'equalto', 'accepted')|list %}
-            {% if active_jobs|length > 0 and active_jobs[0].id == b.id %}
-            <span
-                style="display: inline-block; margin-bottom: 0.8rem; background: #eef2ff; color: #6366f1; border: 1.5px solid #6366f1; padding: 0.3rem 0.75rem; border-radius: 50px; font-size: 0.7rem; font-weight: 800; animation: pulse-light 2s infinite;">⚡
-                Active Job</span>
-
-            <!-- QUICK MESSAGE BUTTONS (RAPIDO STYLE) -->
-            <div style="margin-bottom: 0.8rem;">
-                <p style="font-size: 0.75rem; color: var(--text-muted); font-weight: 800; margin-bottom: 6px;">Send
-                    Quick Update:</p>
-                <div style="display: flex; gap: 0.4rem; overflow-x: auto; padding-bottom: 4px;">
-                    {% set cat = (b.salon.category or '').lower() %}
-                    {% if 'spa' in cat %}{% set quick_msgs = ["Room is getting ready!", "Relaxing oils prepared!", "Warm
-                    towels are ready!"] %}
-                    {% elif 'parlour' in cat or 'parlor' in cat or 'beauty' in cat %}{% set quick_msgs = ["Makeup
-                    station ready!", "Getting equipment set!", "Please wait in lounge."] %}
-                    {% elif 'studio' in cat %}{% set quick_msgs = ["Studio space is ready!", "Setting up now!", "Just 5
-                    mins more!"] %}
-                    {% else %}{% set quick_msgs = ["Your chair is ready!", "Finishing a haircut!", "Please take your
-                    seat."] %}
-                    {% endif %}
-
-                    {% for msg in quick_msgs %}
-                    <form action="{{ url_for('worker_panel.send_message', id=b.id) }}" method="POST">
-                        <input type="hidden" name="message" value="{{ msg }}">
-                        <button type="submit"
-                            style="white-space: nowrap; padding: 0.4rem 0.8rem; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.7rem; font-weight: 700; color: #475569; cursor: pointer; transition: 0.2s;">
-                            {{ msg }}
-                        </button>
-                    </form>
-                    {% endfor %}
-                </div>
-
-                <!-- POLITE STANDARD UPDATES (RAPIDO STYLE) -->
-                <p
-                    style="font-size: 0.65rem; color: #6366f1; font-weight: 850; margin: 8px 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">
-                    Polite Shop Requests:</p>
-                <div style="display: flex; gap: 0.4rem; overflow-x: auto; padding-bottom: 4px;">
-                    {% set polite_msgs = ["Wait some time, I am at shop!", "Don't cancel, please come soon!", "I am
-                    ready at our salon.", "Please visit shop, I am ready!"] %}
-                    {% for msg in polite_msgs %}
-                    <form action="{{ url_for('worker_panel.send_message', id=b.id) }}" method="POST">
-                        <input type="hidden" name="message" value="{{ msg }}">
-                        <button type="submit"
-                            style="white-space: nowrap; padding: 0.4rem 0.8rem; background: #eef2ff; border: 1px solid #c3dafe; border-radius: 8px; font-size: 0.7rem; font-weight: 700; color: #4338ca; cursor: pointer; transition: 0.2s;">
-                            {{ msg }}
-                        </button>
-                    </form>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.5rem;">Enter customer OTP to
-                complete:</p>
-            <form method="POST" action="{{ url_for('worker_panel.verify_otp', id=b.id) }}"
-                style="display: flex; gap: 0.5rem;">
-                <input type="text" name="otp" placeholder="Enter OTP"
-                    style="flex: 1; padding: 0.6rem 0.8rem; border: 2px solid var(--glass-border); border-radius: 12px; font-size: 0.85rem; font-family: 'Outfit', sans-serif;">
-                <button type="submit"
-                    style="padding: 0.6rem 1rem; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 0.8rem; cursor: pointer;">Verify</button>
-            </form>
-            {% else %}
-            <!-- NEXT IN LINE UI (QUEUED) -->
-            <div
-                style="background: rgba(99,102,241,0.05); border: 1px dashed #6366f1; border-radius: 16px; padding: 1.25rem; text-align: center;">
-                <div
-                    style="background: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem auto; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                    <i class="fas fa-clock" style="color: #6366f1;"></i>
-                </div>
-                <h4 style="font-weight: 800; color: #6366f1; font-size: 0.85rem; margin: 0;">Next in Line</h4>
-                <p style="font-size: 0.68rem; color: #64748b; margin: 5px 0 12px 0;">This job will activate
-                    automatically after your current session ends.</p>
-
+        <!-- Active Job Flow -->
+        <div style="padding: 1.5rem; background: #f0f7ff; border-radius: 24px; border: 1px solid #dbeafe;">
+            <p
+                style="font-size: 0.75rem; font-weight: 900; color: #1e40af; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px;">
+                Engagement Tools</p>
+            <div style="display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 8px; margin-bottom: 1.5rem;">
+                {% set msgs = ["Ready at the chair!", "5 mins more, please wait.", "Sanitizing station now.", "Come in,
+                I'm available!"] %}
+                {% for m in msgs %}
                 <form action="{{ url_for('worker_panel.send_message', id=b.id) }}" method="POST">
-                    <input type="hidden" name="message" value="I am with another client, will be with you shortly!">
+                    <input type="hidden" name="message" value="{{ m }}">
                     <button type="submit"
-                        style="width: 100%; background: white; border: 1.5px solid #6366f1; color: #6366f1; font-size: 0.7rem; padding: 0.5rem; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s;">
-                        <i class="fas fa-paper-plane" style="margin-right: 4px;"></i> Notify Client to Wait
-                    </button>
+                        style="white-space: nowrap; padding: 0.6rem 1rem; background: white; border: 1px solid #bfdbfe; border-radius: 12px; font-size: 0.7rem; font-weight: 800; color: #1e40af; cursor: pointer;">{{
+                        m }}</button>
                 </form>
+                {% endfor %}
             </div>
-            {% endif %}
+
+            <form method="POST" action="{{ url_for('worker_panel.verify_otp', id=b.id) }}">
+                <div style="display: flex; gap: 0.6rem; margin-bottom: 0.8rem;">
+                    <select name="payment_method" style="flex: 0.8; padding: 0.8rem; border: 1px solid #bfdbfe; border-radius: 14px; font-weight: 800; color: #1e40af; background: white;">
+                        <option value="Cash">Cash Payment</option>
+                        <option value="Online">Online Payment</option>
+                    </select>
+                    <input type="text" name="otp" placeholder="OTP" required
+                        style="flex: 1; padding: 0.8rem; border: 2px solid #bfdbfe; border-radius: 14px; font-size: 1rem; font-weight: 900; letter-spacing: 2px; text-align: center;">
+                </div>
+                <button type="submit"
+                    style="width: 100%; padding: 1.1rem; background: #2563eb; color: white; border: none; border-radius: 18px; font-weight: 950; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 12px rgba(37,99,235,0.2);">Finalize & Mark Paid</button>
+            </form>
         </div>
         {% endif %}
     </div>
     {% endfor %}
     {% else %}
-    <div id="main-empty-state"
-        style="text-align: center; padding: 4rem 2rem; background: white; border-radius: 24px; border: 2px dashed var(--glass-border);">
-        <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
-        <h3 style="font-weight: 800; color: var(--text-main); margin: 0 0 0.5rem 0;">No Jobs Yet</h3>
-        <p style="color: var(--text-muted); font-size: 0.9rem;">Your assigned jobs will appear here.</p>
+    <div style="text-align: center; padding: 6rem 2rem;">
+        <div
+            style="width: 100px; height: 100px; background: #f8fafc; border-radius: 40px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto; font-size: 3rem; color: #e2e8f0;">
+            <i class="fas fa-calendar-check"></i>
+        </div>
+        <h3 style="font-weight: 950; color: var(--text-main); margin: 0; font-size: 1.5rem;">All Clear!</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 8px; font-weight: 600;">No active or pending
+            bookingsfound. Relax or check your availability.</p>
     </div>
     {% endif %}
-
-    <!-- Filter Result Empty State (Hidden initially) -->
-    <div id="filter-empty-state"
-        style="display: none; text-align: center; padding: 4rem 2rem; background: white; border-radius: 24px; border: 2px dashed var(--glass-border);">
-        <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
-        <h3 style="font-weight: 800; color: var(--text-main); margin: 0 0 0.5rem 0;">No matches found</h3>
-        <p style="color: var(--text-muted); font-size: 0.9rem;">No jobs found for the selected status.</p>
-    </div>
 </div>
 
 <script>
     function filterJobs(status) {
-        let visibleCount = 0;
-        const cards = document.querySelectorAll('.job-card');
-
-        cards.forEach(card => {
-            const isVisible = (status === 'all' || card.dataset.status === status);
-            card.style.display = isVisible ? 'block' : 'none';
-            if (isVisible) visibleCount++;
+        document.querySelectorAll('.job-card').forEach(card => {
+            card.style.display = (status === 'all' || card.dataset.status === status) ? 'block' : 'none';
         });
-
-        // Toggle empty state
-        const filterEmpty = document.getElementById('filter-empty-state');
-        if (cards.length > 0) {
-            filterEmpty.style.display = (visibleCount === 0) ? 'block' : 'none';
-        }
-
-        // Update tab styles
-        document.querySelectorAll('[id^="tab-"]').forEach(tab => {
-            tab.style.background = 'white';
-            tab.style.color = 'var(--text-muted)';
-            tab.style.borderColor = 'var(--glass-border)';
-        });
-        const active = document.getElementById(`tab-${status}`);
-        if (active) {
-            active.style.background = 'var(--primary)';
-            active.style.color = 'white';
-            active.style.borderColor = 'var(--primary)';
-        }
+        document.querySelectorAll('.ftab').forEach(tab => tab.classList.remove('active'));
+        document.getElementById(`tab-${status}`).classList.add('active');
     }
-
-    // On Load: Check if status is in URL
-    window.addEventListener('load', () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlStatus = urlParams.get('status');
-        if (urlStatus) {
-            filterJobs(urlStatus.toLowerCase());
-        }
-    });
 </script>
 {% endblock %}

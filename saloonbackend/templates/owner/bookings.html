@@ -1,12 +1,12 @@
 {% extends "owner/layout.html" %}
-{% block title %}Orders & Bookings{% endblock %}
+{% block title %}Bookings{% endblock %}
 
 {% block content %}
 <div class="fade-in" style="margin-bottom: 2rem;">
     <p
         style="color: var(--primary); font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem;">
         MANAGE</p>
-    <h2 style="font-weight: 800; font-size: 1.75rem; color: var(--text-main); margin: 0;">Orders & Bookings</h2>
+    <h2 style="font-weight: 800; font-size: 1.75rem; color: var(--text-main); margin: 0;">Bookings</h2>
     <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 6px;">All appointments for {{ shop.name }}</p>
 </div>
 
@@ -54,9 +54,19 @@
                 <p style="font-weight: 800; font-size: 1rem; color: var(--text-main); margin: 0;">
                     {{ b.service.name if b.service else 'Deleted Service' }}
                 </p>
-                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 4px 0 0 0;">
-                    <i class="fas fa-user" style="margin-right: 4px;"></i>{{ b.user.name if b.user else 'Walk-in' }}
-                </p>
+                <div style="display: flex; align-items: center; gap: 10px; margin-top: 6px;">
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">
+                        <i class="fas fa-user" style="margin-right: 4px;"></i>{{ b.user.name if b.user else 'Walk-in' }}
+                    </p>
+                    {% if b.user %}
+                    <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.03); padding: 4px 10px; border-radius: 50px;">
+                        <img src="https://flagcdn.com/w40/in.png" style="width: 16px; border-radius: 2px;" alt="IN">
+                        <span style="font-size: 0.75rem; font-weight: 850; color: var(--text-main);">{{ b.user.phone }}</span>
+                        <a href="tel:{{ b.user.phone }}" style="color: #10b981; font-size: 0.8rem; text-decoration: none;"><i class="fas fa-phone"></i></a>
+                        <a href="https://wa.me/91{{ b.user.phone }}" target="_blank" style="color: #25d366; font-size: 0.9rem; text-decoration: none;"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
             <!-- Status Badge -->
             {% if b.status == 'completed' %}
@@ -100,6 +110,12 @@
                 <i class="fas fa-rupee-sign" style="color: var(--primary); margin-right: 4px;"></i>
                 ₹{{ b.service.price if b.service else '0' }}
             </div>
+            <div style="grid-column: span 2;">
+                <i class="fas fa-wallet" style="color: var(--primary); margin-right: 4px;"></i>
+                <span style="color: {{ '#10b981' if b.payment_method == 'Online' else '#f59e0b' }}; font-weight: 800;">
+                    {{ b.payment_method or 'Pay at Salon' }}
+                </span>
+            </div>
         </div>
 
         {% if b.status == 'pending' %}
@@ -123,20 +139,24 @@
         </div>
         {% elif b.status == 'accepted' and b.otp %}
         <div style="padding-top: 0.75rem; border-top: 1px dashed var(--glass-border);">
-            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
-                <span
-                    style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); color: #10b981; padding: 0.3rem 0.75rem; border-radius: 50px; font-size: 0.75rem; font-weight: 700;">
-                    <i class="fas fa-key" style="margin-right: 4px;"></i>Generated OTP: <strong
-                        style="letter-spacing: 1px; font-size: 0.8rem;">{{ b.otp }}</strong>
-                </span>
+            <div style="margin-bottom: 0.75rem;">
+                <p style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">
+                    <i class="fas fa-info-circle"></i> Awaiting customer's arrival. Ask for their OTP to complete the service.
+                </p>
             </div>
             <form action="{{ url_for('owner.verify_otp', id=b.id) }}" method="POST"
-                style="display: flex; gap: 0.5rem; margin: 0; align-items: stretch;">
-                <input type="text" name="otp" placeholder="Enter user's OTP" required
-                    style="padding: 0.4rem 0.8rem; border-radius: 10px; border: 1px solid var(--glass-border); flex: 1; min-width: 0; font-size: 0.85rem; font-family: inherit;">
+                style="display: flex; flex-direction: column; gap: 0.6rem; margin: 0;">
+                <div style="display: flex; gap: 0.5rem;">
+                    <select name="payment_method" style="flex: 0.8; padding: 0.4rem 0.6rem; border-radius: 10px; border: 1px solid var(--glass-border); font-size: 0.8rem; font-weight: 700; color: var(--text-main);">
+                        <option value="Cash">Cash</option>
+                        <option value="Online">Online</option>
+                    </select>
+                    <input type="text" name="otp" placeholder="Enter OTP" required
+                        style="padding: 0.4rem 0.8rem; border-radius: 10px; border: 1px solid var(--glass-border); flex: 1; min-width: 0; font-size: 0.85rem; font-family: inherit;">
+                </div>
                 <button type="submit"
-                    style="background: #10b981; color: white; border: none; padding: 0.4rem 1rem; border-radius: 10px; font-weight: 800; font-size: 0.8rem; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 6px rgba(16,185,129,0.2);">
-                    <i class="fas fa-check-circle" style="margin-right: 4px;"></i> Complete
+                    style="background: #10b981; color: white; border: none; padding: 0.65rem 1rem; border-radius: 10px; font-weight: 800; font-size: 0.8rem; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 6px rgba(16,185,129,0.2);">
+                    <i class="fas fa-check-circle" style="margin-right: 4px;"></i> Complete & Mark Paid
                 </button>
             </form>
         </div>

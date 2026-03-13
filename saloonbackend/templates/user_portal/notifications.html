@@ -1,89 +1,74 @@
 {% extends "user_portal/layout.html" %}
 {% block title %}Notifications{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+{% block i18n_page %}nav_inbox{% endblock %}
+{% block nav_inbox %}active{% endblock %}
+
+{% block styles %}
+<style>
+    .notification-card {
+        background: var(--bg-card); border-radius: 24px; padding: 1.25rem; border: 1px solid var(--glass-border);
+        position: relative; display: flex; gap: 1rem; transition: transform 0.2s; margin-bottom: 1rem;
+    }
+    .notification-card:hover { transform: translateY(-2px); }
+    
+    .status-indicator {
+        width: 4px; height: 100%; position: absolute; left: 0; top: 0; border-radius: 4px 0 0 4px;
+    }
+    .status-accepted { background: var(--primary); }
+    .status-completed { background: #10b981; }
+    .status-rejected { background: #ef4444; }
+    .status-pending { background: #f59e0b; }
+</style>
+{% endblock %}
 
 {% block content %}
-<style>
-    .status-strip {
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 4px;
-        background: #f59e0b;
-        /* Default */
-    }
-
-    .status-strip.accepted {
-        background: #6366f1;
-    }
-
-    .status-strip.completed {
-        background: #10b981;
-    }
-
-    .status-strip.rejected {
-        background: #ef4444;
-    }
-</style>
-
 <div class="fade-in">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-        <h2 style="font-weight: 900; font-size: 1.5rem; color: var(--text-main);">Notifications</h2>
-        <span
-            style="background: rgba(244, 63, 94, 0.1); color: var(--primary); padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.7rem; font-weight: 800;">{{
-            notifications|length }} NEW</span>
-    </div>
-
     {% if notifications %}
-    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-        {% for b in notifications %}
-        <div class="card" style="padding: 1rem; position: relative; overflow: hidden;">
-            <!-- Status Indicator Strip -->
-            <div class="status-strip {{ b.status }}"></div>
+    <div style="display: grid; gap: 0.5rem;">
+        {% for n in notifications %}
+        <div class="notification-card reveal {{ 'unread' if not n.is_read else '' }}">
+            <div class="status-indicator status-{{ n.type }}"></div>
 
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-                <h4 style="font-weight: 800; font-size: 0.95rem; color: var(--text-main);">{{ b.service.name if
-                    b.service else 'Deleted Service' }}</h4>
-                <span class="badge badge-{{ b.status }}">{{ b.status|title }}</span>
+            <div style="flex-shrink: 0; width: 50px; height: 50px; border-radius: 16px; background: var(--bg-main); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                {% if n.type == 'booking' %}
+                <i class="fas fa-calendar-check" style="color: var(--primary);"></i>
+                {% elif n.type == 'offer' %}
+                <i class="fas fa-gift" style="color: #f59e0b;"></i>
+                {% elif n.type == 'info' %}
+                <i class="fas fa-info-circle" style="color: #3b82f6;"></i>
+                {% else %}
+                <i class="fas fa-bell" style="color: var(--text-muted);"></i>
+                {% endif %}
             </div>
 
-            <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.5rem;">
-                {% if b.status == 'pending' %}
-                Your request at <strong>{{ b.salon.name if b.salon else 'Deleted Salon' }}</strong> is pending approval.
-                {% elif b.status == 'accepted' %}
-                Good news! Your booking at <strong>{{ b.salon.name if b.salon else 'Deleted Salon' }}</strong> is
-                confirmed.
-                <span style="display: block; margin-top: 4px; color: var(--primary); font-weight: 700;">OTP: {{ b.otp
-                    }}</span>
-                {% elif b.status == 'completed' %}
-                Service completed at <strong>{{ b.salon.name if b.salon else 'Deleted Salon' }}</strong>. Hope you loved
-                it!
-                {% elif b.status == 'rejected' %}
-                Booking at <strong>{{ b.salon.name if b.salon else 'Deleted Salon' }}</strong> was cancelled or
-                declined.
-                {% endif %}
-            </p>
+            <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                    <h4 style="font-weight: 850; font-size: 0.95rem; margin: 0; color: var(--text-main);">{{ n.title }}</h4>
+                    <span style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); opacity: 0.8;">{{ n.created_at.strftime('%I:%M %p') }}</span>
+                </div>
+                
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0 0 10px 0; line-height: 1.4;">
+                    {{ n.message }}
+                </p>
 
-            <div
-                style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #f8fafc;">
-                <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">
-                    <i class="far fa-clock" style="margin-right: 3px;"></i> {{ b.slot_time.strftime('%I:%M %p, %d %b')
-                    }}
-                </span>
-                <a href="{{ url_for('user_portal.my_bookings') }}"
-                    style="font-size: 0.75rem; color: var(--primary); font-weight: 700; text-decoration: none;">View
-                    Detail <i class="fas fa-chevron-right" style="font-size: 0.6rem;"></i></a>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-size: 0.7rem; font-weight: 850; text-transform: uppercase; color: var(--primary);">{{ n.type }}</span>
+                    {% if n.type == 'booking' %}
+                    <a href="{{ url_for('user_portal.my_bookings') }}" style="font-size: 0.75rem; font-weight: 800; color: var(--text-main); text-decoration: none;"><span data-i18n="details">View Booking</span> <i class="fas fa-arrow-right" style="font-size: 0.6rem; margin-left: 4px;"></i></a>
+                    {% endif %}
+                </div>
             </div>
         </div>
         {% endfor %}
     </div>
     {% else %}
-    <div
-        style="text-align: center; padding: 4rem 2rem; background: white; border-radius: 24px; border: 2px dashed var(--glass-border);">
-        <div style="font-size: 3.5rem; margin-bottom: 1rem; opacity: 0.5;">🔔</div>
-        <h3 style="font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">No updates yet</h3>
-        <p style="color: var(--text-muted); font-size: 0.9rem;">You'll get notified about your bookings and offers here.
-        </p>
+    <div style="padding: 5rem 2rem; text-align: center; background: var(--bg-card); border-radius: 32px; border: 2px dashed var(--glass-border);">
+        <div style="width: 80px; height: 80px; background: rgba(99, 102, 241, 0.1); border-radius: 30px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto; font-size: 2rem; color: var(--primary);">
+            <i class="far fa-bell-slash"></i>
+        </div>
+        <h3 style="font-weight: 900; color: var(--text-main); margin: 0 0 8px 0;" data-i18n="no_notifications">All caught up!</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 240px; margin: 0 auto;" data-i18n="no_notifications_desc">No new notifications right now. Check back later for updates on your bookings.</p>
     </div>
     {% endif %}
 </div>

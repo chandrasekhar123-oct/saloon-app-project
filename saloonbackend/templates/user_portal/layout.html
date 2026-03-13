@@ -5,401 +5,1067 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Saloon Essy | {% block title %}{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #f43f5e;
-            --primary-dark: #e11d48;
-            --orange: #fb923c;
-            --bg-main: #fff5f7;
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --accent: #d946ef;
+            --bg-main: #f8fafc;
             --bg-card: #ffffff;
             --text-main: #0f172a;
             --text-muted: #64748b;
-            --glass-border: #fce7eb;
-            --shadow-sm: 0 2px 8px rgba(244, 63, 94, 0.07);
+            --glass-border: #f1f5f9;
+            --shadow-sm: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --sidebar-width: 280px;
         }
 
         [data-theme='dark'] {
-            --bg-main: #0f172a;
-            --bg-card: #1e293b;
+            --bg-main: #020617;
+            --bg-card: #0f172a;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            --glass-border: #334155;
+            --glass-border: #1e293b;
             --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
-    </style>
 
-    <script>
-        // Theme Loader Script
-        (function () {
-            const theme = localStorage.getItem('theme') || 'light';
-            if (theme === 'dark') {
-                document.documentElement.setAttribute('data-theme', 'dark');
-            }
-        })();
-    </script>
-
-    <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Outfit', sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             background: var(--bg-main);
             color: var(--text-main);
-            display: flex;
-            justify-content: center;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        .mobile-container {
+        .app-container {
+            display: flex;
+            min-height: 100vh;
             width: 100%;
-            max-width: 600px;
-            min-height: 100vh;
-            background: var(--bg-main);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            transition: max-width 0.3s ease;
         }
 
-        @media (min-width: 1024px) {
-            .mobile-container {
-                max-width: 1000px;
-                flex-direction: row;
-            }
-
-            .header {
-                display: none;
-            }
-
-            .bottom-nav {
-                height: 100vh;
-                width: 240px;
-                flex-direction: column;
-                justify-content: flex-start;
-                padding-top: 3rem;
-                left: 0;
-                transform: none;
-                border-top: none;
-                border-right: 1px solid var(--glass-border);
-                position: sticky;
-                top: 0;
-            }
-
-            .nav-item {
-                flex-direction: row;
-                width: 90%;
-                justify-content: flex-start;
-                padding: 1rem 1.5rem;
-                gap: 1rem;
-                font-size: 0.9rem;
-            }
-
-            .nav-item i {
-                font-size: 1.5rem;
-            }
-
-            .main-content {
-                padding: 3rem;
-            }
-
-            .desktop-header {
-                display: flex !important;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 2rem;
-            }
+        /* Sidebar Navigation */
+        /* Sidebar Navigation - Hidden for Unified Bottom Nav */
+        .sidebar {
+            display: none !important;
         }
 
-        .desktop-header {
-            display: none;
-        }
-
-        /* Header */
-        .header {
-            background: linear-gradient(135deg, var(--primary), var(--orange));
-            padding: 1.1rem 1.4rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header-brand {
+        .sidebar-logo {
             display: flex;
             align-items: center;
-            gap: 0.6rem;
+            gap: 12px;
+            margin-bottom: 3rem;
+            text-decoration: none;
         }
 
-        .header-brand i {
-            color: white;
-            font-size: 1.4rem;
+        .sidebar-logo img {
+            height: 40px;
+            width: 40px;
+            object-fit: cover;
+            border-radius: 10px;
         }
 
-        .header-brand span {
-            color: white;
-            font-weight: 900;
+        .sidebar-logo span {
             font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-main);
             letter-spacing: -0.5px;
         }
 
-        .header-right {
+        .nav-links {
             display: flex;
-            align-items: center;
-            gap: 0.75rem;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
         }
 
-        .header-avatar {
-            width: 36px;
-            height: 36px;
-            background: rgba(255, 255, 255, 0.25);
-            border-radius: 50%;
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-link i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .nav-link:hover {
+            background: #fff1f2;
+            color: var(--primary);
+        }
+
+        .nav-link.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(244, 63, 94, 0.2);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            border-top: 1px solid var(--glass-border);
+            padding-top: 1.5rem;
+        }
+
+        .user-mini-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px;
+            border-radius: 12px;
+            background: var(--bg-main);
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--primary);
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-weight: 800;
-            font-size: 1rem;
+            font-weight: 700;
+            overflow: hidden;
         }
 
-        .header-notif {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 1.2rem;
-            position: relative;
-        }
-
-        /* Main */
-        .main-content {
-            padding: 1.25rem;
-            padding-bottom: 90px;
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        /* Bottom Nav */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
+        .user-avatar img {
             width: 100%;
-            max-width: 600px;
-            height: 70px;
-            background: white;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
-            z-index: 2000;
-            border-top: 1px solid #f1f5f9;
+            height: 100%;
+            object-fit: cover;
         }
 
-        .nav-item {
+        .user-info-text {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 3px;
-            text-decoration: none;
-            color: var(--text-muted);
-            font-size: 0.62rem;
+            min-width: 0;
+        }
+
+        .user-info-text .name {
             font-weight: 700;
-            text-transform: uppercase;
-            padding: 0.5rem 1.2rem;
-            border-radius: 12px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-info-text .role {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Main Content Area */
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .top-navbar {
+            height: 65px;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+        }
+
+        [data-theme='dark'] .top-navbar {
+            background: rgba(15, 23, 42, 0.7);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+
+        .navbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .notif-badge {
+            position: relative;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            text-decoration: none;
             transition: color 0.2s;
         }
 
-        .nav-item i {
-            font-size: 1.3rem;
+        .notif-badge::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border: 2px solid var(--bg-card);
+            border-radius: 50%;
         }
 
-        .nav-item.active i,
-        .nav-item.active {
+        .content-body {
+            padding: 1.5rem;
+            flex: 1;
+            padding-bottom: 90px; /* Space for bottom nav */
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Responsive Mobile Layout */
+        /* Responsive adjustments for the new bottom nav first layout */
+        @media (max-width: 1024px) {
+            .content-body {
+                padding: 1rem;
+                padding-bottom: 90px;
+            }
+            .sidebar-overlay { display: none !important; }
+        }
+
+        .bottom-nav-mobile {
+            display: flex;
+            position: fixed;
+            bottom: 15px;
+            left: 15px;
+            right: 15px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 2000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 0 10px;
+        }
+
+        [data-theme='dark'] .bottom-nav-mobile {
+            background: rgba(30, 41, 59, 0.85);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .mobile-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            font-weight: 800;
+            flex: 1;
+            transition: all 0.2s;
+        }
+
+        .mobile-nav-item i {
+            font-size: 1.3rem;
+            margin-bottom: 2px;
+            transition: all 0.3s;
+        }
+
+        .mobile-nav-item.active {
             color: var(--primary);
         }
-
-        /* Cards */
-        .card {
-            background: white;
-            border-radius: 18px;
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--shadow-sm);
+        .mobile-nav-item.active i {
+            transform: translateY(-5px);
+            text-shadow: 0 10px 15px rgba(99, 102, 241, 0.4);
+        }
+        .mobile-nav-item.active span {
+            font-size: 0.75rem;
+            font-weight: 900;
         }
 
-        /* Flash */
-        .flash-messages {
-            margin-bottom: 1rem;
-        }
-
-        .flash-msg {
-            padding: 0.8rem 1rem;
-            border-radius: 14px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .flash-msg.success {
-            background: rgba(16, 185, 129, 0.1);
-            color: #059669;
-            border: 1px solid rgba(16, 185, 129, 0.2);
-        }
-
-        .flash-msg.danger {
-            background: rgba(239, 68, 68, 0.1);
-            color: #dc2626;
-            border: 1px solid rgba(239, 68, 68, 0.2);
-        }
-
-        .flash-msg.warning {
-            background: rgba(245, 158, 11, 0.1);
-            color: #d97706;
-            border: 1px solid rgba(245, 158, 11, 0.2);
-        }
-
-        /* Animations */
+        /* Utility Classes */
         .fade-in {
-            animation: fadeIn 0.4s ease;
+            animation: fadeIn 0.4s ease-out;
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Badges */
-        .badge {
-            padding: 0.25rem 0.65rem;
-            border-radius: 50px;
-            font-size: 0.68rem;
-            font-weight: 800;
+        .flash-messages { margin-bottom: 1.5rem; }
+        .flash-msg {
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .flash-msg.success { background: #f0fdf4; color: #166534; border: 1px solid #dcfce7; }
+        .flash-msg.danger { background: #fef2f2; color: #991b1b; border: 1px solid #fee2e2; }
+        .flash-msg.warning { background: #fffbeb; color: #92400e; border: 1px solid #fef3c7; }
+
+        /* Modern Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+
+        /* Story Section Styles */
+        .story-container {
+            display: flex;
+            gap: 1.25rem;
+            overflow-x: auto;
+            padding: 0.5rem 0.25rem 1.5rem 0.25rem;
+            scrollbar-width: none;
+        }
+        .story-container::-webkit-scrollbar { display: none; }
+        
+        .story-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .story-item:active { transform: scale(0.95); }
+        
+        .story-ring {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            padding: 3px;
+            background: linear-gradient(45deg, #f43f5e, #fb923c);
+            position: relative;
+        }
+        .story-ring.active { background: #e2e8f0; }
+        
+        .story-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid var(--bg-main);
+            object-fit: cover;
+            background: white;
+        }
+        
+        .story-name {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-main);
+            max-width: 72px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .badge-pending {
-            background: rgba(245, 158, 11, 0.12);
-            color: #d97706;
+        /* Horizontal Scroller */
+        .h-scroll {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            padding: 0.5rem 0.25rem 1.5rem 0.25rem;
+            scrollbar-width: none;
+            scroll-behavior: smooth;
+        }
+        .h-scroll::-webkit-scrollbar { display: none; }
+
+        .service-pill-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            padding: 12px 20px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            text-decoration: none;
+            color: inherit;
+        }
+        .service-pill-btn:hover { background: #fff1f2; border-color: var(--primary); }
+        .service-pill-btn i { font-size: 1.25rem; color: var(--primary); }
+        .service-pill-btn span { font-weight: 700; font-size: 0.9rem; }
+
+        .stat-card-mini {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            padding: 1.25rem;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 140px;
+            box-shadow: var(--shadow-sm);
         }
 
-        .badge-accepted {
-            background: rgba(99, 102, 241, 0.12);
-            color: #6366f1;
-        }
 
-        .badge-completed {
-            background: rgba(16, 185, 129, 0.12);
-            color: #059669;
+        /* Pulse Animation */
+        @keyframes storyPulse {
+            0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(244, 63, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
         }
+        .story-ring.live { animation: storyPulse 2s infinite; }
 
-        .badge-rejected {
-            background: rgba(239, 68, 68, 0.12);
-            color: #dc2626;
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        .premium-bg {
+            background: radial-gradient(circle at 10% 20%, rgba(244, 63, 94, 0.05) 0%, transparent 40%),
+                        radial-gradient(circle at 90% 80%, rgba(251, 146, 60, 0.05) 0%, transparent 40%);
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1;
         }
     </style>
     {% block styles %}{% endblock %}
 </head>
 
 <body>
-    <div class="mobile-container">
-
-        <!-- Header -->
-        <div class="header">
-            <div class="header-brand">
-                <i class="fas fa-cut"></i>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <a href="/" class="sidebar-logo">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo">
                 <span>Saloon Essy</span>
-                <a href="/"
-                    style="background: rgba(255,255,255,0.2); color: white; padding: 0.2rem 0.5rem; border-radius: 50px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; text-decoration: none; border: 1px solid rgba(255,255,255,0.3); margin-left: 8px;">
-                    <i class="fas fa-exchange-alt"></i>
+            </a>
+
+            <nav class="nav-links">
+                <a href="{{ url_for('user_portal.home') }}" class="nav-link {{ 'active' if active_page == 'home' else '' }}">
+                    <i class="fas fa-compass"></i>
+                    <span>Discover</span>
                 </a>
-            </div>
-            <div class="header-right">
-                <a href="{{ url_for('user_portal.notifications') }}" class="header-notif">
+                <a href="{{ url_for('user_portal.my_bookings') }}" class="nav-link {{ 'active' if active_page == 'bookings' else '' }}">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Bookings</span>
+                </a>
+                <a href="{{ url_for('user_portal.notifications') }}" class="nav-link {{ 'active' if active_page == 'notifications' else '' }}">
                     <i class="fas fa-bell"></i>
+                    <span>Notifications</span>
                 </a>
-                <a href="{{ url_for('user_portal.profile') }}" style="text-decoration: none;">
-                    <div class="header-avatar" style="overflow: hidden; border: 2px solid rgba(255,255,255,0.5);">
+                <a href="{{ url_for('user_portal.profile') }}" class="nav-link {{ 'active' if active_page == 'profile' else '' }}">
+                    <i class="fas fa-user-circle"></i>
+                    <span>My Profile</span>
+                </a>
+                <a href="{{ url_for('user_portal.settings') }}" class="nav-link {{ 'active' if active_page == 'settings' else '' }}">
+                    <i class="fas fa-sliders-h"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="{{ url_for('user_portal.profile') }}" class="user-mini-profile">
+                    <div class="user-avatar">
                         {% if user and user.profile_image %}
-                        <img src="{{ user.profile_image }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        <img src="{{ user.profile_image }}" alt="User">
                         {% else %}
-                        {{ user.name[0].upper() if user else 'U' }}
+                        {{ user.name[0]|upper if user else 'U' }}
                         {% endif %}
                     </div>
+                    <div class="user-info-text">
+                        <span class="name">{{ user.name if user else 'Guest User' }}</span>
+                        <span class="role">Premium Client</span>
+                    </div>
+                    <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 0.7rem; color: var(--text-muted);"></i>
+                </a>
+                <a href="{{ url_for('user_portal.logout') }}" class="nav-link" style="margin-top: 1rem; color: #ef4444;">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
                 </a>
             </div>
-        </div>
+        </aside>
 
-        <!-- Content -->
-        <div class="main-content">
-            <div class="desktop-header">
-                <div class="header-brand" style="color: var(--text-main);">
-                    <i class="fas fa-cut" style="color: var(--primary); font-size: 2rem;"></i>
-                    <span style="color: var(--text-main); font-size: 1.8rem;">Saloon Essy</span>
+        <!-- Main Wrapper -->
+        <main class="main-wrapper">
+            <header class="top-navbar">
+                <div class="page-header">
+                    <div class="search-input-wrapper" style="position: relative; margin-left: 0.5rem; display: none;">
+                        <i class="fas fa-search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.9rem;"></i>
+                        <input type="text" placeholder="Quick search..." style="background: var(--bg-main); border: none; padding: 10px 15px 10px 40px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; width: 250px; outline: none; border: 1px solid transparent; transition: all 0.2s;">
+                    </div>
+                    <h1 class="header-title" style="font-size: 1.1rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.3px;" data-i18n="{% block i18n_page %}{% endblock %}">{% block page_title %}Dashboard{% endblock %}</h1>
                 </div>
-                <div class="header-right">
-                    <a href="{{ url_for('user_portal.notifications') }}" class="header-notif"
-                        style="color: var(--text-muted);">
-                        <i class="fas fa-bell"></i>
-                    </a>
-                    <a href="{{ url_for('user_portal.profile') }}" style="text-decoration: none;">
-                        <div class="header-avatar"
-                            style="width: 45px; height: 45px; overflow: hidden; border: 2px solid var(--primary); color: var(--text-main); background: var(--bg-card);">
-                            {% if user and user.profile_image %}
-                            <img src="{{ user.profile_image }}" style="width: 100%; height: 100%; object-fit: cover;">
-                            {% else %}
-                            {{ user.name[0].upper() if user else 'U' }}
-                            {% endif %}
+                
+                <div class="navbar-actions">
+                    <!-- Language Selection -->
+                    <div class="lang-switcher" style="position: relative;">
+                        <button onclick="toggleLangMenu()" style="background: var(--bg-main); border: 1px solid var(--glass-border); padding: 5px 12px; border-radius: 10px; font-weight: 800; font-size: 0.75rem; color: var(--text-main); cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-globe"></i> <span id="current-lang-label">EN</span>
+                        </button>
+                        <div id="langDropdown" style="display: none; position: absolute; top: 110%; right: 0; background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: 12px; box-shadow: var(--shadow-md); z-index: 1000; overflow: hidden; min-width: 120px;">
+                            <div onclick="setLanguage('en')" style="padding: 10px 15px; cursor: pointer; font-weight: 700; font-size: 0.85rem; transition: background 0.2s;" onmouseover="this.style.background='var(--primary)'" onmouseout="this.style.background='transparent'">English</div>
+                            <div onclick="setLanguage('te')" style="padding: 10px 15px; cursor: pointer; font-weight: 700; font-size: 0.85rem; transition: background 0.2s;" onmouseover="this.style.background='var(--primary)'" onmouseout="this.style.background='transparent'">తెలుగు (Telugu)</div>
+                            <div onclick="setLanguage('hi')" style="padding: 10px 15px; cursor: pointer; font-weight: 700; font-size: 0.85rem; transition: background 0.2s;" onmouseover="this.style.background='var(--primary)'" onmouseout="this.style.background='transparent'">हिन्दी (Hindi)</div>
                         </div>
+                    </div>
+
+                    <a href="{{ url_for('user_portal.notifications') }}" class="notif-badge">
+                        <i class="far fa-bell"></i>
                     </a>
+                    <div class="theme-switch" onclick="toggleTheme()" style="cursor: pointer; color: var(--text-muted);">
+                        <i class="fas fa-moon" id="theme-icon"></i>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-body" id="mainContent">
+                <div class="premium-bg"></div>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                    <div class="flash-msg {{ category }}">
+                        <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}"></i>
+                        {{ message|safe }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% endwith %}
+
+                <div class="fade-in">
+                    {% block content %}{% endblock %}
                 </div>
             </div>
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-            <div class="flash-messages">
-                {% for category, message in messages %}
-                <div class="flash-msg {{ category }}">{{ message|safe }}</div>
-                {% endfor %}
-            </div>
-            {% endif %}
-            {% endwith %}
+        </main>
 
-            {% block content %}{% endblock %}
-        </div>
-
-        <!-- Bottom Nav -->
-        <nav class="bottom-nav">
-            <a href="{{ url_for('user_portal.home') }}"
-                class="nav-item {{ 'active' if active_page == 'home' else '' }}">
+        <!-- Bottom Mobile Nav -->
+        <nav class="bottom-nav-mobile">
+            <a href="{{ url_for('user_portal.home') }}" class="mobile-nav-item {% block nav_home %}{% endblock %}">
                 <i class="fas fa-compass"></i>
-                <span>Explore</span>
+                <span data-i18n="nav_discover">Discover</span>
             </a>
-            <a href="{{ url_for('user_portal.my_bookings') }}"
-                class="nav-item {{ 'active' if active_page == 'bookings' else '' }}">
+            <a href="{{ url_for('user_portal.my_bookings') }}" class="mobile-nav-item {% block nav_bookings %}{% endblock %}">
                 <i class="fas fa-calendar-alt"></i>
-                <span>Bookings</span>
+                <span data-i18n="nav_bookings">Bookings</span>
             </a>
-            <a href="{{ url_for('user_portal.profile') }}"
-                class="nav-item {{ 'active' if active_page == 'profile' else '' }}">
+            <a href="{{ url_for('user_portal.notifications') }}" class="mobile-nav-item {% block nav_inbox %}{% endblock %}">
+                <i class="fas fa-bell"></i>
+                <span data-i18n="nav_inbox">Inbox</span>
+            </a>
+            <a href="{{ url_for('user_portal.profile') }}" class="mobile-nav-item {% block nav_profile %}{% endblock %}">
                 <i class="fas fa-user"></i>
-                <span>Profile</span>
-            </a>
-            <a href="{{ url_for('user_portal.settings') }}"
-                class="nav-item {{ 'active' if active_page == 'settings' else '' }}">
-                <i class="fas fa-cog"></i>
-                <span>Settings</span>
+                <span data-i18n="nav_profile">Profile</span>
             </a>
         </nav>
     </div>
+
+    <script>
+        // Theme Toggle Logic
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            const currentTheme = html.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            icon.className = newTheme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+        }
+
+        // Initialize Theme
+        (function() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            const icon = document.getElementById('theme-icon');
+            if (icon) icon.className = theme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+        })();
+
+        // Multi-Language Support
+        const translations = {
+            'en': {
+                'nav_discover': 'Discover',
+                'nav_bookings': 'Bookings',
+                'nav_inbox': 'Inbox',
+                'nav_profile': 'Profile',
+                'dashboard': 'Dashboard',
+                'my_profile': 'My Profile',
+                'book_appointment': 'Book Appointment',
+                'confirm_booking': 'Confirm Appointment',
+                'welcome_back': 'Welcome Back!',
+                'search_placeholder': 'Search for salons or services...',
+                'all': 'All',
+                'men': 'Men',
+                'women': 'Women',
+                'spa': 'Spa',
+                'nails': 'Nails',
+                'recommended': 'Recommended',
+                'view_all': 'View All',
+                'exclusive_offers': 'Exclusive Offers',
+                'claim_now': 'CLAIM NOW',
+                'winter_glow': 'Winter Glow Up',
+                'top_specialists': 'Top Specialists',
+                'all_bookings': 'All Bookings',
+                'pending': 'Pending',
+                'accepted': 'Accepted',
+                'completed': 'Completed',
+                'rejected': 'Rejected',
+                'no_bookings': 'No Bookings Found',
+                'start_journey': 'Start your journey today!',
+                'book_now': 'Book Now',
+                'cancel_btn': 'Cancel Appointment',
+                'rate_btn': 'Rate Service',
+                'otp_instruction': 'SHOW THIS OTP TO START SERVICE',
+                'total_bookings': 'Total Bookings',
+                'total_spent': 'Total Spent',
+                'booking_history': 'Booking History',
+                'account_settings': 'Account Settings',
+                'sign_out': 'Sign Out',
+                'view_history_desc': 'View all your past appointments',
+                'view_settings_desc': 'Update your personal information',
+                'personal_info': 'Personal Information',
+                'full_name': 'Full Name',
+                'phone_number': 'Phone Number',
+                'new_password': 'New Password',
+                'password_placeholder': 'Leave blank to keep current',
+                'preferences': 'Preferences',
+                'interface_theme': 'Interface Theme',
+                'theme_desc': 'Switch between light and dark modes',
+                'save_settings': 'Save Profile Settings',
+                'update_photo': 'Update your profile picture',
+                'select_service': 'Select Service',
+                'select_specialist': 'Select Specialist',
+                'select_date_time': 'Select Date & Time',
+                'total_price': 'TOTAL PRICE',
+                'instant_confirm': 'Instant Confirm',
+                'pay_at_salon': 'Pay at Salon',
+                'confirm_appointment': 'Confirm Appointment',
+                'no_notifications': 'All caught up!',
+                'no_notifications_desc': 'No new notifications right now.',
+                'details': 'Details',
+                'booking_confirmed': 'Your booking at {salon} is confirmed! Use OTP {otp}.',
+                'booking_pending': 'Your request at {salon} is waiting for confirmation.',
+                'booking_completed': 'How was your experience at {salon}?',
+                'booking_rejected': 'Booking at {salon} could not be processed.',
+                'how_was_service': 'How was your service?',
+                'feedback_help': 'Your feedback helps us improve!',
+                'feedback_placeholder': 'Tell us about your experience...',
+                'submit_review': 'Submit Review',
+                'maybe_later': 'Not now, maybe later',
+                'welcome_back_title': 'Welcome Back',
+                'sign_in_desc': 'Sign in to book your next grooming session',
+                'create_account': 'Create Account',
+                'join_desc': 'Join us for a premium grooming experience',
+                'login_btn': 'Login to Dashboard',
+                'register_btn': 'Create New Account',
+                'already_have_account': 'Already have an account?',
+                'new_here': 'New here?',
+                'forgot_password': 'Forgot?',
+                'or_register_with': 'Or Register With',
+                'login_otp': 'Login with OTP',
+                'back_gateway': 'Back to Gateway',
+                'full_name_label': 'Full Name',
+                'phone_label': 'Phone Number',
+                'password_label': 'Password',
+                'official_partner': 'Official Partner',
+                'shop_gallery': 'Shop Gallery',
+                'any': 'Any',
+                'auto_assign': 'Auto Assign',
+                'available': 'Available',
+                'away': 'Away',
+                'date_label': 'DATE',
+                'time_label': 'TIME',
+                'no_services': 'No services available at this time.',
+                'refer_earn': 'Refer & Earn ₹100',
+                'refer_desc': 'Share with friends and get credits!',
+                'invite_btn': 'INVITE',
+                'next_appointment': 'Next Appointment',
+                'view_btn': 'VIEW',
+                'all_nearby': 'All Nearby Salons',
+                'found': 'found',
+                'open_now': 'Open Now',
+                'closed': 'Closed',
+                'mins': 'mins',
+                'book_now_btn': 'Book Now',
+                'no_salons': 'No Salons Found',
+                'adjust_filters': 'Try adjusting your filters.',
+                'beauty_parlor': 'Beauty Parlor',
+                'payment_method': 'Payment Method',
+                'cash_upi_at_counter': 'Cash or UPI at counter after service'
+            },
+            'te': {
+                'nav_discover': 'అన్వేషించండి',
+                'nav_bookings': 'బుకింగ్‌లు',
+                'nav_inbox': 'ఇన్‌బాక్స్',
+                'nav_profile': 'ప్రొఫైల్',
+                'dashboard': 'డాష్‌బోర్డ్',
+                'my_profile': 'నా ప్రొఫైల్',
+                'book_appointment': 'అపాయింట్‌మెంట్ బుక్ చేయండి',
+                'confirm_booking': 'బుకింగ్‌ను నిర్ధారించండి',
+                'welcome_back': 'తిరిగి స్వాగతం!',
+                'search_placeholder': 'సలూన్‌లు లేదా సేవల కోసం వెతకండి...',
+                'all': 'అన్నీ',
+                'men': 'పురుషులు',
+                'women': 'మహిళలు',
+                'spa': 'స్పా',
+                'nails': 'గోర్లు',
+                'recommended': 'సిఫార్సు చేయబడినవి',
+                'view_all': 'అన్నీ చూడండి',
+                'exclusive_offers': 'ప్రత్యేక ఆఫర్‌లు',
+                'claim_now': 'ఇప్పుడే పొందండి',
+                'winter_glow': 'చలికాలం గ్లో అప్',
+                'top_specialists': 'టాప్ నిపుణులు',
+                'all_bookings': 'అన్ని బుకింగ్‌లు',
+                'pending': 'పెండింగ్‌లో ఉంది',
+                'accepted': 'అంగీకరించబడింది',
+                'completed': 'పూర్తయింది',
+                'rejected': 'తిరస్కరించబడింది',
+                'no_bookings': 'బుకింగ్‌లు లేవు',
+                'start_journey': 'ఈ రోజు సలూన్ ఎస్సీతో ప్రారంభించండి!',
+                'book_now': 'ఇప్పుడే బుక్ చేయండి',
+                'cancel_btn': 'అపాయింట్‌మెంట్‌ను రద్దు చేయండి',
+                'rate_btn': 'రేటింగ్ ఇవ్వండి',
+                'otp_instruction': 'సర్వీస్ ప్రారంభించడానికి ఈ OTPని చూపండి',
+                'total_bookings': 'మొత్తం బుకింగ్‌లు',
+                'total_spent': 'మొత్తం ఖర్చు',
+                'booking_history': 'బుకింగ్ చరిత్ర',
+                'account_settings': 'ఖాతా సెట్టింగులు',
+                'sign_out': 'సైన్ అవుట్',
+                'view_history_desc': 'మీ గత అపాయింట్‌మెంట్‌లను చూడండి',
+                'view_settings_desc': 'మీ వ్యక్తిగత సమాచారాన్ని నవీకరించండి',
+                'personal_info': 'వ్యక్తిగత సమాచారం',
+                'full_name': 'పూర్తి పేరు',
+                'phone_number': 'ఫోన్ నంబర్',
+                'new_password': 'కొత్త పాస్‌వర్డ్',
+                'password_placeholder': 'ప్రస్తుత పాస్‌వర్డ్‌ను ఉంచడానికి ఖాళీగా ఉంచండి',
+                'preferences': 'ప్రాధాన్యతలు',
+                'interface_theme': 'ఇంటర్‌ఫేస్ థీమ్',
+                'theme_desc': 'లైట్ మరియు డార్క్ మోడ్‌ల మధ్య మారండి',
+                'save_settings': 'మొత్తం సేవ్ చేయండి',
+                'update_photo': 'మీ ప్రొఫైల్ చిత్రాన్ని అప్‌డేట్ చేయండి',
+                'select_service': 'మొదట సేవను ఎంచుకోండి',
+                'select_specialist': 'నిపుణుడిని ఎంచుకోండి',
+                'select_date_time': 'తేదీ మరియు సమయాన్ని ఎంచుకోండి',
+                'total_price': 'మొత్తం ధర',
+                'instant_confirm': 'తక్షణ నిర్ధారణ',
+                'pay_at_salon': 'సలూన్‌లో చెల్లించండి',
+                'confirm_appointment': 'నియమకాన్ని నిర్ధారించండి',
+                'no_notifications': 'అన్నీ పూర్తయ్యాయి!',
+                'no_notifications_desc': 'ప్రస్తుతానికి కొత్త నోటిఫికేషన్‌లు లేవు.',
+                'details': 'వివరాలు',
+                'booking_confirmed': '{salon}లో మీ బుకింగ్ నిర్ధారించబడింది! OTP {otp}ని ఉపయోగించండి.',
+                'booking_pending': '{salon} వద్ద మీ అభ్యర్థన నిర్ధారణ కోసం వేచి ఉంది.',
+                'booking_completed': '{salon}లో మీ అనుభవం ఎలా ఉంది?',
+                'booking_rejected': '{salon}లో బుకింగ్ ప్రాసెస్ చేయబడలేదు.',
+                'how_was_service': 'మీ సేవ ఎలా ఉంది?',
+                'feedback_help': 'మీ అభిప్రాయం మెరుగుపరచడంలో మాకు సహాయపడుతుంది!',
+                'feedback_placeholder': 'మీ అనుభవం గురించి మాకు చెప్పండి...',
+                'submit_review': 'రివ్యూ సమర్పించండి',
+                'maybe_later': 'ఇప్పుడు కాదు, తర్వాత',
+                'welcome_back_title': 'తిరిగి స్వాగతం',
+                'sign_in_desc': 'మీ తదుపరి అపాయింట్‌మెంట్ బుక్ చేయడానికి సైన్ ఇన్ చేయండి',
+                'create_account': 'ఖాతాను సృష్టించండి',
+                'join_desc': 'ప్రీమియం అనుభవం కోసం మాతో చేరండి',
+                'login_btn': 'లాగిన్ చేయండి',
+                'register_btn': 'కొత్త ఖాతాను సృష్టించండి',
+                'already_have_account': 'ఇప్పటికే ఖాతా ఉందా?',
+                'new_here': 'ఇక్కడ కొత్తవా?',
+                'forgot_password': 'మర్చిపోయారా?',
+                'or_register_with': 'లేదా దీనితో రిజిస్టర్ చేసుకోండి',
+                'login_otp': 'OTPతో లాగిన్ చేయండి',
+                'back_gateway': 'గేట్‌వేకి తిరిగి వెళ్లండి',
+                'full_name_label': 'పూర్తి పేరు',
+                'phone_label': 'ఫోన్ నంబర్',
+                'password_label': 'పాస్‌వర్డ్',
+                'official_partner': 'అధికారిక భాగస్వామి',
+                'shop_gallery': 'షాప్ గ్యాలరీ',
+                'any': 'ఎవరో ఒకరు',
+                'auto_assign': 'ఆటో అసైన్',
+                'available': 'అందుబాటులో ఉన్నారు',
+                'away': 'అందుబాటులో లేరు',
+                'date_label': 'తేదీ',
+                'time_label': 'సమయం',
+                'no_services': 'ప్రస్తుతానికి సేవలు అందుబాటులో లేవు.',
+                'refer_earn': 'రెఫర్ చేయండి రూ.100 సంపాదించండి',
+                'refer_desc': 'స్నేహితులతో పంచుకోండి మరియు క్రెడిట్స్ పొందండి!',
+                'invite_btn': 'ఆహ్వానించండి',
+                'next_appointment': 'తదుపరి అపాయింట్‌మెంట్',
+                'view_btn': 'చూడండి',
+                'all_nearby': 'అన్ని సమీప సలూన్‌లు',
+                'found': 'కనుగొనబడ్డాయి',
+                'open_now': 'ఇప్పుడు తెరిచి ఉంది',
+                'closed': 'మూసివేయబడింది',
+                'mins': 'నిమిషాలు',
+                'book_now_btn': 'ఇప్పుడే బుక్ చేయండి',
+                'no_salons': 'సలూన్‌లు ఏవీ లేవు',
+                'adjust_filters': 'మీ ఫిల్టర్‌లను సర్దుబాటు చేయడానికి ప్రయత్నికండి.',
+                'beauty_parlor': 'బ్యూటీ పార్లర్',
+                'payment_method': 'చెల్లింపు విధానం',
+                'cash_upi_at_counter': 'సర్వీస్ తర్వాత కౌంటర్ వద్ద నగదు లేదా UPI ద్వారా చెల్లించండి'
+            },
+            'hi': {
+                'nav_discover': 'खोजें',
+                'nav_bookings': 'बुकिंग',
+                'nav_inbox': 'इनबॉक्स',
+                'nav_profile': 'प्रोफ़ाइल',
+                'dashboard': 'डैशबोर्ड',
+                'my_profile': 'मेरी प्रोफ़ाइल',
+                'book_appointment': 'अपॉइंटमेंट बुक करें',
+                'confirm_booking': 'बुकिंग की पुष्टि करें',
+                'welcome_back': 'वापसी पर स्वागत है!',
+                'search_placeholder': 'सैलून या सेवाओं की खोज करें...',
+                'all': 'सभी',
+                'men': 'पुरुष',
+                'women': 'महिलाएं',
+                'spa': 'स्पा',
+                'nails': 'नाखून',
+                'recommended': 'अनुशंसित',
+                'view_all': 'सभी देखें',
+                'exclusive_offers': 'विशेष ऑफर',
+                'claim_now': 'अभी प्राप्त करें',
+                'winter_glow': 'विंटर ग्लो अप',
+                'top_specialists': 'शीर्ष विशेषज्ञ',
+                'all_bookings': 'सभी बुकिंग',
+                'pending': 'लंबित',
+                'accepted': 'स्वीकार किया गया',
+                'completed': 'पूरा हुआ',
+                'rejected': 'अस्वीकृत',
+                'no_bookings': 'कोई बुकिंग नहीं मिली',
+                'start_journey': 'आज ही सैलून एस्सी के साथ शुरू करें!',
+                'book_now': 'अभी बुक करें',
+                'cancel_btn': 'अपॉइंटमेंट रद्द करें',
+                'rate_btn': 'रेटिंग दें',
+                'otp_instruction': 'सेवा शुरू करने के लिए यह OTP दिखाएं',
+                'total_bookings': 'कुल बुकिंग',
+                'total_spent': 'कुल खर्च',
+                'booking_history': 'बुकिंग इतिहास',
+                'account_settings': 'अकाउंट सेटिंग्स',
+                'sign_out': 'साइन आउट',
+                'view_history_desc': 'अपनी पिछली अपॉइंटमेंट देखें',
+                'view_settings_desc': 'अपनी व्यक्तिगत जानकारी अपडेट करें',
+                'personal_info': 'व्यक्तिगत जानकारी',
+                'full_name': 'पूरा नाम',
+                'phone_number': 'फ़ोन नंबर',
+                'new_password': 'नया पासवर्ड',
+                'password_placeholder': 'वर्तमान रखने के लिए खाली छोड़ें',
+                'preferences': 'प्राथमिकताएं',
+                'interface_theme': 'इंटरफ़ेस थीम',
+                'theme_desc': 'लाइट और डार्क मोड के बीच स्विच करें',
+                'save_settings': 'प्रोफ़ाइल सहेजें',
+                'update_photo': 'अपनी प्रोफ़ाइल फ़ोटो अपडेट करें',
+                'select_service': 'सेवा चुनें',
+                'select_specialist': 'विशेषज्ञ चुनें',
+                'select_date_time': 'दिनांक और समय चुनें',
+                'total_price': 'कुल मूल्य',
+                'instant_confirm': 'तुरंत पुष्टि',
+                'pay_at_salon': 'सैलून में भुगतान करें',
+                'confirm_appointment': 'अपॉइंटमेंट पक्का करें',
+                'no_notifications': 'सब कुछ अपडेट है!',
+                'no_notifications_desc': 'अभी कोई नई सूचना नहीं है।',
+                'details': 'विवरण',
+                'booking_confirmed': '{salon} में आपकी बुकिंग पक्की हो गई है! OTP {otp} का उपयोग करें।',
+                'booking_pending': '{salon} पर आपका अनुरोध पुष्टि की प्रतीक्षा कर रहा है।',
+                'booking_completed': '{salon} में आपका अनुभव कैसा रहा?',
+                'booking_rejected': '{salon} में बुकिंग की प्रक्रिया पूरी नहीं हो सकी।',
+                'how_was_service': 'आपकी सेवा कैसी रही?',
+                'feedback_help': 'आपकी प्रतिक्रिया हमें बेहतर बनाने में मदद करती है!',
+                'feedback_placeholder': 'हमें अपने अनुभव के बारे में बताएं...',
+                'submit_review': 'रिव्यू सबमिट करें',
+                'maybe_later': 'अभी नहीं, बाद में',
+                'welcome_back_title': 'वापसी पर स्वागत है',
+                'sign_in_desc': 'अपना अगला अपॉइंटमेंट बुक करने के लिए लॉगिन करें',
+                'create_account': 'खाता बनाएँ',
+                'join_desc': 'प्रीमियम अनुभव के लिए हमसे जुड़ें',
+                'login_btn': 'लॉगिन करें',
+                'register_btn': 'नया खाता बनाएँ',
+                'already_have_account': 'पहले से ही एक खाता है?',
+                'new_here': 'यहाँ नए हैं?',
+                'forgot_password': 'भूल गए?',
+                'or_register_with': 'या इसके साथ पंजीकरण करें',
+                'login_otp': 'OTP के साथ लॉगिन करें',
+                'back_gateway': 'गेटवे पर वापस जाएं',
+                'full_name_label': 'पूरा नाम',
+                'phone_label': 'फ़ोन नंबर',
+                'password_label': 'पासवर्ड',
+                'official_partner': 'आधिकारिक भागीदार',
+                'shop_gallery': 'शॉप गैलरी',
+                'any': 'कोई भी',
+                'auto_assign': 'ऑटो असाइन',
+                'available': 'उपलब्ध',
+                'away': 'बाहर',
+                'date_label': 'तारीख',
+                'time_label': 'समय',
+                'no_services': 'इस समय कोई सेवा उपलब्ध नहीं है।',
+                'refer_earn': 'रेफर करें ₹100 कमाएं',
+                'refer_desc': 'दोस्तों के साथ साझा करें और क्रेडिट पाएं!',
+                'invite_btn': 'आमंत्रित करें',
+                'next_appointment': 'अगला अपॉइंटमेंट',
+                'view_btn': 'देखें',
+                'all_nearby': 'सभी नजदीकी सैलून',
+                'found': 'मिले',
+                'open_now': 'अभी खुला है',
+                'closed': 'बंद है',
+                'mins': 'मिनट',
+                'book_now_btn': 'अभी बुक करें',
+                'no_salons': 'कोई सैलून नहीं मिला',
+                'adjust_filters': 'फ़िल्टर बदलने का प्रयास करें।',
+                'beauty_parlor': 'ब्यूटी पार्लर',
+                'payment_method': 'भुगतान का तरीका',
+                'cash_upi_at_counter': 'सेवा के बाद काउंटर पर नकद या UPI द्वारा भुगतान करें'
+            }
+        };
+
+        function toggleLangMenu() {
+            const dropdown = document.getElementById('langDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function setLanguage(lang) {
+            localStorage.setItem('user_lang', lang);
+            applyLanguage(lang);
+            document.getElementById('langDropdown').style.display = 'none';
+            document.getElementById('current-lang-label').innerText = lang.toUpperCase();
+        }
+
+        function applyLanguage(lang) {
+            const dictionary = translations[lang];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dictionary[key]) {
+                    el.innerText = dictionary[key];
+                }
+            });
+
+            // Update placeholders
+            document.querySelectorAll('input[placeholder]').forEach(input => {
+                if (input.getAttribute('data-i18n-hold')) {
+                    const key = input.getAttribute('data-i18n-hold');
+                    if (dictionary[key]) {
+                        input.placeholder = dictionary[key];
+                    }
+                }
+            });
+        }
+
+        // Initialize Language
+        (function() {
+            const lang = localStorage.getItem('user_lang') || 'en';
+            setTimeout(() => applyLanguage(lang), 100);
+            const label = document.getElementById('current-lang-label');
+            if (label) label.innerText = lang.toUpperCase();
+        })();
+
+        // Close dropdown on click outside
+        window.onclick = function(event) {
+            if (!event.target.closest('.lang-switcher')) {
+                const dropdown = document.getElementById('langDropdown');
+                if (dropdown) dropdown.style.display = 'none';
+            }
+        }
+
+        // Reveal Animation Observer
+        document.addEventListener('DOMContentLoaded', function() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        });
+    </script>
+    <!-- Audio Elements for Status Updates -->
+    <audio id="statusSuccessSound" preload="auto">
+        <source src="https://assets.mixkit.co/active_storage/sfx/2852/2852-preview.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="statusAlertSound" preload="auto">
+        <source src="https://assets.mixkit.co/active_storage/sfx/2854/2854-preview.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // Check for booking status updates every 5 seconds
+        if (typeof Notification !== 'undefined') {
+            if (Notification.permission !== 'granted') {
+                Notification.requestPermission();
+            }
+        }
+
+        function checkBookingStatus() {
+            fetch("{{ url_for('user_portal.check_booking_status') }}")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.updates) {
+                        data.bookings.forEach(booking => {
+                            const soundId = booking.status === 'accepted' ? 'statusSuccessSound' : 'statusAlertSound';
+                            const sound = document.getElementById(soundId);
+                            if (sound) {
+                                sound.play().catch(e => console.log("Sound play prevented", e));
+                            }
+                            
+                            if (Notification.permission === 'granted') {
+                                new Notification(`Booking Update: ${booking.status.toUpperCase()} 💇`, {
+                                    body: booking.message,
+                                    icon: '{{ url_for("static", filename="images/logo.png") }}'
+                                });
+                            }
+                        });
+                        
+                        // Optional: Refresh if on bookings page
+                        if (window.location.href.includes('bookings')) {
+                            setTimeout(() => window.location.reload(), 2000);
+                        }
+                    }
+                })
+                .catch(err => console.error("Poll Error:", err));
+        }
+
+        // Initialize polling if user is logged in
+        {% if session.get('portal_user_id') %}
+        setInterval(checkBookingStatus, 5000);
+        document.addEventListener('DOMContentLoaded', checkBookingStatus);
+        {% endif %}
+    </script>
 </body>
 
 </html>

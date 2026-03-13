@@ -8,6 +8,15 @@
 
 {% block content %}
 <div class="fade-in" style="max-width: 800px; margin: 0 auto; padding-bottom: 5rem;">
+    <!-- Back Button -->
+    <a href="{{ url_for('owner.profile') }}" 
+       style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: #64748b; font-weight: 700; font-size: 0.9rem; margin-bottom: 1.5rem; padding: 8px 16px; background: white; border-radius: 12px; border: 1px solid #e2e8f0; transition: 0.2s;"
+       onmouseover="this.style.background='#f8fafc'; this.style.color='var(--primary)';"
+       onmouseout="this.style.background='white'; this.style.color='#64748b';">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Profile</span>
+    </a>
+
     <form action="{{ url_for('owner.settings') }}" method="POST" enctype="multipart/form-data">
         <!-- Profile Header Card -->
         <div class="card"
@@ -154,6 +163,106 @@
                     <input type="text" name="shop_name" value="{{ shop.name }}" class="form-control"
                         style="background: #f8fafc; border-radius: 12px; padding: 0.8rem 1rem;">
                 </div>
+                <!-- Salon Category Selection (Premium Multi-Select Pills) -->
+                <div class="form-group" style="grid-column: span 2;">
+                    <label class="form-label" style="display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-shapes" style="color: var(--primary);"></i> Salon Specialties / Category (Select Multiple)
+                    </label>
+                    <input type="hidden" name="shop_category" id="shopCategoryInput" value="{{ shop.category or 'Barber Shop' }}">
+                    <div style="margin-bottom: 1rem; position: relative;">
+                        <input type="text" id="specialtySearch" placeholder="Search or add specialty (e.g. Bridal Makeup)..." 
+                               style="width: 100%; padding: 0.8rem 1rem 0.8rem 2.8rem; border-radius: 14px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 0.85rem; font-weight: 700; transition: 0.3s;"
+                               onkeydown="handleSpecialtyKey(event)">
+                        <i class="fas fa-search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.9rem;"></i>
+                    </div>
+
+                    <div id="pillsContainer" style="display: flex; flex-wrap: wrap; gap: 10px; background: #f8fafc; padding: 1.2rem; border-radius: 20px; border: 1px solid #e2e8f0;">
+                        {% set cats = ['Barber Shop', 'Beauty Parlor', 'Spa & Wellness', 'Tattoo Studio', 'Nail Art', 'Makeup Artist', 'Hair Stylist'] %}
+                        {% set current_cats = (shop.category or '').split(',') %}
+                        
+                        {# Standard Pills #}
+                        {% for cat in cats %}
+                        <div onclick="toggleSalonCategory('{{ cat }}', this)" 
+                             class="salon-cat-pill"
+                             data-cat-name="{{ cat.lower() }}"
+                             style="padding: 8px 18px; border-radius: 12px; font-size: 0.8rem; font-weight: 800; cursor: pointer; transition: all 0.2s; 
+                                    {% if cat.strip() in current_cats %}
+                                    background: #6366f1; color: white; border: 2px solid #6366f1;
+                                    {% else %}
+                                    background: white; color: #64748b; border: 2px solid #f1f5f9;
+                                    {% endif %}">
+                            {{ cat }}
+                        </div>
+                        {% endfor %}
+
+                        {# Custom Pills (for categories not in the standard list) #}
+                        {% for cat in current_cats %}
+                            {% if cat.strip() and cat.strip() not in cats %}
+                            <div onclick="toggleSalonCategory('{{ cat.strip() }}', this)" 
+                                 class="salon-cat-pill"
+                                 data-cat-name="{{ cat.strip().lower() }}"
+                                 style="padding: 8px 18px; border-radius: 12px; font-size: 0.8rem; font-weight: 800; cursor: pointer; transition: all 0.2s; background: #6366f1; color: white; border: 2px solid #6366f1;">
+                                {{ cat.strip() }}
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <script>
+                    let selectedCats = {{ current_cats|tojson }}.map(c => c.trim()).filter(c => c !== "");
+                    
+                    function toggleSalonCategory(category, element) {
+                        const index = selectedCats.indexOf(category);
+                        if (index > -1) {
+                            selectedCats.splice(index, 1);
+                            element.style.background = 'white';
+                            element.style.color = '#64748b';
+                            element.style.borderColor = '#f1f5f9';
+                        } else {
+                            if (!selectedCats.includes(category)) {
+                                selectedCats.push(category);
+                                element.style.background = '#6366f1';
+                                element.style.color = 'white';
+                                element.style.borderColor = '#6366f1';
+                            }
+                        }
+                        document.getElementById('shopCategoryInput').value = selectedCats.join(',');
+                    }
+
+                    function handleSpecialtyKey(e) {
+                        const val = e.target.value.trim();
+                        // Filter existing
+                        const pills = document.querySelectorAll('.salon-cat-pill');
+                        pills.forEach(p => {
+                            if (p.getAttribute('data-cat-name').includes(val.toLowerCase())) {
+                                p.style.display = 'block';
+                            } else {
+                                p.style.display = 'none';
+                            }
+                        });
+
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (val && !selectedCats.includes(val)) {
+                                // Add as new pill if it doesn't exist
+                                const container = document.getElementById('pillsContainer');
+                                const newPill = document.createElement('div');
+                                newPill.className = 'salon-cat-pill';
+                                newPill.setAttribute('data-cat-name', val.toLowerCase());
+                                newPill.style.cssText = "padding: 8px 18px; border-radius: 12px; font-size: 0.8rem; font-weight: 800; cursor: pointer; transition: all 0.2s; background: #6366f1; color: white; border: 2px solid #6366f1;";
+                                newPill.innerText = val;
+                                newPill.onclick = function() { toggleSalonCategory(val, newPill); };
+                                
+                                container.appendChild(newPill);
+                                selectedCats.push(val);
+                                document.getElementById('shopCategoryInput').value = selectedCats.join(',');
+                                e.target.value = '';
+                                pills.forEach(p => p.style.display = 'block'); // reset filter
+                            }
+                        }
+                    }
+                </script>
                 <div class="form-group">
                     <label class="form-label">Payment ID (UPI)</label>
                     <input type="text" name="upi_id" value="{{ shop.upi_id or '' }}" class="form-control"
@@ -197,6 +306,51 @@
                     selected for upload</p>
             </div>
 
+            <!-- Excellence Categories -->
+            <div class="form-group" style="margin-top: 2rem;">
+                <label class="form-label" style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-award" style="color: #f59e0b;"></i> Categories of Excellence
+                </label>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; background: #f8fafc; padding: 1.5rem; border-radius: 20px; border: 1px solid #e2e8f0;">
+                    {% set excel_list = ['Top Rated', 'Hygiene Pro', 'Premium Ambience', 'Master Stylists', 'Customer Choice', 'Friendly Staff', 'Luxury Spa'] %}
+                    {% set current_excel = (shop.excellence_categories or '').split(',') %}
+                    {% for cat in excel_list %}
+                    <label class="excel-pill" style="cursor: pointer; margin: 0;">
+                        <input type="checkbox" name="excellence_list" value="{{ cat }}" 
+                               {% if cat.strip() in current_excel %}checked{% endif %}
+                               style="display: none;" onchange="updateExcelPill(this)">
+                        <div class="pill-content" style="padding: 8px 16px; border-radius: 50px; font-size: 0.8rem; font-weight: 700; transition: 0.3s;
+                             {% if cat.strip() in current_excel %}
+                             background: #f59e0b; color: white; border: 1.5px solid #f59e0b;
+                             {% else %}
+                             background: white; color: #64748b; border: 1.5px solid #e2e8f0;
+                             {% endif %}">
+                            <i class="fas fa-check-circle" style="margin-right: 5px; {% if cat.strip() in current_excel %}display: inline-block;{% else %}display: none;{% endif %}"></i>
+                            {{ cat }}
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+                <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.75rem;">Selected categories will appear as trust badges on your salon profile.</p>
+            </div>
+
+            <script>
+                function updateExcelPill(checkbox) {
+                    const content = checkbox.nextElementSibling;
+                    const icon = content.querySelector('i');
+                    if (checkbox.checked) {
+                        content.style.background = '#f59e0b';
+                        content.style.color = 'white';
+                        content.style.borderColor = '#f59e0b';
+                        icon.style.display = 'inline-block';
+                    } else {
+                        content.style.background = 'white';
+                        content.style.color = '#64748b';
+                        content.style.borderColor = '#e2e8f0';
+                        icon.style.display = 'none';
+                    }
+                }
+            </script>
             <div
                 style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem; align-items: start;">
                 <div class="form-group">

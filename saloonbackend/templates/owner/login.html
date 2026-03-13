@@ -53,19 +53,17 @@
         .header-section::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500&q=80') center/cover;
+            inset: 0;
+            background: url("{{ url_for('static', filename='images/logo.png') }}") center/cover no-repeat;
             opacity: 0.1;
+            filter: grayscale(100%);
         }
 
         .logo-box {
             width: 70px;
             height: 70px;
             background: white;
-            border-radius: 20px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -110,11 +108,12 @@
             transform: translateY(-50%);
             color: var(--text-slate);
             transition: 0.3s;
+            pointer-events: none;
         }
 
         .input-wrapper input {
             width: 100%;
-            padding: 1.3rem 1.5rem 1.3rem 4rem;
+            padding: 1.3rem 3.5rem 1.3rem 4rem;
             border: 2px solid #f1f5f9;
             border-radius: 20px;
             background: #f8fafc;
@@ -133,11 +132,23 @@
 
         .input-wrapper .toggle-pass {
             position: absolute;
-            right: 1.5rem;
+            right: 1.1rem;
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
             color: var(--text-slate);
+            z-index: 10;
+            padding: 8px;
+            transition: 0.2s;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .input-wrapper .toggle-pass:hover {
+            color: var(--primary-premium);
+            transform: translateY(-50%) scale(1.1);
         }
 
         .auth-actions {
@@ -219,19 +230,21 @@
 <body>
     <div class="login-card fade-in">
         <div class="header-section">
-            <div class="logo-box">
-                <i class="fas fa-scissors"></i>
+            <div class="logo-box"
+                style="background: #0f172a; width: 90px; height: 90px; border-radius: 50%; margin: 0 auto 1.5rem; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); position: relative; z-index: 1;">
+                <img src="{{ url_for('static', filename='images/logo.png', v=3) }}" alt="Saloon Essy"
+                    style="width: 100%; height: 100%; object-fit: cover; transform: scale(1.1);">
             </div>
-            <h1 style="font-weight: 950; font-size: 2.5rem; letter-spacing: -2px; margin: 0;">Saloon Essy</h1>
+            <h1 style="font-size: 2.2rem; font-weight: 900; letter-spacing: -1px; margin: 0; position: relative; z-index: 1;">Saloon Essy</h1>
             <p
-                style="text-transform: uppercase; font-size: 0.85rem; letter-spacing: 3px; font-weight: 700; opacity: 0.7; margin-top: 0.5rem;">
-                Partner Portal</p>
+                style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 3px; font-weight: 700; opacity: 0.7; margin-top: 0.5rem; position: relative; z-index: 1;">
+                Partner Portal Login</p>
         </div>
 
         <div class="form-section">
-            <!-- Real-world feature: Background Logo Watermark -->
             <div class="form-bg-logo">
-                <i class="fas fa-scissors"></i>
+                <img src="{{ url_for('static', filename='images/logo.png', v=3) }}"
+                    style="width: 100%; opacity: 0.06; filter: grayscale(1);">
             </div>
 
             <div style="margin-bottom: 2.5rem; position: relative; z-index: 1;">
@@ -244,9 +257,13 @@
             {% if messages %}
             <div style="position: relative; z-index: 1; margin-bottom: 2rem;">
                 {% for category, message in messages %}
+                {% set bg_color = '#f0fdf4' if category == 'success' else '#fff1f2' %}
+                {% set text_color = '#166534' if category == 'success' else '#be123c' %}
+                {% set border_color = '#10b981' if category == 'success' else '#be123c' %}
+                {% set icon = 'fa-check-circle' if category == 'success' else 'fa-exclamation-circle' %}
                 <div
-                    style="padding: 1rem; border-radius: 15px; background: #fff1f2; color: #be123c; font-size: 0.9rem; font-weight: 600; border-left: 4px solid #be123c;">
-                    <i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i> {{ message }}
+                    style="padding: 1rem; border-radius: 15px; background: {{ bg_color }}; color: {{ text_color }}; font-size: 0.9rem; font-weight: 600; border-left: 4px solid {{ border_color }}; margin-bottom: 0.5rem;">
+                    <i class="fas {{ icon }}" style="margin-right: 8px;"></i> {{ message }}
                 </div>
                 {% endfor %}
             </div>
@@ -279,17 +296,21 @@
                 <button type="submit" class="btn-submit">Sign In to Dashboard</button>
             </form>
 
-            <!-- Real-world feature: Social Support -->
             <div class="social-login">
-                <span
-                    style="font-size: 0.85rem; color: var(--text-slate); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Or
-                    Continue With</span>
+                <p
+                    style="text-transform: uppercase; font-size: 0.7rem; letter-spacing: 2px; font-weight: 800; color: var(--text-slate); opacity: 0.8;">
+                    Or Login With</p>
                 <div class="social-btns">
-                    <div class="social-icon" style="color: #ea4335;" onclick="simulateSocialLogin('Google')"><i class="fab fa-google"></i></div>
-                    <div class="social-icon" style="color: #000;" onclick="simulateSocialLogin('Apple')"><i class="fab fa-apple"></i></div>
-                    <div class="social-icon" style="color: #1877f2;" onclick="simulateSocialLogin('Facebook')"><i class="fab fa-facebook-f"></i></div>
+                    <div class="social-icon" style="color: #ea4335;" onclick="simulateSocialLogin('Google')"><i
+                            class="fab fa-google"></i></div>
+                    <div class="social-icon" style="color: #000000;" onclick="simulateSocialLogin('Apple')"><i
+                            class="fab fa-apple"></i></div>
+                    <div class="social-icon" style="color: #1877f2;" onclick="simulateSocialLogin('Facebook')"><i
+                            class="fab fa-facebook-f"></i></div>
                 </div>
             </div>
+
+
 
             <div style="margin-top: 3.5rem; text-align: center; font-size: 0.95rem; font-weight: 600;">
                 <span style="color: var(--text-slate);">New Partner?</span>

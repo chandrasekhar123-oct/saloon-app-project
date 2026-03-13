@@ -1,38 +1,147 @@
 {% extends 'admin/layout.html' %}
 
-{% block page_title %}Salon Specialists{% endblock %}
+{% block page_title %}Service Specialists{% endblock %}
 
 {% block content %}
 <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h3>Registered Artists & Specialists</h3>
+    </div>
+    
     <table>
         <thead>
             <tr>
                 <th>ID</th>
-                <th>Specialist Name</th>
-                <th>Phone</th>
-                <th>Salon</th>
-                <th>Skill</th>
-                <th>Exp</th>
+                <th>Specialist</th>
+                <th>Contact</th>
+                <th>Workplace</th>
+                <th>Expertise</th>
                 <th>Status</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-            {% for worker in workers %}
-            <tr>
-                <td>#{{ worker.id }}</td>
-                <td>{{ worker.name }}</td>
-                <td>{{ worker.phone }}</td>
-                <td>{{ worker.salon.name if worker.salon else 'N/A' }}</td>
-                <td>{{ worker.skill }}</td>
-                <td>{{ worker.experience }} yrs</td>
-                <td>
-                    <span style="color: {{ '#10b981' if worker.is_active else '#ef4444' }};">
-                        {{ 'Online' if worker.status == 'online' else 'Offline' }}
-                    </span>
-                </td>
-            </tr>
-            {% endfor %}
+            {% if workers %}
+                {% for worker in workers %}
+                <tr>
+                    <td>#{{ worker.id }}</td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <img src="{{ worker.image_url or 'https://i.pravatar.cc/150?u=' + worker.phone }}" 
+                                 style="width: 40px; height: 40px; border-radius: 12px; object-fit: cover; border: 1px solid rgba(255,255,255,0.05);">
+                            <div>
+                                <div style="font-weight: 700;">{{ worker.name }}</div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted);">{{ worker.experience or '0' }} Years Exp.</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-size: 0.85rem;">{{ worker.phone }}</div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 600; font-size: 0.85rem;">{{ worker.salon.name if worker.salon else 'Freelancer' }}</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">{{ worker.salon.location if worker.salon else '' }}</div>
+                    </td>
+                    <td>
+                        <span style="font-size: 0.8rem; background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
+                            {{ worker.skill or 'General' }}
+                        </span>
+                    </td>
+                    <td>
+                        <div id="status-container-{{ worker.id }}">
+                            {% if worker.is_active %}
+                            <span id="status-{{ worker.id }}" style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 4px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">
+                                Active
+                            </span>
+                            {% else %}
+                            <span id="status-{{ worker.id }}" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 4px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(239, 68, 68, 0.2);">
+                                ⛔ Blocked
+                            </span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <button onclick="toggleWorker({{ worker.id }})" id="block-btn-{{ worker.id }}" class="btn" style="padding: 6px 15px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; background: {{ 'rgba(239, 68, 68, 0.1)' if worker.is_active else 'rgba(16, 185, 129, 0.1)' }}; color: {{ '#ef4444' if worker.is_active else '#10b981' }}; border: 1px solid {{ 'rgba(239, 68, 68, 0.2)' if worker.is_active else 'rgba(16, 185, 129, 0.2)' }};">
+                            <i class="fas {{ 'fa-ban' if worker.is_active else 'fa-check-circle' }}" style="margin-right: 5px;"></i>
+                            {{ 'Block Account' if worker.is_active else 'Unblock Account' }}
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 4rem;">
+                        <i class="fas fa-user-slash" style="font-size: 3rem; color: #334155; margin-bottom: 1rem; display: block;"></i>
+                        <p>No specialists registered yet.</p>
+                    </td>
+                </tr>
+            {% endif %}
         </tbody>
     </table>
 </div>
+
+<script>
+function toggleApproval(workerId) {
+    fetch(`/superadmin/worker/${workerId}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const label = document.getElementById(`approx-${workerId}`);
+            const btn = document.getElementById(`approve-btn-${workerId}`);
+            if (data.is_approved) {
+                label.innerText = '✓ Verified';
+                label.style.color = '#10b981';
+                btn.innerText = 'Revoke';
+                btn.style.background = 'rgba(239, 68, 68, 0.1)';
+                btn.style.color = '#ef4444';
+            } else {
+                label.innerText = '⚠ Pending Approval';
+                label.style.color = '#fbbf24';
+                btn.innerText = 'Approve';
+                btn.style.background = 'rgba(16, 185, 129, 0.1)';
+                btn.style.color = '#10b981';
+            }
+        }
+    });
+}
+
+function toggleWorker(workerId) {
+    fetch(`/superadmin/worker/${workerId}/toggle`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const btn = document.getElementById(`block-btn-${workerId}`);
+            const statusLabel = document.getElementById(`status-${workerId}`);
+            
+            if (data.is_active) {
+                if (statusLabel) {
+                    statusLabel.innerText = 'Active';
+                    statusLabel.style.background = 'rgba(16, 185, 129, 0.1)';
+                    statusLabel.style.color = '#10b981';
+                }
+                btn.innerHTML = '<i class="fas fa-ban" style="margin-right: 5px;"></i> Block Account';
+                btn.style.background = 'rgba(239, 68, 68, 0.1)';
+                btn.style.color = '#ef4444';
+                showToast('Specialist Unblocked Successfully!', 'success');
+            } else {
+                if (statusLabel) {
+                    statusLabel.innerText = 'Blocked';
+                    statusLabel.style.background = 'rgba(239, 68, 68, 0.1)';
+                    statusLabel.style.color = '#ef4444';
+                }
+                btn.innerHTML = '<i class="fas fa-check-circle" style="margin-right: 5px;"></i> Unblock Account';
+                btn.style.background = 'rgba(16, 185, 129, 0.1)';
+                btn.style.color = '#10b981';
+                showToast('Specialist Blocked Successfully!', 'danger');
+            }
+        }
+    });
+}
+</script>
 {% endblock %}

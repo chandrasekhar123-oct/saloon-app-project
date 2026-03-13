@@ -114,8 +114,13 @@
                     </div>
                     <div>
                         <span
-                            style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; display: block;">Revenue</span>
-                        <span style="font-size: 0.9rem; font-weight: 800; color: #10b981;">₹{{ stat.revenue }}</span>
+                            style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; display: block;">Net Earning</span>
+                        <span style="font-size: 0.9rem; font-weight: 800; color: #10b981;">₹{{ "%.0f"|format(stat.revenue) }}</span>
+                    </div>
+                    <div>
+                        <span
+                            style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; display: block;">Total Intake</span>
+                        <span style="font-size: 0.9rem; font-weight: 800; color: #64748b;">₹{{ "%.0f"|format(stat.total_intake) }}</span>
                     </div>
                 </div>
                 {% if stat.service_breakdown %}
@@ -180,6 +185,31 @@
                     <label class="form-label" style="font-weight: 700;">Experience (Years)</label>
                     <input type="number" name="experience" class="form-control"
                         style="background: #f8fafc; padding: 1rem; border-radius: 14px;" placeholder="5" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: 700;">Payout Model</label>
+                    <select name="payment_type" id="paymentTypeSelect" class="form-control" 
+                            style="background: #f8fafc; padding: 1rem; border-radius: 14px; border: 1px solid #e2e8f0; width: 100%;"
+                            onchange="togglePayoutFields()">
+                        <option value="commission">Per-Head Commission</option>
+                        <option value="salary">Fixed Salary</option>
+                    </select>
+                </div>
+                <div id="commGroup" class="form-group">
+                    <label class="form-label" style="font-weight: 700; display: flex; justify-content: space-between;">
+                        <span>Commission Rate</span>
+                        <span id="commDisplay" style="color: #6366f1;">50%</span>
+                    </label>
+                    <input type="range" name="commission_rate" min="0" max="100" value="50" step="5"
+                        oninput="document.getElementById('commDisplay').innerText = this.value + '%'"
+                        style="width: 100%; accent-color: #6366f1; cursor: pointer;">
+                    <p style="font-size: 0.65rem; color: var(--text-muted); margin-top: 5px;">Worker gets X% of each service price.</p>
+                </div>
+                <div id="salaryGroup" class="form-group" style="display: none;">
+                    <label class="form-label" style="font-weight: 700;">Monthly Salary (₹)</label>
+                    <input type="number" name="salary_amount" class="form-control" placeholder="15000"
+                        style="background: #f8fafc; padding: 1rem; border-radius: 14px;">
+                    <p style="font-size: 0.65rem; color: var(--text-muted); margin-top: 5px;">Fixed amount per month (no per-head commission).</p>
                 </div>
             </div>
             <div style="display: flex; flex-direction: column; gap: 1.5rem;">
@@ -282,9 +312,14 @@
                 <i class="fas fa-phone-alt" style="color: #10b981; font-size: 0.7rem; margin-right: 4px;"></i>{{
                 worker.phone }}
             </p>
-            <p
-                style="color: #10b981; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-top: 0.25rem;">
-                {{ worker.experience }}+ Years Exp</p>
+            {% if worker.is_owner %}
+            <p style="color: #6366f1; font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem; background: #eef2ff; padding: 4px 12px; border-radius: 50px;">
+                <i class="fas fa-crown"></i> Shop Owner
+            </p>
+            {% endif %}
+            <p style="color: var(--text-muted); font-weight: 700; font-size: 0.72rem; margin-top: 0.25rem;">
+                {{ worker.experience }}+ Years Experience
+            </p>
             <div style="margin-top: 1rem; width: 100%;">
                 <p
                     style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; letter-spacing: 1px; margin-bottom: 0.5rem; text-align: left;">
@@ -312,18 +347,21 @@
                     style="text-decoration: none; color: var(--text-main); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.4rem;">
                     <i class="fas fa-phone-alt" style="color: #3b82f6;"></i> Call
                 </a>
-                <div style="display: flex; gap: 0.5rem;">
-                    <button class="btn"
-                        style="width: 35px; height: 35px; padding: 0; background: #f8fafc; color: var(--text-muted); border-radius: 8px; justify-content: center;">
-                        <i class="fas fa-edit"></i>
+                <div style="display: flex; gap: 0.5rem; width: 100%; margin-top: 1rem;">
+                    <button class="btn" onclick="openPayoutModal({{ worker.id }}, '{{ worker.name }}', {{ worker.current_balance or 0 }})"
+                        style="flex: 1; background: #f0fdf4; color: #16a34a; border: 1.5px solid #bbf7d0; border-radius: 12px; font-weight: 800; font-size: 0.8rem; padding: 0.6rem; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                        <i class="fas fa-money-bill-wave"></i> Pay ₹{{ "%.0f"|format(worker.current_balance or 0) }}
                     </button>
-                    <form action="{{ url_for('owner.delete_worker', id=worker.id) }}" method="POST" style="margin: 0;"
-                        onsubmit="return confirm('Remove this staff member?');">
-                        <button type="submit" class="btn"
-                            style="width: 35px; height: 35px; padding: 0; background: #fff1f2; color: var(--danger); border-radius: 8px; justify-content: center;">
-                            <i class="fas fa-trash-alt"></i>
+                    <div style="display: flex; gap: 0.4rem;">
+                        <button class="btn" style="width: 38px; height: 38px; padding: 0; background: #f8fafc; color: var(--text-muted); border-radius: 10px; justify-content: center; border: 1px solid #e2e8f0;">
+                            <i class="fas fa-edit"></i>
                         </button>
-                    </form>
+                        <form action="{{ url_for('owner.delete_worker', id=worker.id) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Remove {{ worker.name }} from team?');">
+                            <button type="submit" class="btn" style="width: 38px; height: 38px; padding: 0; background: #fff1f2; color: var(--danger); border-radius: 10px; justify-content: center; border: 1px solid #fecaca;">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -367,6 +405,19 @@
 </style>
 <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@21.0.8/build/js/intlTelInput.min.js"></script>
 <script>
+    function togglePayoutFields() {
+        const type = document.getElementById('paymentTypeSelect').value;
+        const commGroup = document.getElementById('commGroup');
+        const salaryGroup = document.getElementById('salaryGroup');
+        if (type === 'salary') {
+            commGroup.style.display = 'none';
+            salaryGroup.style.display = 'block';
+        } else {
+            commGroup.style.display = 'block';
+            salaryGroup.style.display = 'none';
+        }
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
         const input = document.querySelector("#phone");
         const hiddenInput = document.querySelector("#full_phone");

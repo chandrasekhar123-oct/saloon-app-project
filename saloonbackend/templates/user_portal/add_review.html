@@ -1,100 +1,41 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "user_portal/layout.html" %}
+{% block title %}Rate Service{% endblock %}
+{% block page_title %}Rate Service{% endblock %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rate Service | Saloon Essy</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body {
-            background: #f8fafc;
-            font-family: 'Outfit', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
+{% block styles %}
+<style>
+    .rating-card {
+        background: var(--bg-card); border-radius: 32px; padding: 2.5rem; border: 1px solid var(--glass-border);
+        text-align: center; box-shadow: var(--shadow-md); max-width: 500px; margin: 2rem auto;
+    }
 
-        .container {
-            background: white;
-            padding: 2.5rem;
-            border-radius: 1.5rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-            width: 90%;
-            max-width: 450px;
-            text-align: center;
-        }
+    .stars { display: flex; justify-content: center; gap: 12px; margin: 2rem 0; }
+    .stars i { font-size: 2.5rem; color: #e2e8f0; cursor: pointer; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .stars i.active { color: #f59e0b; transform: scale(1.1); text-shadow: 0 0 15px rgba(245, 158, 11, 0.3); }
+    .stars i:hover { transform: scale(1.2); }
 
-        h1 {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-            color: #1e293b;
-        }
+    .feedback-area {
+        width: 100%; padding: 1.25rem; border-radius: 20px; border: 2px solid var(--glass-border);
+        background: var(--bg-main); font-family: inherit; font-size: 1rem; font-weight: 600; min-height: 150px;
+        outline: none; transition: all 0.2s; margin-bottom: 2rem; resize: none; color: var(--text-main);
+    }
+    .feedback-area:focus { border-color: var(--primary); background: white; }
 
-        p {
-            color: #64748b;
-            margin-bottom: 2rem;
-        }
+    .salon-badge {
+        display: inline-flex; align-items: center; gap: 8px; background: rgba(99, 102, 241, 0.1); color: var(--primary);
+        padding: 8px 16px; border-radius: 50px; font-weight: 800; font-size: 0.85rem; margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
 
-        .stars {
-            display: flex;
-            justify-content: center;
-            gap: 0.75rem;
-            margin-bottom: 2rem;
-        }
-
-        .stars i {
-            font-size: 2.5rem;
-            color: #cbd5e1;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-
-        .stars i.active {
-            color: #fbbf24;
-        }
-
-        textarea {
-            width: 100%;
-            padding: 1rem;
-            border-radius: 0.75rem;
-            border: 1px solid #e2e8f0;
-            font-size: 1rem;
-            margin-bottom: 1.5rem;
-            resize: none;
-            height: 120px;
-            box-sizing: border-box;
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 1rem;
-            background: #6366f1;
-            color: white;
-            border: none;
-            border-radius: 0.75rem;
-            font-weight: 700;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-
-        .back-link {
-            display: block;
-            margin-top: 1.5rem;
-            color: #64748b;
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <h1>How was your service?</h1>
-        <p>At {{ booking.salon.name if booking.salon else 'Deleted Salon' }}</p>
+{% block content %}
+<div class="fade-in">
+    <div class="rating-card reveal">
+        <div class="salon-badge">
+            <i class="fas fa-store"></i> {{ booking.salon.name if booking.salon else 'Saloon' }}
+        </div>
+        <h2 style="font-weight: 900; font-size: 1.6rem; color: var(--text-main); margin-bottom: 0.5rem;" data-i18n="how_was_service">How was your service?</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem; font-weight: 600;" data-i18n="feedback_help">Your feedback helps us improve!</p>
 
         <form method="POST">
             <input type="hidden" name="rating" id="rating-val" value="5">
@@ -106,33 +47,31 @@
                 <i class="fas fa-star active" data-val="5"></i>
             </div>
 
-            <textarea name="comment" placeholder="Write your experience here..." required></textarea>
+            <textarea name="comment" class="feedback-area" data-i18n-hold="feedback_placeholder" placeholder="Tell us about your experience..." required></textarea>
 
-            <button type="submit" class="submit-btn">Submit Feedback</button>
+            <button type="submit" style="width: 100%; height: 60px; background: var(--primary); color: white; border: none; border-radius: 18px; font-weight: 800; font-size: 1.1rem; cursor: pointer; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <span data-i18n="submit_review">Submit Review</span> <i class="fas fa-paper-plane"></i>
+            </button>
         </form>
 
-        <a href="{{ url_for('user_portal.my_bookings') }}" class="back-link">May be later</a>
+        <a href="{{ url_for('user_portal.my_bookings') }}" style="display: block; margin-top: 1.5rem; color: var(--text-muted); text-decoration: none; font-weight: 800; font-size: 0.9rem;">
+            <span data-i18n="maybe_later">Not now, maybe later</span>
+        </a>
     </div>
+</div>
 
-    <script>
-        const stars = document.querySelectorAll('.stars i');
-        const ratingInput = document.getElementById('rating-val');
+<script>
+    const stars = document.querySelectorAll('.stars i');
+    const ratingInput = document.getElementById('rating-val');
 
-        stars.forEach(star => {
-            star.addEventListener('click', () => {
-                const val = star.getAttribute('data-val');
-                ratingInput.value = val;
-
-                stars.forEach(s => {
-                    if (s.getAttribute('data-val') <= val) {
-                        s.classList.add('active');
-                    } else {
-                        s.classList.remove('active');
-                    }
-                });
+    stars.forEach(star => {
+        star.addEventListener('click', () => {
+            const val = star.getAttribute('data-val');
+            ratingInput.value = val;
+            stars.forEach(s => {
+                s.classList.toggle('active', s.getAttribute('data-val') <= val);
             });
         });
-    </script>
-</body>
-
-</html>
+    });
+</script>
+{% endblock %}

@@ -4,7 +4,7 @@ class Salon(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
-    category = db.Column(db.String(50), default="Barber Shop") # Added category (Hair, Spa, Tattoo, etc.)
+    category = db.Column(db.Text, default="Barber Shop") # Supports multiple categories comma-separated
     address = db.Column(db.String(255), nullable=False)
     state = db.Column(db.String(100)) # Added state field
     location = db.Column(db.String(100)) # City/Area
@@ -19,6 +19,7 @@ class Salon(db.Model):
     qr_code_url = db.Column(db.String(255)) # Image link for QR code
     logo_url = db.Column(db.String(500))
     shop_photos = db.Column(db.Text) # Stored as comma-separated URLs or JSON string
+    excellence_categories = db.Column(db.Text) # Comma-separated categories like "Top Rated, Hygiene Champion"
     is_active = db.Column(db.Boolean, default=True)
 
     @property

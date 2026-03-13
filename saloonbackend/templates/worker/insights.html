@@ -15,46 +15,39 @@
         style="background: white; border-radius: 20px; padding: 1.25rem; border: 1px solid var(--glass-border); box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
         <p
             style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700; margin: 0; text-transform: uppercase;">
-            Total Earnings</p>
-        <h3 style="font-size: 1.8rem; font-weight: 900; color: var(--primary); margin: 5px 0 2px 0;">₹{{ total_earnings
-            }}</h3>
-        <p style="color: #10b981; font-size: 0.7rem; font-weight: 700;"><i class="fas fa-arrow-up"></i> Lifetime</p>
+            Lifetime Total</p>
+        <h3 style="font-size: 1.8rem; font-weight: 900; color: #64748b; margin: 5px 0 2px 0;">₹{{ "%.0f"|format(total_earnings) }}</h3>
+        <p style="color: #94a3b8; font-size: 0.7rem; font-weight: 700;"><i class="fas fa-history"></i> total earned</p>
     </div>
     <div
-        style="background: white; border-radius: 20px; padding: 1.25rem; border: 1px solid var(--glass-border); box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+        style="background: #f0fdf4; border-radius: 20px; padding: 1.25rem; border: 1px solid #bbf7d0; box-shadow: 0 4px 15px rgba(16,185,129,0.1);">
         <p
-            style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700; margin: 0; text-transform: uppercase;">
-            Success Rate</p>
-        <h3 style="font-size: 1.8rem; font-weight: 900; color: #6366f1; margin: 5px 0 2px 0;">{{ success_rate }}%</h3>
-        <p style="color: #6366f1; font-size: 0.7rem; font-weight: 700;"><i class="fas fa-check-circle"></i> Completed
-        </p>
+            style="color: #16a34a; font-size: 0.75rem; font-weight: 800; margin: 0; text-transform: uppercase;">
+            Payout Ready</p>
+        <h3 style="font-size: 1.8rem; font-weight: 900; color: #16a34a; margin: 5px 0 2px 0;">₹{{ "%.0f"|format(worker.current_balance or 0) }}</h3>
+        <p style="color: #16a34a; font-size: 0.7rem; font-weight: 700;"><i class="fas fa-wallet"></i> collect anytime</p>
     </div>
 </div>
 
-<!-- Performance Chart Mockup -->
-<div
-    style="background: white; border-radius: 24px; padding: 1.5rem; border: 1px solid var(--glass-border); margin-bottom: 1.5rem;">
+<!-- Performance Chart (Real Data) -->
+<div style="background: white; border-radius: 24px; padding: 1.5rem; border: 1px solid var(--glass-border); margin-bottom: 1.5rem;">
     <h4 style="margin: 0 0 1rem 0; font-weight: 800; font-size: 0.95rem; color: var(--text-main);">Earnings Trend</h4>
-    <div
-        style="height: 150px; display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; padding-top: 10px;">
-        {% for h in [40, 70, 50, 90, 60, 85, 100] %}
-        <div
-            style="flex: 1; background: linear-gradient(to top, var(--primary), #3b82f6); height: {{ h }}%; border-radius: 4px 4px 0 0; position: relative;">
-            <div
-                style="position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 0.6rem; font-weight: 700; color: var(--text-muted);">
-                {{ loop.index }}</div>
+    <div style="height: 150px; display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; padding-top: 10px;">
+        {% for day in weekly_trend %}
+        <div style="flex: 1; background: linear-gradient(to top, var(--primary), #3b82f6); height: {{ day.percent }}%; border-radius: 6px; position: relative; cursor: pointer; transition: 0.3s;" 
+             title="₹{{ day.amount }}"
+             onmouseover="this.style.opacity='0.8'" 
+             onmouseout="this.style.opacity='1'">
+            <div style="position: absolute; top: -22px; left: 50%; transform: translateX(-50%); font-size: 0.6rem; font-weight: 800; color: var(--text-muted);">
+                ₹{{ day.amount if day.amount > 0 else '' }}
+            </div>
         </div>
         {% endfor %}
     </div>
-    <div
-        style="display: flex; justify-content: space-between; margin-top: 0.75rem; color: var(--text-muted); font-size: 0.65rem; font-weight: 700;">
-        <span>Mon</span>
-        <span>Tue</span>
-        <span>Wed</span>
-        <span>Thu</span>
-        <span>Fri</span>
-        <span>Sat</span>
-        <span>Sun</span>
+    <div style="display: flex; justify-content: space-between; margin-top: 15px; color: var(--text-muted); font-size: 0.65rem; font-weight: 800; border-top: 1px solid #f1f5f9; padding-top: 10px;">
+        {% for day in weekly_trend %}
+        <span>{{ day.day }}</span>
+        {% endfor %}
     </div>
 </div>
 

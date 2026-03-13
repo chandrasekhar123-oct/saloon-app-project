@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Worker Portal | {% block title %}{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -49,7 +50,7 @@
         @media (min-width: 1024px) {
             .mobile-container {
                 max-width: 1000px;
-                flex-direction: row;
+                flex-direction: column;
             }
 
             .header {
@@ -57,30 +58,7 @@
             }
 
             .bottom-nav {
-                height: 100vh;
-                width: 240px;
-                flex-direction: column;
-                justify-content: flex-start;
-                padding-top: 3rem;
-                left: 0;
-                transform: none;
-                border-top: none;
-                border-right: 1px solid var(--glass-border);
-                position: sticky;
-                top: 0;
-            }
-
-            .nav-item {
-                flex-direction: row;
-                width: 90%;
-                justify-content: flex-start;
-                padding: 1rem 1.5rem;
-                gap: 1rem;
-                font-size: 0.9rem;
-            }
-
-            .nav-item i {
-                font-size: 1.5rem;
+                max-width: 1000px; /* Match container width on desktop */
             }
 
             .main-content {
@@ -240,15 +218,16 @@
 <body>
     <div class="mobile-container">
         <!-- Header -->
-        <div class="header">
-            <div class="header-logo">
-                <i class="fas fa-cut"></i>
-                <span>WorkerHub</span>
-            </div>
+        <div class="header" style="background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);">
+            <a href="{{ url_for('worker_panel.dashboard') }}" class="header-logo" style="text-decoration: none;">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Saloon Essy"
+                    style="height: 45px; width: 45px; background: white; border-radius: 50%; padding: 2px; object-fit: cover;">
+            </a>
             <div style="display: flex; gap: 8px; align-items: center;">
-                <span class="header-badge">Specialist</span>
+                <span class="header-badge" style="background: rgba(255,255,255,0.15); font-size: 0.65rem;">Artist
+                    Hub</span>
                 <a href="/"
-                    style="background: rgba(255,255,255,0.2); color: white; padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; text-decoration: none; border: 1px solid rgba(255,255,255,0.3);">
+                    style="background: white; color: #065f46; padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; text-decoration: none; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
                     <i class="fas fa-exchange-alt" style="margin-right: 3px;"></i>Switch
                 </a>
             </div>
@@ -258,14 +237,21 @@
         <div class="main-content">
             <div class="desktop-worker-header">
                 <div style="display: flex; align-items: center; gap: 0.8rem;">
-                    <i class="fas fa-cut" style="font-size: 2rem; color: var(--primary);"></i>
-                    <h1 style="font-weight: 800; font-size: 2rem; color: var(--text-main); margin: 0;">WorkerHub</h1>
+                    <img src="{{ url_for('static', filename='images/logo.png', v=3) }}" alt="Saloon Essy"
+                        style="height: 55px; width: 55px; background: #0f172a; border-radius: 50%; object-fit: cover; transform: scale(1.1); box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                    <h1
+                        style="font-weight: 950; font-size: 2.2rem; color: var(--text-main); margin: 0; letter-spacing: -1.5px;">
+                        Saloon Essy</h1>
                 </div>
                 <div style="display: flex; align-items: center; gap: 1rem;">
-                    <span class="header-badge" style="background: var(--primary); color: white;">Artist Portal</span>
+                    <span class="header-badge"
+                        style="background: #059669; color: white; border: none; font-size: 0.75rem;">Artist
+                        Portal</span>
                     <a href="/"
-                        style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; font-weight: 700; border: 1px solid #e2e8f0; padding: 0.4rem 0.8rem; border-radius: 50px;">
-                        <i class="fas fa-exchange-alt"></i> Switch Mode
+                        style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; font-weight: 700; border: 2px solid #e2e8f0; padding: 0.5rem 1rem; border-radius: 50px; transition: 0.3s;"
+                        onmouseover="this.style.borderColor='#059669'; this.style.color='#059669'"
+                        onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='var(--text-muted)'">
+                        <i class="fas fa-exchange-alt"></i> Mode Switch
                     </a>
                 </div>
             </div>
@@ -306,6 +292,96 @@
             </a>
         </nav>
     </div>
+    <!-- 🔔 Job Alert Sound & Overlay -->
+    <audio id="jobAlertSound" loop preload="auto">
+        <source src="https://assets.mixkit.co/active_storage/sfx/1358/1358-preview.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="ringingOverlay" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(6, 78, 59, 0.95); backdrop-filter: blur(10px); color: white; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem;">
+        <div style="width: 120px; height: 120px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 2rem; animation: pulse-ring 1.5s infinite;">
+            <i class="fas fa-phone-alt" style="font-size: 3rem; color: #10b981; animation: shake 0.5s infinite;"></i>
+        </div>
+        <h1 style="font-weight: 900; font-size: 2rem; margin-bottom: 0.5rem; letter-spacing: -1px;">NEW JOB REQUEST!</h1>
+        <p style="font-size: 1.1rem; opacity: 0.9; margin-bottom: 2.5rem; font-weight: 600;">A customer is waiting for your response.</p>
+        
+        <div style="display: flex; gap: 1rem; width: 100%; max-width: 320px;">
+            <button onclick="stopRinging(true)" style="flex: 1; background: white; color: #064e3b; border: none; padding: 1.25rem; border-radius: 20px; font-weight: 900; font-size: 1rem; cursor: pointer; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">VIEW JOB</button>
+            <button onclick="stopRinging(false)" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 0 1.5rem; border-radius: 20px; font-weight: 700; cursor: pointer;">Ignore</button>
+        </div>
+    </div>
+
+    <style>
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            20% { transform: rotate(-15deg); }
+            40% { transform: rotate(15deg); }
+            60% { transform: rotate(-15deg); }
+            80% { transform: rotate(15deg); }
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 20px rgba(255,255,255,0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+        }
+    </style>
+
+    <script>
+        let isRinging = false;
+        
+        function stopRinging(viewJob) {
+            const sound = document.getElementById('jobAlertSound');
+            const overlay = document.getElementById('ringingOverlay');
+            if (sound) {
+                sound.pause();
+                sound.currentTime = 0;
+            }
+            if (overlay) overlay.style.display = 'none';
+            isRinging = false;
+            
+            if (viewJob) {
+                window.location.href = "{{ url_for('worker_panel.my_bookings') }}";
+            }
+        }
+
+        function checkNewJobs() {
+            if (isRinging) return; // Don't trigger if already ringing
+
+            fetch("{{ url_for('worker_panel.check_new_bookings') }}")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.new_jobs) {
+                        isRinging = true;
+                        const sound = document.getElementById('jobAlertSound');
+                        const overlay = document.getElementById('ringingOverlay');
+                        
+                        if (overlay) overlay.style.display = 'flex';
+                        if (sound) {
+                            sound.play().catch(e => {
+                                console.log("Sound play blocked. Requires interaction.");
+                                // Fallback: still show overlay, user will click 'View Job'
+                            });
+                        }
+                        
+                        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+                            new Notification('New Job Request! 🚨', {
+                                body: `You have ${data.count} new booking request(s).`,
+                                icon: '{{ url_for("static", filename="images/logo.png") }}'
+                            });
+                        }
+                    }
+                })
+                .catch(err => console.error("Poll Error:", err));
+        }
+
+        // Initialize polling
+        setInterval(checkNewJobs, 5000);
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof Notification !== 'undefined' && Notification.permission !== 'granted') {
+                Notification.requestPermission();
+            }
+            checkNewJobs();
+        });
+    </script>
 </body>
 
 </html>

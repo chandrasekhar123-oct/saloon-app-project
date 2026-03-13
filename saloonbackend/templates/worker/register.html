@@ -4,301 +4,452 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Worker Portal | Register</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap"
+    <title>Saloon Essy | Artist Registration</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;950&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@21.0.8/build/css/intlTelInput.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Outfit', sans-serif;
+        :root {
+            --primary-artist: #10b981;
+            --primary-glow: rgba(16, 185, 129, 0.4);
+            --text-dark: #0f172a;
+            --text-slate: #64748b;
+            --bg-page: #f8fafc;
         }
 
         body {
-            background: linear-gradient(135deg, #0f172a 0%, #134e4a 100%);
-            min-height: 100vh;
+            background: var(--bg-page);
+            background-image:
+                radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(5, 150, 105, 0.1) 0px, transparent 50%);
+            margin: 0;
             display: flex;
-            align-items: center;
             justify-content: center;
-            padding: 1.5rem;
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
         }
 
-        .card {
-            background: white;
-            border-radius: 28px;
-            padding: 2.5rem 2rem;
-            max-width: 440px;
+        .main-container {
             width: 100%;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            padding: 4rem 1.5rem;
+            position: relative;
+            animation: fadeIn 0.8s ease;
         }
 
-        .logo {
+        .premium-card {
+            background: white;
+            border-radius: 40px;
+            box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header-section {
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+            color: white;
             text-align: center;
-            margin-bottom: 1.75rem;
+            position: relative;
+            overflow: hidden;
         }
 
-        .logo-icon {
+        .header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=800&q=80') center/cover;
+            opacity: 0.15;
+            mix-blend-mode: overlay;
+        }
+
+        .logo-box {
             width: 70px;
             height: 70px;
-            background: linear-gradient(135deg, #10b981, #059669);
-            border-radius: 20px;
-            margin: 0 auto 0.75rem auto;
+            background: white;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.75rem;
-            color: white;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 1;
         }
 
-        h1 {
-            font-size: 1.6rem;
-            font-weight: 900;
-            color: #0f172a;
+        .logo-box i {
+            font-size: 2rem;
+            color: #047857;
         }
 
-        p.sub {
-            color: #64748b;
-            font-size: 0.85rem;
-            margin-top: 4px;
+        .form-section {
+            padding: 4rem 3rem;
+            position: relative;
+        }
+
+        .form-bg-logo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 25rem;
+            color: rgba(16, 185, 129, 0.03);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .section-group {
+            position: relative;
+            z-index: 1;
+            margin-bottom: 3.5rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 1rem;
+        }
+
+        .section-header i {
+            width: 45px;
+            height: 45px;
+            background: #f1f5f9;
+            color: var(--primary-artist);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .section-header h3 {
+            font-weight: 850;
+            font-size: 1.3rem;
+            margin: 0;
+            color: var(--text-dark);
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
         }
 
         .form-group {
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
         }
 
-        label {
+        .input-label {
             display: block;
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: #374151;
-            margin-bottom: 0.35rem;
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--text-slate);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding-left: 0.5rem;
         }
 
-        input,
-        select {
+        .form-input {
             width: 100%;
-            padding: 0.8rem 1rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 14px;
-            font-size: 0.9rem;
+            padding: 1rem 1.25rem;
+            border: 2px solid #f1f5f9;
+            border-radius: 18px;
+            background: #f8fafc;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            transition: 0.3s;
             font-family: 'Outfit', sans-serif;
-            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
             outline: none;
-        }
-
-        input:focus,
-        select:focus {
-            border-color: #10b981;
-        }
-
-        .iti {
-            width: 100%;
-            display: block;
-        }
-
-        .iti input {
-            padding-left: 95px !important;
-        }
-
-
-        .iti__country-list {
-            border-radius: 14px;
-            border: 2px solid #e5e7eb;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            font-family: 'Outfit', sans-serif;
-        }
-
-        .iti__flag {
-            border-radius: 2px;
+            border-color: var(--primary-artist);
+            background: white;
+            box-shadow: 0 10px 25px -5px var(--primary-glow);
         }
 
         .skills-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 0.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 0.75rem;
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 20px;
+            border: 2px solid #f1f5f9;
         }
 
         .skill-chip {
-            padding: 0.5rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
+            padding: 0.7rem;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
             text-align: center;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s;
-            color: #64748b;
+            transition: 0.2s;
+            color: var(--text-slate);
         }
 
         .skill-chip.selected {
-            border-color: #10b981;
-            background: rgba(16, 185, 129, 0.1);
-            color: #059669;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 0.9rem;
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: var(--primary-artist);
+            border-color: var(--primary-artist);
             color: white;
+            box-shadow: 0 8px 20px -5px var(--primary-glow);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1.4rem;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            font-weight: 900;
+            font-size: 1.2rem;
             border: none;
-            border-radius: 14px;
-            font-size: 1rem;
-            font-weight: 800;
             cursor: pointer;
-            margin-top: 0.75rem;
-        }
-
-        .footer-link {
-            text-align: center;
+            box-shadow: 0 20px 40px -10px rgba(16, 185, 129, 0.4);
+            transition: 0.3s;
             margin-top: 1rem;
-            font-size: 0.85rem;
-            color: #64748b;
         }
 
-        .footer-link a {
-            color: #10b981;
-            font-weight: 700;
-            text-decoration: none;
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 25px 50px -12px rgba(16, 185, 129, 0.5);
         }
 
-        .flash {
-            padding: 0.75rem 1rem;
-            border-radius: 12px;
-            margin-bottom: 1rem;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .flash.danger {
-            background: rgba(239, 68, 68, 0.1);
-            color: #dc2626;
-        }
-
-        .back-link {
-            display: block;
+        .photo-upload-container {
             text-align: center;
-            margin-top: 0.75rem;
-            color: #94a3b8;
-            font-size: 0.82rem;
-            text-decoration: none;
+            margin-bottom: 2rem;
+        }
+
+        #regPhotoPreview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            border: 3px dashed #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            overflow: hidden;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        #regPhotoPreview:hover {
+            border-color: var(--primary-artist);
+            background: #f0fdf4;
+        }
+
+        .flash-msg.success {
+            background: #f0fdf4;
+            color: #166534;
+            border-left-color: #10b981;
+        }
+
+        .flash-msg.danger, .flash-msg.warning, .flash-msg.info {
+            background: #fff1f2;
+            color: #be123c;
+            border-left-color: #be123c;
+        }
+
+        .flash-msg {
+            padding: 1.2rem;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-left: 5px solid;
+            margin-bottom: 3rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .input-grid {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+
+            .form-section {
+                padding: 3rem 1.5rem;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="card">
-        <div class="logo">
-            <div class="logo-icon"><i class="fas fa-user-plus"></i></div>
-            <h1>Join as Worker</h1>
-            <p class="sub">Submit your request to join a salon team</p>
-        </div>
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        {% for category, message in messages %}
-        <div class="flash {{ category }}">{{ message }}</div>
-        {% endfor %}
-        {% endif %}
-        {% endwith %}
-
-        <form method="POST" id="registerForm" enctype="multipart/form-data">
-            <!-- Photo Upload with Preview -->
-            <div style="text-align: center; margin-bottom: 1.5rem;">
-                <label for="regPhoto" style="cursor: pointer; display: inline-block; position: relative;">
-                    <div id="regPhotoPreview"
-                        style="width: 80px; height: 80px; border-radius: 50%; background: #f1f5f9; border: 2px dashed #cbd5e1; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                        <i class="fas fa-camera" style="font-size: 1.5rem; color: #94a3b8;"></i>
-                    </div>
-                    <div
-                        style="position: absolute; bottom: 0; right: 0; background: #10b981; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; border: 2px solid white;">
-                        <i class="fas fa-plus"></i>
-                    </div>
-                </label>
-                <input type="file" id="regPhoto" name="photo" accept="image/*" style="display: none;" onchange="
-                    const file = this.files[0];
-                    if(file) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            document.getElementById('regPhotoPreview').innerHTML = '<img src=\'' + e.target.result + '\' style=\'width: 100%; height: 100%; object-fit: cover;\'>';
-                        }
-                        reader.readAsDataURL(file);
-                    }
-                ">
-                <p style="font-size: 0.7rem; color: #64748b; margin-top: 5px; font-weight: 700;">Add Profile Photo</p>
-            </div>
-            <div class="form-group">
-                <label>Full Name</label>
-                <input type="text" name="name" placeholder="Your full name" required>
-            </div>
-            <div class="form-group">
-                <label>Phone Number</label>
-                <input type="tel" id="phone" name="raw_phone" placeholder="Enter mobile number" required>
-                <input type="hidden" name="phone" id="full_phone">
-            </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" name="password" placeholder="Create a password" required>
-            </div>
-            <div class="form-group">
-                <label>Gender</label>
-                <select name="gender"
-                    style="width: 100%; padding: 0.75rem 1rem; border: 2px solid #f1f5f9; border-radius: 12px; font-family: 'Outfit', sans-serif; font-size: 0.9rem; outline: none; transition: 0.3s; background: #f8fafc;"
-                    required>
-                    <option value="" disabled selected>Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Experience (Years)</label>
-                <input type="number" name="experience" placeholder="e.g. 3" min="0" max="50">
-            </div>
-            <div class="form-group">
-                <label>State/Province</label>
-                <select id="stateSelect" name="state" required>
-                    <option value="" disabled selected>Select country first</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>City</label>
-                <select id="citySelect" name="city" required>
-                    <option value="" disabled selected>Select state first</option>
-                </select>
-                <input type="text" id="customCityInput" placeholder="Enter your town/city"
-                    style="display: none; width: 100%; padding: 0.8rem 1rem; border: 2px solid #e5e7eb; border-radius: 14px; margin-top: 0.5rem; font-size: 0.9rem;"
-                    disabled>
-            </div>
-            <div class="form-group">
-                <label>Select Salon to Join</label>
-                <select name="salon_id" id="salonSelect" required>
-                    <option value="" data-category="General">Choose a salon...</option>
-                    {% for salon in salons %}
-                    <option value="{{ salon.id }}" data-category="{{ salon.category }}">
-                        {{ salon.name }} — {{ (salon.category or 'Barber Shop') }} ({{ salon.location or salon.address
-                        or '' }})
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="form-group">
-                <label id="skillsLabel">Skills (tap to select)</label>
-                <div class="skills-grid" id="skillsGrid">
-                    <!-- Skills will be injected here dynamically -->
+    <div class="main-container">
+        <div class="premium-card">
+            <div class="header-section">
+                <div class="logo-box"
+                    style="background: #0f172a; width: 100px; height: 100px; border-radius: 50%; margin: 0 auto 1.5rem; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+                    <img src="{{ url_for('static', filename='images/logo.png', v=3) }}" alt="Saloon Essy"
+                        style="width: 100%; height: 100%; object-fit: cover; transform: scale(1.1);">
                 </div>
-                <input type="hidden" name="skill" id="skillInput">
+                <h1 style="font-weight: 950; font-size: 2.5rem; letter-spacing: -1.5px; margin: 0;">Saloon Essy</h1>
+                <p
+                    style="text-transform: uppercase; font-size: 0.85rem; letter-spacing: 3px; font-weight: 700; opacity: 0.8; margin-top: 0.5rem;">
+                    Artist Registration</p>
             </div>
-            <button type="submit" class="btn"><i class="fas fa-paper-plane" style="margin-right: 8px;"></i>Submit Join
-                Request</button>
-        </form>
-        <div class="footer-link">
-            <p>Already registered? <a href="{{ url_for('worker_panel.login') }}">Login →</a></p>
+
+            <div class="form-section">
+                <div class="form-bg-logo">
+                    <img src="{{ url_for('static', filename='images/logo.png', v=3) }}"
+                        style="width: 100%; opacity: 0.06; filter: grayscale(1);">
+                </div>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="flash-msg {{ category }}">
+                    <i class="fas {{ 'fa-check-circle' if category == 'success' else 'fa-exclamation-circle' }}"
+                        style="margin-right: 8px;"></i> {{ message }}
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+
+                <form method="POST" id="registerForm" enctype="multipart/form-data">
+                    <!-- Section: Professional Profile -->
+                    <div class="section-group">
+                        <div class="section-header">
+                            <i class="fas fa-camera"></i>
+                            <h3>Professional Identity</h3>
+                        </div>
+
+                        <div class="photo-upload-container">
+                            <label for="regPhoto">
+                                <div id="regPhotoPreview">
+                                    <i class="fas fa-camera" style="font-size: 1.8rem; color: #94a3b8;"></i>
+                                </div>
+                            </label>
+                            <input type="file" id="regPhoto" name="photo" accept="image/*" style="display: none;"
+                                onchange="previewImage(this)">
+                            <p style="font-size: 0.8rem; color: var(--text-slate); margin-top: 10px; font-weight: 700;">
+                                Upload Profile Portrait</p>
+                        </div>
+
+                        <div class="input-grid">
+                            <div class="form-group">
+                                <label class="input-label">Full Name</label>
+                                <input type="text" name="name" class="form-input" placeholder="e.g. John Artist"
+                                    required>
+                            </div>
+                            <div class="form-group">
+                                <label class="input-label">Phone Number</label>
+                                <input type="tel" id="phone" name="raw_phone" class="form-input" required>
+                                <input type="hidden" name="phone" id="full_phone">
+                            </div>
+                        </div>
+
+                        <div class="input-grid">
+                            <div class="form-group">
+                                <label class="input-label">Gender</label>
+                                <select name="gender" class="form-input" required>
+                                    <option value="" disabled selected>Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="input-label">Experience (Years)</label>
+                                <input type="number" name="experience" class="form-input" placeholder="e.g. 5" min="0">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="input-label">Account Password</label>
+                            <input type="password" name="password" class="form-input" placeholder="••••••••" required>
+                        </div>
+                    </div>
+
+                    <!-- Section: Location & Salon -->
+                    <div class="section-group">
+                        <div class="section-header">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <h3>Workspace Location</h3>
+                        </div>
+                        <div class="input-grid">
+                            <div class="form-group">
+                                <label class="input-label">State/Province</label>
+                                <select id="stateSelect" name="state" class="form-input" required>
+                                    <option value="" disabled selected>Select country first</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="input-label">City/Town</label>
+                                <select id="citySelect" name="city" class="form-input" required>
+                                    <option value="" disabled selected>Select state first</option>
+                                </select>
+                                <input type="text" id="customCityInput" class="form-input" placeholder="Type city name"
+                                    style="display: none; margin-top: 10px;" disabled>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="input-label">Preferred Salon to Join</label>
+                            <select name="salon_id" id="salonSelect" class="form-input" required>
+                                <option value="" data-category="General">Choose a workspace...</option>
+                                {% for salon in salons %}
+                                <option value="{{ salon.id }}" data-category="{{ (salon.category or 'Barber Shop') }}">
+                                    {{ salon.name }} — {{ (salon.category or 'Barber Shop') }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Section: Expertise -->
+                    <div class="section-group">
+                        <div class="section-header">
+                            <i class="fas fa-star"></i>
+                            <h3 id="skillsLabel">Area of Expertise</h3>
+                        </div>
+                        <div class="skills-grid" id="skillsGrid">
+                            <!-- Skills dynamically injected -->
+                        </div>
+                        <input type="hidden" name="skill" id="skillInput">
+                    </div>
+
+                    <button type="submit" class="btn-submit">Submit Artist Application</button>
+
+                    <div style="text-align: center; margin-top: 2.5rem; font-weight: 700; color: var(--text-slate);">
+                        Already registered? <a href="{{ url_for('worker_panel.login') }}"
+                            style="color: var(--primary-artist); text-decoration: none; font-weight: 900;">Artist Login
+                            →</a>
+                    </div>
+                </form>
+            </div>
         </div>
-        <a href="/" class="back-link">← Back to Gateway</a>
+
+        <a href="/"
+            style="display: block; text-align: center; margin-top: 2rem; color: var(--text-slate); text-decoration: none; font-weight: 700; font-size: 0.9rem;">←
+            Back to Gateway</a>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@21.0.8/build/js/intlTelInput.min.js"></script>
@@ -313,6 +464,17 @@
         };
 
         let selectedSkills = [];
+
+        function previewImage(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('regPhotoPreview').innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
 
         function toggleSkill(el, skill) {
             const idx = selectedSkills.indexOf(skill);
@@ -334,8 +496,7 @@
             grid.innerHTML = '';
             selectedSkills = [];
             document.getElementById('skillInput').value = '';
-
-            label.innerHTML = `Skills for ${category} (tap to select)`;
+            label.innerHTML = `Expertise in ${category}`;
 
             skills.forEach(skill => {
                 const chip = document.createElement('div');
@@ -347,9 +508,10 @@
         }
 
         document.addEventListener("DOMContentLoaded", function () {
+            const input = document.querySelector("#phone");
+            const hiddenInput = document.querySelector("#full_phone");
             const salonSelect = document.getElementById('salonSelect');
 
-            // Set initial skills
             updateSkillsGrid('General');
 
             salonSelect.addEventListener('change', function () {
@@ -357,8 +519,6 @@
                 const category = selectedOption.getAttribute('data-category') || 'Barber Shop';
                 updateSkillsGrid(category);
             });
-            const input = document.querySelector("#phone");
-            const hiddenInput = document.querySelector("#full_phone");
 
             const iti = window.intlTelInput(input, {
                 initialCountry: "auto",
@@ -377,13 +537,12 @@
                 hiddenInput.value = iti.getNumber();
             });
 
+            // Location Logic
             const stateSelect = document.getElementById('stateSelect');
             const citySelect = document.getElementById('citySelect');
 
             function fetchStates(countryName) {
                 stateSelect.innerHTML = '<option value="" disabled selected>Loading states...</option>';
-                citySelect.innerHTML = '<option value="" disabled selected>Select state first</option>';
-
                 fetch("https://countriesnow.space/api/v0.1/countries/states", {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -392,7 +551,7 @@
                     .then(res => res.json())
                     .then(data => {
                         stateSelect.innerHTML = '<option value="" disabled selected>Select State</option>';
-                        if (!data.error && data.data && data.data.states && data.data.states.length > 0) {
+                        if (!data.error && data.data && data.data.states) {
                             data.data.states.forEach(state => {
                                 const option = document.createElement('option');
                                 option.value = state.name;
@@ -400,53 +559,21 @@
                                 stateSelect.appendChild(option);
                             });
                             stateSelect.dataset.country = countryName;
-                        } else {
-                            // Fallback
-                            const fallbackStates = ['Andhra Pradesh', 'Telangana', 'Karnataka', 'Maharashtra', 'Tamil Nadu', 'Delhi', 'Other'];
-                            fallbackStates.forEach(state => {
-                                const option = document.createElement('option');
-                                option.value = state;
-                                option.textContent = state;
-                                stateSelect.appendChild(option);
-                            });
-                            stateSelect.dataset.country = 'India';
                         }
-                    })
-                    .catch(err => {
-                        console.error('Error fetching states:', err);
-                        stateSelect.innerHTML = '<option value="" disabled selected>Select State</option><option value="Other">Other</option>';
                     });
             }
 
             input.addEventListener("countrychange", function () {
                 const countryData = iti.getSelectedCountryData();
                 if (countryData && countryData.name) {
-                    const countryName = countryData.name.split(" (")[0];
-                    fetchStates(countryName);
+                    fetchStates(countryData.name.split(" (")[0]);
                 }
             });
 
-            // Initial load for auto-detected country
-            setTimeout(() => {
-                const initialCountryData = iti.getSelectedCountryData();
-                if (initialCountryData && initialCountryData.name) {
-                    const countryName = initialCountryData.name.split(" (")[0];
-                    fetchStates(countryName);
-                }
-            }, 1000);
-
-            // Fetch cities on state change
             stateSelect.addEventListener('change', function () {
                 const stateName = this.value;
                 const countryName = this.dataset.country || 'India';
-
-                if (!stateName || stateName === 'Other') {
-                    citySelect.innerHTML = '<option value="" disabled selected>Select City</option><option value="Other">Other</option>';
-                    return;
-                }
-
                 citySelect.innerHTML = '<option value="" disabled selected>Loading cities...</option>';
-
                 fetch("https://countriesnow.space/api/v0.1/countries/state/cities", {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -455,7 +582,7 @@
                     .then(res => res.json())
                     .then(data => {
                         citySelect.innerHTML = '<option value="" disabled selected>Select City</option>';
-                        if (!data.error && data.data && data.data.length > 0) {
+                        if (!data.error && data.data) {
                             data.data.forEach(city => {
                                 let cleanCity = city.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                                 const option = document.createElement('option');
@@ -464,33 +591,33 @@
                                 citySelect.appendChild(option);
                             });
                         }
-                        const optionOther = document.createElement('option');
-                        optionOther.value = 'Other';
-                        optionOther.textContent = 'Other (Type Manually)';
-                        citySelect.appendChild(optionOther);
-                    })
-                    .catch(err => {
-                        console.error('Error fetching cities:', err);
-                        citySelect.innerHTML = '<option value="" disabled selected>Select City</option><option value="Other">Other (Type Manually)</option>';
+                        const optOther = document.createElement('option');
+                        optOther.value = 'Other'; optOther.textContent = 'Other (Type Manually)';
+                        citySelect.appendChild(optOther);
                     });
             });
 
-            const customCityInput = document.getElementById('customCityInput');
             citySelect.addEventListener('change', function () {
+                const customCityInput = document.getElementById('customCityInput');
                 if (this.value === 'Other') {
                     customCityInput.style.display = 'block';
                     customCityInput.disabled = false;
                     customCityInput.setAttribute('name', 'city');
-                    customCityInput.required = true;
                     this.removeAttribute('name');
                 } else {
                     customCityInput.style.display = 'none';
                     customCityInput.disabled = true;
-                    customCityInput.removeAttribute('name');
-                    customCityInput.required = false;
                     this.setAttribute('name', 'city');
                 }
             });
+
+            // Initial Detection
+            setTimeout(() => {
+                const initialCountryData = iti.getSelectedCountryData();
+                if (initialCountryData && initialCountryData.name) {
+                    fetchStates(initialCountryData.name.split(" (")[0]);
+                }
+            }, 1000);
         });
     </script>
 </body>

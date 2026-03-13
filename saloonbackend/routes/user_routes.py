@@ -172,3 +172,26 @@ def get_bookings(user_id):
             "message": message
         })
     return jsonify(result)
+@user_bp.route('/complaint', methods=['POST'])
+def raise_complaint():
+    from models import Complaint
+    data = request.json
+    user_id = data.get('user_id')
+    target_type = data.get('target_type') # 'worker' or 'owner'
+    target_id = data.get('target_id')
+    subject = data.get('subject')
+    description = data.get('description')
+    
+    if not all([user_id, target_type, target_id, subject, description]):
+        return jsonify({"message": "All fields are required", "status": "error"}), 400
+        
+    complaint = Complaint(
+        reporter_id=user_id,
+        target_type=target_type,
+        target_id=target_id,
+        subject=subject,
+        description=description
+    )
+    db.session.add(complaint)
+    db.session.commit()
+    return jsonify({"message": "Complaint filed successfully. Admin will review it.", "status": "success"})
