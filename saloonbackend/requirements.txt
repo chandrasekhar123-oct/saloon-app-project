@@ -7,3 +7,4 @@ google-auth
 mysqlclient
 pymysql
 gunicorn
+psycopg2-binary
