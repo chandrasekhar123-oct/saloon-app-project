@@ -9,6 +9,7 @@
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@21.0.8/build/css/intlTelInput.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         :root {
             --primary-artist: #10b981;
@@ -376,12 +377,9 @@
                     style="text-transform: uppercase; font-size: 0.72rem; letter-spacing: 2.5px; font-weight: 800; color: var(--text-slate); opacity: 0.75;">
                     Or Sign In With</p>
                 <div class="social-btns">
-                    <div class="social-icon" style="color: #ea4335;" onclick="simulateSocialLogin('Google')"><i
-                            class="fab fa-google"></i></div>
-                    <div class="social-icon" style="color: #000000;" onclick="simulateSocialLogin('Apple')"><i
-                            class="fab fa-apple"></i></div>
-                    <div class="social-icon" style="color: #1877f2;" onclick="simulateSocialLogin('Facebook')"><i
-                            class="fab fa-facebook-f"></i></div>
+                    <div class="social-icon" style="color: #ea4335;" onclick="loginWithGoogle()"><i class="fab fa-google"></i></div>
+                    <div class="social-icon" style="color: #000000;" onclick="simulateSocialLogin('Apple')"><i class="fab fa-apple"></i></div>
+                    <div class="social-icon" style="color: #1877f2;" onclick="simulateSocialLogin('Facebook')"><i class="fab fa-facebook-f"></i></div>
                 </div>
             </div>
 
@@ -459,6 +457,54 @@
                 }, 1000);
             }, 2500);
         }
+
+        window.handleGoogleCredentialResponse = (response) => {
+            showOverlay("Syncing Portfolio...", "Connecting to your Google business profile.");
+            
+            fetch("{{ url_for('worker_panel.google_login') }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ credential: response.credential })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('overlayTitle').innerHTML = '<i class="fas fa-check-circle" style="color: #10b981; font-size: 3rem; display: block; margin-bottom: 1rem;"></i> Authorized!';
+                    document.getElementById('overlaySub').innerText = "Grooming your dashboard experience.";
+                    setTimeout(() => { window.location.href = "{{ url_for('worker_panel.dashboard') }}"; }, 1000);
+                } else {
+                    document.getElementById('authOverlay').style.display = 'none';
+                    alert(data.message || "Google Login failed");
+                }
+            })
+            .catch(err => {
+                document.getElementById('authOverlay').style.display = 'none';
+                console.error("Error:", err);
+                alert("An error occurred during Google Sign-In.");
+            });
+        };
+
+        function loginWithGoogle() {
+            showOverlay("Connecting to Google...", "Opening secure account selector.");
+            google.accounts.id.prompt((notification) => {
+                if (notification.isNotDisplayed()) {
+                    document.getElementById('authOverlay').style.display = 'none';
+                    alert("Google Sign-In prompt was blocked. Please try again or check browser settings.");
+                }
+                if (notification.isSkippedMoment() || notification.isDismissMoment()) {
+                    document.getElementById('authOverlay').style.display = 'none';
+                }
+            });
+        }
+
+        window.onload = function () {
+            google.accounts.id.initialize({
+                client_id: "788448575031-r7f781j9o2291iv2769p74h8d23u9idm.apps.googleusercontent.com",
+                callback: handleGoogleCredentialResponse,
+                auto_select: false,
+                cancel_on_tap_outside: true
+            });
+        };
 
         window.simulateSocialLogin = (provider) => {
             showOverlay(`Verifying ${provider}...`, "Establishing secure artist handshake.");

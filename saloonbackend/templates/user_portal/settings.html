@@ -40,14 +40,46 @@
                 
                 <div>
                     <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;" data-i18n="phone_number">Phone Number</label>
-                    <input type="tel" id="phone" name="raw_phone" value="{{ user.phone }}" required style="width: 100%; padding: 12px 18px; border-radius: 14px; border: 1px solid var(--glass-border); background: var(--bg-main); font-weight: 600; font-family: inherit;">
-                    <input type="hidden" name="phone" id="full_phone" value="{{ user.phone }}">
+                    <input type="tel" id="phone" name="raw_phone" value="{{ user.phone or '' }}" {% if not user.google_id %}required{% endif %} style="width: 100%; padding: 12px 18px; border-radius: 14px; border: 1px solid var(--glass-border); background: var(--bg-main); font-weight: 600; font-family: inherit;">
+                    <input type="hidden" name="phone" id="full_phone" value="{{ user.phone or '' }}">
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">Email Address</label>
+                    <input type="email" name="email" value="{{ user.email or '' }}" style="width: 100%; padding: 12px 18px; border-radius: 14px; border: 1px solid var(--glass-border); background: var(--bg-main); font-weight: 600; font-family: inherit;" {% if user.google_id %}readonly{% endif %}>
+                    {% if user.google_id %}
+                    <p style="font-size: 0.65rem; color: var(--text-muted); margin-top: 5px;">Linked to Google account (Primary Email)</p>
+                    {% endif %}
                 </div>
 
                 <div>
                     <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;" data-i18n="new_password">New Password</label>
                     <input type="password" name="password" data-i18n-hold="password_placeholder" placeholder="Leave blank to keep current" style="width: 100%; padding: 12px 18px; border-radius: 14px; border: 1px solid var(--glass-border); background: var(--bg-main); font-weight: 600; font-family: inherit;">
                 </div>
+            </div>
+        </div>
+
+        <!-- Social Accounts -->
+        <div style="background: var(--bg-card); border-radius: 24px; padding: 2rem; border: 1px solid var(--glass-border); margin-bottom: 2rem;">
+            <h4 style="font-weight: 850; font-size: 1.1rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-share-nodes" style="color: var(--primary);"></i> <span>Linked Accounts</span>
+            </h4>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 16px; background: {% if user.google_id %}rgba(234, 67, 53, 0.05){% else %}var(--bg-main){% endif %}; border: 1px solid {% if user.google_id %}rgba(234, 67, 53, 0.1){% else %}var(--glass-border){% endif %};">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 40px; height: 40px; border-radius: 10px; background: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                        <i class="fab fa-google" style="color: #ea4335; font-size: 1.2rem;"></i>
+                    </div>
+                    <div>
+                        <h5 style="margin: 0; font-weight: 800; font-size: 0.9rem;">Google Account</h5>
+                        <p style="margin: 0; font-size: 0.7rem; color: var(--text-muted);">{% if user.google_id %}Connected as {{ user.email }}{% else %}Not connected{% endif %}</p>
+                    </div>
+                </div>
+                {% if user.google_id %}
+                <span style="font-size: 0.75rem; font-weight: 900; color: #10b981;"><i class="fas fa-check-circle"></i> Linked</span>
+                {% else %}
+                <button type="button" onclick="simulateSocialLogin('Google')" style="background: white; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 8px; font-weight: 800; font-size: 0.7rem; cursor: pointer;">Connect</button>
+                {% endif %}
             </div>
         </div>
 

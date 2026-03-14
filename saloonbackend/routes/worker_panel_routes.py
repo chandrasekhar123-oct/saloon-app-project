@@ -7,6 +7,9 @@ from functools import wraps
 import os
 import random
 import string
+from google.oauth2 import id_token
+from google.auth.transport import requests
+from config import Config
 
 worker_panel_bp = Blueprint('worker_panel', __name__, url_prefix='/worker-panel')
 
@@ -33,6 +36,11 @@ def worker_login_required(f):
             session.pop('worker_id', None)
             flash('Your account is pending approval by the shop owner.', 'warning')
             return redirect(url_for('worker_panel.login'))
+
+        # NEW: Ensure Google users select a salon before accessing dashboard
+        if not worker.salon_id and request.endpoint != 'worker_panel.setup_profile':
+            flash('Please complete your profile by selecting a salon.', 'info')
+            return redirect(url_for('worker_panel.setup_profile'))
             
         return f(*args, **kwargs)
     return decorated
@@ -67,6 +75,77 @@ def login():
 
     return render_template('worker/login.html')
 
+@worker_panel_bp.route('/google-login', methods=['POST'])
+def google_login():
+    token = request.json.get('credential')
+    if not token:
+        return jsonify({'success': False, 'message': 'No token provided'}), 400
+
+    try:
+        # Verify the token
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(), Config.GOOGLE_CLIENT_ID)
+        
+        # Get user info from token
+        google_id = idinfo['sub']
+        email = idinfo['email']
+        name = idinfo.get('name', 'Google Worker')
+        picture = idinfo.get('picture')
+
+        # Check if worker exists
+        worker = Worker.query.filter_by(google_id=google_id).first()
+        if not worker:
+            # Check by email
+            worker = Worker.query.filter_by(email=email).first()
+            if worker:
+                worker.google_id = google_id
+                if not worker.image_url:
+                    worker.image_url = picture
+            else:
+                # Create new worker (Unlinked to a salon initially)
+                worker = Worker(
+                    name=name,
+                    email=email,
+                    google_id=google_id,
+                    image_url=picture,
+                    is_active=True,
+                    is_approved=True 
+                )
+                db.session.add(worker)
+            db.session.commit()
+
+        # Login the worker
+        if not worker.is_active:
+            return jsonify({'success': False, 'message': 'Account deactivated.'}), 403
+        
+        session['worker_id'] = worker.id
+        
+        # Determine redirection
+        if not worker.salon_id:
+            return jsonify({'success': True, 'message': 'New account', 'redirect': url_for('worker_panel.setup_profile')})
+        
+        return jsonify({'success': True, 'message': 'Login successful', 'redirect': url_for('worker_panel.dashboard')})
+
+    except ValueError:
+        return jsonify({'success': False, 'message': 'Invalid token'}), 400
+
+# ─── Profile Setup (For Google/New Workers) ──────────────────────────────────
+@worker_panel_bp.route('/setup-profile', methods=['GET', 'POST'])
+def setup_profile():
+    if 'worker_id' not in session: return redirect(url_for('worker_panel.login'))
+    worker = get_current_worker()
+    salons = Salon.query.all()
+    
+    if request.method == 'POST':
+        worker.salon_id = request.form.get('salon_id')
+        worker.experience = request.form.get('experience')
+        worker.skill = request.form.get('skill')
+        worker.gender = request.form.get('gender')
+        db.session.commit()
+        flash('Profile completed! Welcome to the team.', 'success')
+        return redirect(url_for('worker_panel.dashboard'))
+        
+    return render_template('worker/setup_profile.html', worker=worker, salons=salons)
+
 # ─── Register ────────────────────────────────────────────────────────────────
 @worker_panel_bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -75,17 +154,12 @@ def register():
         name = request.form.get('name')
         phone = request.form.get('phone')
         password = request.form.get('password')
-        salon_id = request.form.get('salon_id')
-        experience = request.form.get('experience', 0)
-        skill = request.form.get('skill')
-
         gender = request.form.get('gender')
         state = request.form.get('state')
         city = request.form.get('city')
-
-        if Worker.query.filter_by(phone=phone).first():
-            flash('A worker with this phone already exists.', 'danger')
-            return render_template('worker/register.html', salons=salons)
+        salon_id = request.form.get('salon_id')
+        experience = request.form.get('experience')
+        skill = request.form.get('skill')
 
         worker = Worker(
             name=name,
@@ -133,7 +207,7 @@ def reset_password(worker_id):
 @worker_login_required
 def dashboard():
     worker = get_current_worker()
-    salon = Salon.query.get(worker.salon_id) if worker.salon_id else None
+    salon = db.session.get(Salon, worker.salon_id) if worker.salon_id else None
     all_bookings = Booking.query.filter_by(worker_id=worker.id).all()
     today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
 
@@ -165,8 +239,8 @@ def dashboard():
                         for b in total_completed_bookings if day <= b.slot_time < day_end)
         weekly_earnings.append({
             'day': day.strftime('%a'),
-            'amount': round(day_total, 2),
-            'percent': int(min(100.0, (float(day_total) / 1000.0 * 100.0))) if day_total > 0 else 5 # Adjusted goal for worker share
+            'amount': float(round(float(day_total), 2)),
+            'percent': int(min(100, int((float(day_total) / 1000.0 * 100.0)))) if day_total > 0 else 5 # Adjusted goal for worker share
         })
 
     # Success Rate & Monthly
@@ -180,7 +254,7 @@ def dashboard():
     # Calculate Average Rating from Reviews
     reviews = Review.query.join(Booking).filter(Booking.worker_id == worker.id).all()
     if reviews:
-        avg_rating = round(float(sum(r.rating for r in reviews)) / len(reviews), 1)
+        avg_rating = float(round(float(sum(r.rating for r in reviews)) / len(reviews), 1))
     else:
         avg_rating = 5.0
     
@@ -251,7 +325,7 @@ def insights():
     # Average Rating
     reviews = Review.query.join(Booking).filter(Booking.worker_id == worker.id).all()
     if reviews:
-        avg_rating = round(float(sum(r.rating for r in reviews)) / len(reviews), 1)
+        avg_rating = float(round(float(sum(r.rating for r in reviews)) / len(reviews), 1))
     else:
         avg_rating = 5.0
     
@@ -264,8 +338,8 @@ def insights():
                         for b in completed_jobs if day <= b.slot_time < day_end)
         weekly_trend.append({
             'day': day.strftime('%a'),
-            'amount': round(day_total, 2),
-            'percent': int(min(100.0, (float(day_total) / 1000.0 * 100.0))) if day_total > 0 else 5
+            'amount': float(round(float(day_total), 2)),
+            'percent': int(min(100, int((float(day_total) / 1000.0 * 100.0)))) if day_total > 0 else 5
         })
     
     return render_template('worker/insights.html', 
@@ -408,9 +482,18 @@ def settings():
         if name:
             worker.name = name
             
+        # Only update email if not a Google user
+        if not worker.google_id:
+            email = request.form.get('email')
+            if email:
+                worker.email = email
+
         phone = request.form.get('phone')
         if phone:
             worker.phone = phone
+        elif worker.google_id:
+            # For Google users, phone is optional
+            pass
             
         experience = request.form.get('experience')
         if experience is not None and experience != '':

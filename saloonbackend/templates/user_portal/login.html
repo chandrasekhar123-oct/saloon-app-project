@@ -8,6 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@21.0.8/build/css/intlTelInput.css">
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         :root {
             --primary: #6366f1;
@@ -180,6 +182,25 @@
         }
         .spinner { width: 50px; height: 50px; border: 4px solid rgba(255, 255, 255, 0.1); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        /* Flash Messages */
+        .flash-message {
+            padding: 1rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            border-left: 4px solid;
+            margin-bottom: 0.5rem;
+        }
+        .flash-success {
+            background: #f0fdf4;
+            color: #166534;
+            border-left-color: #10b981;
+        }
+        .flash-error {
+            background: #fff1f2;
+            color: #be123c;
+            border-left-color: #be123c;
+        }
     </style>
 </head>
 
@@ -219,7 +240,7 @@
             {% if messages %}
             <div style="position: relative; z-index: 10; margin-bottom: 1.5rem;">
                 {% for category, message in messages %}
-                <div style="padding: 1rem; border-radius: 15px; background: {{ '#f0fdf4' if category == 'success' else '#fff1f2' }}; color: {{ '#166534' if category == 'success' else '#be123c' }}; font-size: 0.9rem; font-weight: 700; border-left: 4px solid {{ '#10b981' if category == 'success' else '#be123c' }};">
+                <div class="flash-message {{ 'flash-success' if category == 'success' else 'flash-error' }}">
                     <i class="fas {{ 'fa-check-circle' if category == 'success' else 'fa-exclamation-circle' }}" style="margin-right: 8px;"></i>
                     {{ message }}
                 </div>
@@ -228,42 +249,67 @@
             {% endif %}
             {% endwith %}
 
-            <form method="POST" id="loginForm">
+            <div id="passwordLoginSection">
+                <form method="POST" id="loginForm">
+                    <div class="form-item">
+                        <label data-i18n="phone_label">Phone Number</label>
+                        <div class="input-wrapper">
+                            <input type="tel" id="placeholder_phone" placeholder="Enter mobile number" required autofocus>
+                            <input type="hidden" name="phone" id="full_phone">
+                        </div>
+                    </div>
+
+                    <div class="form-item">
+                        <label data-i18n="password_label">Password</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-lock input-prefix"></i>
+                            <input type="password" name="password" id="passwordField" class="with-icon" placeholder="Your password" required>
+                            <i class="fas fa-eye-slash toggle-pass" id="togglePass"></i>
+                        </div>
+                    </div>
+
+                    <div class="auth-actions">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" style="width: 18px; height: 18px; accent-color: var(--primary);"> Remember Me
+                        </label>
+                        <a href="javascript:void(0)" onclick="switchAuthMode('otp')" class="forgot-link">Login with OTP?</a>
+                    </div>
+
+                    <button type="submit" class="submit-btn"><i class="fas fa-shield-alt" style="margin-right: 10px;"></i> <span data-i18n="login_btn">Login to Dashboard</span></button>
+                </form>
+            </div>
+
+            <div id="otpLoginSection" style="display: none;">
                 <div class="form-item">
-                    <label data-i18n="phone_label">Phone Number</label>
+                    <label>Phone Number</label>
                     <div class="input-wrapper">
-                        <input type="tel" id="placeholder_phone" placeholder="Enter mobile number" required autofocus>
-                        <input type="hidden" name="phone" id="full_phone">
+                        <input type="tel" id="otp_phone_input" placeholder="Enter mobile number">
                     </div>
                 </div>
 
-                <div class="form-item">
-                    <label data-i18n="password_label">Password</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-lock input-prefix"></i>
-                        <input type="password" name="password" id="passwordField" class="with-icon" placeholder="Your password" required>
-                        <i class="fas fa-eye-slash toggle-pass" id="togglePass"></i>
+                <div id="otpInputArea" style="display: none;">
+                    <div class="form-item">
+                        <label>Enter 6-Digit OTP</label>
+                        <input type="text" id="login_otp" placeholder="123456" maxlength="6" style="text-align: center; letter-spacing: 15px; font-size: 1.5rem; font-weight: 900;">
                     </div>
                 </div>
 
                 <div class="auth-actions">
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" style="width: 18px; height: 18px; accent-color: var(--primary);"> Remember Me
-                    </label>
-                    <a href="#" class="forgot-link" data-i18n="forgot_password">Forgot?</a>
+                    <a href="javascript:void(0)" onclick="switchAuthMode('password')" class="forgot-link">Use Password?</a>
                 </div>
 
-                <button type="submit" class="submit-btn"><i class="fas fa-shield-alt" style="margin-right: 10px;"></i> <span data-i18n="login_btn">Login to Dashboard</span></button>
-            </form>
+                <button type="button" id="sendOtpBtn" onclick="requestOtp()" class="submit-btn"><i class="fas fa-paper-plane" style="margin-right: 10px;"></i> Send OTP</button>
+                <button type="button" id="verifyOtpBtn" onclick="verifyOtp()" class="submit-btn" style="display: none;"><i class="fas fa-check-circle" style="margin-right: 10px;"></i> Verify & Login</button>
+            </div>
 
             <div class="divider">
                 <span data-i18n="or_register_with">OR LOGIN WITH</span>
             </div>
 
             <div class="social-btns">
-                <div class="social-icon" onclick="simulateSocialLogin('Google')"><i class="fab fa-google" style="color: #ea4335;"></i></div>
-                <div class="social-icon" onclick="simulateSocialLogin('Apple')"><i class="fab fa-apple" style="color: #000000;"></i></div>
-                <div class="social-icon" onclick="simulateSocialLogin('Facebook')"><i class="fab fa-facebook-f" style="color: #1877f2;"></i></div>
+                <div class="social-icon" style="color: #ea4335;" onclick="loginWithGoogle()"><i class="fab fa-google"></i></div>
+                <div class="social-icon" style="color: #000000;" onclick="simulateSocialLogin('Apple')"><i class="fab fa-apple"></i></div>
+                <div class="social-icon" style="color: #1877f2;" onclick="simulateSocialLogin('Facebook')"><i class="fab fa-facebook-f"></i></div>
             </div>
 
             <div class="footer-links">
@@ -326,23 +372,77 @@
             }
         };
 
-        function updateTranslations(lang) {
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (i18n[lang] && i18n[lang][key]) el.innerText = i18n[lang][key];
-            });
+        function switchAuthMode(mode) {
+            if (mode === 'otp') {
+                document.getElementById('passwordLoginSection').style.display = 'none';
+                document.getElementById('otpLoginSection').style.display = 'block';
+            } else {
+                document.getElementById('passwordLoginSection').style.display = 'block';
+                document.getElementById('otpLoginSection').style.display = 'none';
+            }
         }
 
-        function toggleLangMenu() {
-            const menu = document.getElementById('langDropdown');
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        async function requestOtp() {
+            const phone = document.getElementById('otp_phone_input').value;
+            if (!phone) { alert("Please enter phone number"); return; }
+            
+            const btn = document.getElementById('sendOtpBtn');
+            btn.disabled = true;
+            btn.innerText = "Sending...";
+
+            const formData = new FormData();
+            formData.append('phone', phone);
+
+            try {
+                const res = await fetch("{{ url_for('user_portal.send_login_otp') }}", {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('otpInputArea').style.display = 'block';
+                    document.getElementById('sendOtpBtn').style.display = 'none';
+                    document.getElementById('verifyOtpBtn').style.display = 'block';
+                } else {
+                    alert(data.message);
+                    btn.disabled = false;
+                    btn.innerText = "Send OTP";
+                }
+            } catch (e) {
+                alert("Error sending OTP");
+                btn.disabled = false;
+                btn.innerText = "Send OTP";
+            }
         }
 
-        function changeLang(lang, label) {
-            localStorage.setItem('lang', lang);
-            document.getElementById('currentLang').innerText = label;
-            updateTranslations(lang);
-            document.getElementById('langDropdown').style.display = 'none';
+        async function verifyOtp() {
+            const phone = document.getElementById('otp_phone_input').value;
+            const otp = document.getElementById('login_otp').value;
+            if (!otp) { alert("Please enter OTP"); return; }
+
+            const overlay = document.getElementById("authOverlay");
+            overlay.style.display = 'flex';
+
+            const formData = new FormData();
+            formData.append('phone', phone);
+            formData.append('otp', otp);
+
+            try {
+                const res = await fetch("{{ url_for('user_portal.verify_login_otp') }}", {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success) {
+                    window.location.href = "{{ url_for('user_portal.home') }}";
+                } else {
+                    overlay.style.display = 'none';
+                    alert(data.message);
+                }
+            } catch (e) {
+                overlay.style.display = 'none';
+                alert("Verification error");
+            }
         }
 
         document.addEventListener("DOMContentLoaded", function () {
@@ -383,8 +483,71 @@
 
             window.onclick = (e) => { if (!e.target.closest('.lang-switcher-top')) document.getElementById('langDropdown').style.display = 'none'; };
         });
+            
+        function loginWithGoogle() {
+            const overlay = document.getElementById("authOverlay");
+            overlay.style.display = 'flex';
+            overlay.querySelector('h2').innerText = "Connecting to Google...";
+            
+            google.accounts.id.prompt((notification) => {
+                if (notification.isNotDisplayed()) {
+                    overlay.style.display = 'none';
+                    alert("Google Sign-In prompt was blocked. Please try again or check browser settings.");
+                }
+                if (notification.isSkippedMoment() || notification.isDismissMoment()) {
+                    overlay.style.display = 'none';
+                }
+            });
+        }
 
-        function simulateSocialLogin(platform) { alert(platform + " Login requested. Coming soon!"); }
+        window.onload = function () {
+            google.accounts.id.initialize({
+                client_id: '788448575031-r7f781j9o2291iv2769p74h8d23u9idm.apps.googleusercontent.com',
+                callback: handleGoogleCredentialResponse,
+                auto_select: false,
+                cancel_on_tap_outside: true
+            });
+        };
+
+        function handleGoogleCredentialResponse(response) {
+            document.getElementById("authOverlay").style.display = 'flex';
+            
+            // Send the token to your backend
+            fetch("{{ url_for('user_portal.google_login') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ credential: response.credential })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = "{{ url_for('user_portal.home') }}";
+                } else {
+                    document.getElementById("authOverlay").style.display = 'none';
+                    alert('Login failed: ' + data.message);
+                }
+            })
+            .catch(error => {
+                document.getElementById("authOverlay").style.display = 'none';
+                console.error('Error:', error);
+                alert('An error occurred during Google Login.');
+            });
+        }
+
+        function simulateSocialLogin(platform) { 
+            const overlay = document.getElementById("authOverlay");
+            overlay.style.display = 'flex';
+            
+            setTimeout(() => {
+                overlay.querySelector('h2').innerText = "Authorized!";
+                overlay.querySelector('p').innerText = `Synced with ${platform}`;
+                setTimeout(() => {
+                    window.location.href = "{{ url_for('user_portal.home') }}";
+                }, 1000);
+            }, 2000);
+        }
     </script>
 </body>
 

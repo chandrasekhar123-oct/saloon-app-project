@@ -5,8 +5,9 @@ class Owner(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    phone = db.Column(db.String(20), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
+    phone = db.Column(db.String(20), unique=True, nullable=True)
+    password = db.Column(db.String(200), nullable=True)
+    google_id = db.Column(db.String(100), unique=True, nullable=True)
     profile_image = db.Column(db.String(500), nullable=True)
     gender = db.Column(db.String(10), nullable=True) # Added gender field
     is_active = db.Column(db.Boolean, default=True) # Added for administrative control
@@ -18,8 +19,10 @@ class Owner(UserMixin, db.Model):
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    phone = db.Column(db.String(20), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
+    phone = db.Column(db.String(20), unique=True, nullable=True)
+    email = db.Column(db.String(120), unique=True, nullable=True)
+    password = db.Column(db.String(200), nullable=True)
+    google_id = db.Column(db.String(100), unique=True, nullable=True)
     profile_image = db.Column(db.String(500), nullable=True)
     gender = db.Column(db.String(10), nullable=True) # Added gender field
     is_active = db.Column(db.Boolean, default=True) # Added for administrative control
@@ -30,10 +33,12 @@ class User(UserMixin, db.Model):
 
 class Worker(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    salon_id = db.Column(db.Integer, db.ForeignKey('salon.id'), nullable=False)
+    salon_id = db.Column(db.Integer, db.ForeignKey('salon.id'), nullable=True) # Optional link
     name = db.Column(db.String(100), nullable=False)
-    phone = db.Column(db.String(20), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
+    phone = db.Column(db.String(20), unique=True, nullable=True)
+    email = db.Column(db.String(120), unique=True, nullable=True)
+    password = db.Column(db.String(200), nullable=True)
+    google_id = db.Column(db.String(100), unique=True, nullable=True)
     skill = db.Column(db.String(200)) # e.g., "Haircut, Styling"
     experience = db.Column(db.Integer)
     image_url = db.Column(db.String(500), default="https://i.pravatar.cc/300")

@@ -233,7 +233,7 @@ def toggle_status(id):
 @worker_bp.route('/earnings/<int:id>', methods=['GET'])
 def get_earnings(id):
     from datetime import datetime, timedelta
-    worker = Worker.query.get(id)
+    worker = db.session.get(Worker, id)
     if not worker:
         return jsonify({"message": "Worker not found", "status": "error"}), 404
 

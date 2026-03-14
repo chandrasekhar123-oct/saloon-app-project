@@ -12,6 +12,12 @@ from datetime import datetime, timedelta
 
 admin_bp = Blueprint('admin', __name__)
 
+@admin_bp.route('/')
+def index():
+    if current_user.is_authenticated and isinstance(current_user, SuperAdmin):
+        return redirect(url_for('admin.dashboard'))
+    return redirect(url_for('admin.login'))
+
 @admin_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated and isinstance(current_user, SuperAdmin):
@@ -62,7 +68,10 @@ def salons():
 @login_required
 def toggle_salon(id):
     if not isinstance(current_user, SuperAdmin): return jsonify({'success': False}), 403
-    salon = Salon.query.get_or_404(id)
+    salon = db.session.get(Salon, id)
+    if not salon:
+        from flask import abort
+        abort(404)
     salon.is_active = not salon.is_active
     db.session.commit()
     return jsonify({'success': True, 'is_active': salon.is_active})
@@ -71,7 +80,10 @@ def toggle_salon(id):
 @login_required
 def toggle_owner(id):
     if not isinstance(current_user, SuperAdmin): return jsonify({'success': False}), 403
-    owner = Owner.query.get_or_404(id)
+    owner = db.session.get(Owner, id)
+    if not owner:
+        from flask import abort
+        abort(404)
     owner.is_active = not owner.is_active
     db.session.commit()
     return jsonify({'success': True, 'is_active': owner.is_active})

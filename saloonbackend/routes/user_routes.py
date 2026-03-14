@@ -1,8 +1,13 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, Salon, Service, Booking
 from datetime import datetime
 import random
+try:
+    from google.oauth2 import id_token
+    from google.auth.transport import requests as google_requests
+except ImportError:
+    id_token = None # Will handle this in the route
 
 user_bp = Blueprint('user', __name__)
 
@@ -32,6 +37,60 @@ def login():
     if user and check_password_hash(user.password, password):
         return jsonify({"message": "Login successful", "status": "success", "user_id": user.id})
     return jsonify({"message": "Invalid credentials", "status": "error"}), 401
+    
+@user_bp.route('/google-login', methods=['POST'])
+def google_login():
+    if id_token is None:
+        return jsonify({"message": "google-auth library not installed on server", "status": "error"}), 500
+        
+    data = request.json
+    token = data.get('credential')
+    client_id = current_app.config.get('GOOGLE_CLIENT_ID')
+    
+    try:
+        # Verify the token
+        idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), client_id)
+        
+        google_id = idinfo['sub']
+        email = idinfo.get('email')
+        name = idinfo.get('name')
+        picture = idinfo.get('picture')
+        
+        # 1. Try to find user by google_id
+        user = User.query.filter_by(google_id=google_id).first()
+        
+        if not user:
+            # 2. Try to find user by email
+            user = User.query.filter_by(email=email).first()
+            if user:
+                # Link google account to existing email
+                user.google_id = google_id
+                if not user.profile_image:
+                    user.profile_image = picture
+            else:
+                # 3. Create new user
+                user = User(name=name, email=email, google_id=google_id, profile_image=picture)
+                db.session.add(user)
+            db.session.commit()
+            
+        # Log the user in
+        session['portal_user_id'] = user.id
+        
+        return jsonify({
+            "message": "Login successful", 
+            "status": "success", 
+            "user_id": user.id,
+            "user": {
+                "name": user.name,
+                "email": user.email,
+                "profile_image": user.profile_image
+            }
+        })
+        
+    except ValueError as e:
+        return jsonify({"message": f"Invalid token: {str(e)}", "status": "error"}), 400
+    except Exception as e:
+        return jsonify({"message": str(e), "status": "error"}), 500
 
 @user_bp.route('/salons', methods=['GET'])
 def get_salons():

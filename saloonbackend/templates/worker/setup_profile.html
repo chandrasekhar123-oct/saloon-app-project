@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Artist Profile | Saloon Essy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;950&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-artist: #10b981;
+            --primary-glow: rgba(16, 185, 129, 0.4);
+            --text-dark: #0f172a;
+            --text-slate: #64748b;
+            --bg-page: #f8fafc;
+        }
+
+        body {
+            background: var(--bg-page);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(5, 150, 105, 0.1) 0px, transparent 50%);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 600px;
+            padding: 4rem 1.5rem;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .premium-card {
+            background: white;
+            border-radius: 40px;
+            box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .welcome-hero {
+            padding: 3rem 2rem;
+            background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+            color: white;
+        }
+
+        .profile-bubble {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 4px solid white;
+            margin: 0 auto 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .profile-bubble img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .form-section {
+            padding: 3rem;
+            text-align: left;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--text-slate);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 2px solid #f1f5f9;
+            border-radius: 18px;
+            background: #f8fafc;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            box-sizing: border-box;
+            transition: 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-artist);
+            background: white;
+            box-shadow: 0 10px 25px -5px var(--primary-glow);
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .skill-chip {
+            padding: 0.7rem;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            color: var(--text-slate);
+        }
+
+        .skill-chip.selected {
+            background: var(--primary-artist);
+            color: white;
+            border-color: var(--primary-artist);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1.4rem;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            font-weight: 900;
+            font-size: 1.2rem;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 20px 40px -10px rgba(16, 185, 129, 0.4);
+            margin-top: 1rem;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <div class="premium-card">
+            <div class="welcome-hero">
+                <div class="profile-bubble">
+                    <img src="{{ worker.image_url or 'https://ui-avatars.com/api/?name=' + worker.name }}" alt="Profile">
+                </div>
+                <h1 style="margin: 0; font-size: 1.8rem;">Welcome, {{ worker.name.split(' ')[0] }}!</h1>
+                <p style="opacity: 0.8; margin-top: 0.5rem; font-weight: 500;">Let's connect you to a workspace to get started.</p>
+            </div>
+
+            <div class="form-section">
+                <form method="POST" id="setupForm">
+                    <label class="input-label">Choose Your Salon</label>
+                    <select name="salon_id" id="salonSelect" class="form-input" required>
+                        <option value="" disabled selected>Select a workspace...</option>
+                        {% for salon in salons %}
+                        <option value="{{ salon.id }}" data-category="{{ salon.category or 'General' }}">
+                            {{ salon.name }} — {{ salon.category or 'General' }}
+                        </option>
+                        {% endfor %}
+                    </select>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <label class="input-label">Gender</label>
+                            <select name="gender" class="form-input" required>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="input-label">Exp. (Years)</label>
+                            <input type="number" name="experience" class="form-input" placeholder="e.g. 5" required>
+                        </div>
+                    </div>
+
+                    <label class="input-label">Your Specializations</label>
+                    <div class="skills-grid" id="skillsGrid">
+                        <!-- Skills dynamic -->
+                    </div>
+                    <input type="hidden" name="skill" id="skillInput" required>
+
+                    <button type="submit" class="btn-submit">Launch My Dashboard</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const skillPatterns = {
+            'Barber Shop': ['Haircut', 'Beard Trim', 'Shaving', 'Hair Color', 'Head Massage'],
+            'Beauty Parlor': ['Facial', 'Threading', 'Waxing', 'Makeup', 'Hair Styling'],
+            'Spa & Wellness': ['Massage', 'Aroma Therapy', 'Body Scrub', 'Reflexology'],
+            'General': ['Haircut', 'Facial', 'Hair Styling', 'Massage']
+        };
+
+        let selectedSkills = [];
+
+        function toggleSkill(el, skill) {
+            const idx = selectedSkills.indexOf(skill);
+            if (idx > -1) {
+                selectedSkills.splice(idx, 1);
+                el.classList.remove('selected');
+            } else {
+                selectedSkills.push(skill);
+                el.classList.add('selected');
+            }
+            document.getElementById('skillInput').value = selectedSkills.join(', ');
+        }
+
+        function updateSkillsGrid(category) {
+            const grid = document.getElementById('skillsGrid');
+            const skills = skillPatterns[category] || skillPatterns['General'];
+            grid.innerHTML = '';
+            skills.forEach(skill => {
+                const chip = document.createElement('div');
+                chip.className = 'skill-chip';
+                chip.innerText = skill;
+                chip.onclick = () => toggleSkill(chip, skill);
+                grid.appendChild(chip);
+            });
+        }
+
+        document.getElementById('salonSelect').addEventListener('change', function() {
+            const cat = this.options[this.selectedIndex].getAttribute('data-category');
+            updateSkillsGrid(cat);
+        });
+
+        // Initial grid
+        updateSkillsGrid('General');
+    </script>
+</body>
+
+</html>

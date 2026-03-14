@@ -186,9 +186,19 @@
                 </div>
                 <div class="form-group-premium">
                     <label style="display: block; font-weight: 800; font-size: 0.8rem; margin-bottom: 0.6rem; color: var(--text-slate); text-transform: uppercase;">Phone Number</label>
-                    <input type="tel" name="phone" value="{{ worker.phone }}" required
-                        style="width: 100%; padding: 1.1rem; border-radius: 18px; border: 2px solid #f1f5f9; background: #f8fafc; font-size: 1rem; font-weight: 650; box-sizing: border-box;">
+                    <input type="tel" name="phone" value="{{ worker.phone }}" 
+                           {% if not worker.google_id %}required{% endif %}
+                           style="width: 100%; padding: 1.1rem; border-radius: 18px; border: 2px solid #f1f5f9; background: #f8fafc; font-size: 1rem; font-weight: 650; box-sizing: border-box;">
                 </div>
+            </div>
+
+            <div class="form-group-premium">
+                <label style="display: block; font-weight: 800; font-size: 0.8rem; margin-bottom: 0.6rem; color: var(--text-slate); text-transform: uppercase;">Email Address</label>
+                <input type="email" name="email" value="{{ worker.email }}" 
+                       {% if worker.google_id %}readonly style="width: 100%; padding: 1.1rem; border-radius: 18px; border: 2px solid #f1f5f9; background: #f1f5f9; color: #64748b; font-size: 1rem; font-weight: 650; box-sizing: border-box; cursor: not-allowed;" title="Email cannot be changed for Google accounts"{% else %}style="width: 100%; padding: 1.1rem; border-radius: 18px; border: 2px solid #f1f5f9; background: #f8fafc; font-size: 1rem; font-weight: 650; box-sizing: border-box;"{% endif %}>
+                {% if worker.google_id %}
+                <p style="font-size: 0.65rem; color: #6366f1; font-weight: 700; margin-top: 0.5rem;"><i class="fab fa-google"></i> Linked with Google Authentication</p>
+                {% endif %}
             </div>
 
             <div class="form-group-premium">
