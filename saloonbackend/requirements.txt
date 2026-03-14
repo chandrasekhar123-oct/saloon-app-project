@@ -6,3 +6,4 @@ flask-cors
 google-auth
 mysqlclient
 pymysql
+gunicorn
