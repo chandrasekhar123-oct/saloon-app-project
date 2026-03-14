@@ -17,6 +17,7 @@
         <h3 style="font-weight: 800; font-size: 1.1rem; margin-bottom: 1.25rem;">Create New Promotion</h3>
         <form action="{{ url_for('owner.manage_offers') }}" method="POST" enctype="multipart/form-data"
             style="display: flex; flex-direction: column; gap: 1rem;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div>
                 <label
                     style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">Offer
@@ -115,6 +116,7 @@
                     </span>
                     <form action="{{ url_for('owner.delete_offer', id=offer.id) }}" method="POST"
                         onsubmit="return confirm('Remove this offer?')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <button type="submit"
                             style="background: none; border: none; color: #ef4444; font-size: 0.75rem; font-weight: 700; cursor: pointer;">
                             <i class="fas fa-trash-alt"></i> Remove

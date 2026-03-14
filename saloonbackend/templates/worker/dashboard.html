@@ -252,9 +252,11 @@
         {% if b.status == 'pending' %}
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 1rem;">
             <form action="{{ url_for('worker_panel.accept_booking', id=b.id) }}" method="POST" style="margin: 0;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <button type="submit" style="width: 100%; background: var(--primary); color: white; border: none; padding: 10px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer;">Accept</button>
             </form>
             <form action="{{ url_for('worker_panel.reject_booking', id=b.id) }}" method="POST" style="margin: 0;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <button type="submit" style="width: 100%; background: #fee2e2; color: #ef4444; border: none; padding: 10px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer;">Decline</button>
             </form>
         </div>
@@ -262,6 +264,7 @@
         <div style="background: #f8fafc; border-radius: 16px; padding: 1rem; margin-top: 0.5rem;">
             <p style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;">Verify Job (OTP)</p>
             <form action="{{ url_for('worker_panel.verify_otp', id=b.id) }}" method="POST" style="display: flex; gap: 8px;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <input type="text" name="otp" placeholder="Enter 6-digit OTP" required class="verify-input"
                        style="flex: 1; padding: 10px 15px; border-radius: 10px; border: 2px solid #e2e8f0; font-size: 0.9rem; font-weight: 700; outline: none;">
                 <button type="submit" style="background: #0f172a; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 800; font-size: 0.85rem; cursor: pointer;">Verify</button>

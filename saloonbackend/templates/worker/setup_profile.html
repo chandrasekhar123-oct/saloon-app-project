@@ -157,6 +157,7 @@
 
             <div class="form-section">
                 <form method="POST" id="setupForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <label class="input-label">Choose Your Salon</label>
                     <select name="salon_id" id="salonSelect" class="form-input" required>
                         <option value="" disabled selected>Select a workspace...</option>

@@ -6,6 +6,7 @@
 {% block content %}
 <div class="fade-in">
     <form action="{{ url_for('user_portal.settings') }}" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <!-- Photo Upload Section -->
         <div style="background: var(--bg-card); border-radius: 24px; padding: 2rem; border: 1px solid var(--glass-border); margin-bottom: 2rem; text-align: center; position: relative;">
             <div style="position: relative; width: 120px; height: 120px; margin: 0 auto 1.5rem auto;">

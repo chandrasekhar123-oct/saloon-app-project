@@ -3,7 +3,7 @@ from werkzeug.security import check_password_hash
 from models import User, Worker, Owner, OTPVerification
 from utils.sms_service import SMSService
 import random
-from extensions import db
+from extensions import db, limiter
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -11,6 +11,7 @@ auth_bp = Blueprint('auth', __name__)
 otp_store = {}
 
 @auth_bp.route('/send-otp', methods=['POST'])
+@limiter.limit("3 per hour", error_message="Too many OTP requests. Please try again later.")
 def send_otp():
     data = request.json
     phone = data.get('phone')
@@ -27,6 +28,7 @@ def send_otp():
     return jsonify({"message": f"Failed to send OTP: {msg}", "status": "error"}), 500
 
 @auth_bp.route('/verify-otp', methods=['POST'])
+@limiter.limit("5 per hour", error_message="Too many failed attempts. Please try again later.")
 def verify_otp_login():
     data = request.json
     phone = data.get('phone')

@@ -113,6 +113,7 @@
     </div>
 
     <form action="{{ url_for('owner.manage_services') }}" method="POST" style="padding: 1.5rem 2rem 2rem 2rem;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 2rem;">
             <!-- Left Side: Basic Info -->
             <div style="display: flex; flex-direction: column; gap: 1.5rem;">
@@ -274,6 +275,7 @@
     </div>
 
     <form action="{{ url_for('owner.bulk_add_services') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <div style="max-height: 400px; overflow-y: auto; padding: 0 2rem;">
             <table style="width: 100%; border-collapse: collapse;">
                 <thead style="position: sticky; top: 0; background: white; z-index: 10;">
@@ -337,6 +339,7 @@
                 </button>
                 <form action="{{ url_for('owner.delete_service', id=service.id) }}" method="POST" style="margin: 0;"
                     onsubmit="return confirm('Are you sure you want to delete this service?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <button type="submit" class="btn"
                         style="width: 45px; height: 45px; justify-content: center; background: #fff1f2; color: var(--danger); border-radius: 10px; padding: 0;">
                         <i class="fas fa-trash-alt"></i>

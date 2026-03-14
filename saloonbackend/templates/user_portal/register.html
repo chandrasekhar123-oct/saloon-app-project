@@ -227,6 +227,7 @@
             {% endwith %}
 
             <form method="POST" id="registerForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="form-item">
                     <label data-i18n="full_name_label">Full Name</label>
                     <input type="text" name="name" placeholder="Your full name" required>

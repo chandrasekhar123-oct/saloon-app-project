@@ -40,6 +40,7 @@
 
         {% if not is_owner_worker %}
         <form action="{{ url_for('owner.add_self_worker') }}" method="POST" style="margin: 0;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <button type="submit" class="btn"
                 style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; font-weight: 700;
                        border: none; padding: 0.85rem 1.75rem; border-radius: 50px;
@@ -168,6 +169,7 @@
         </button>
     </div>
     <form action="{{ url_for('owner.manage_workers') }}" method="POST" style="padding: 2rem;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
             <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                 <div class="form-group">
@@ -275,10 +277,12 @@
             <div style="display: flex; gap: 0.75rem;">
                 <form action="{{ url_for('owner.approve_worker', worker_id=worker.id) }}" method="POST"
                     style="flex: 1;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <button type="submit" class="btn"
                         style="width: 100%; border: none; background: #10b981; color: white; border-radius: 12px; font-weight: 700; padding: 0.65rem; font-size: 0.85rem;">Approve</button>
                 </form>
                 <form action="{{ url_for('owner.reject_worker', worker_id=worker.id) }}" method="POST" style="flex: 1;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <button type="submit" class="btn"
                         style="width: 100%; border: 1px solid #ef4444; background: white; color: #ef4444; border-radius: 12px; font-weight: 700; padding: 0.65rem; font-size: 0.85rem;">Decline</button>
                 </form>
@@ -357,6 +361,7 @@
                             <i class="fas fa-edit"></i>
                         </button>
                         <form action="{{ url_for('owner.delete_worker', id=worker.id) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Remove {{ worker.name }} from team?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <button type="submit" class="btn" style="width: 38px; height: 38px; padding: 0; background: #fff1f2; color: var(--danger); border-radius: 10px; justify-content: center; border: 1px solid #fecaca;">
                                 <i class="fas fa-trash-alt"></i>
                             </button>

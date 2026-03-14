@@ -286,6 +286,7 @@
             {% endwith %}
 
             <form action="{{ url_for('owner.login') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <!-- Input Group: Email -->
                 <div class="input-wrapper">
                     <i class="fas fa-envelope prefix-icon"></i>

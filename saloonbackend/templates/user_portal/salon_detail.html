@@ -108,6 +108,7 @@
 
     <!-- Info & Booking Section -->
     <form method="POST" action="{{ url_for('user_portal.book_service') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <input type="hidden" name="salon_id" value="{{ salon.id }}">
         
         <div class="section-card">

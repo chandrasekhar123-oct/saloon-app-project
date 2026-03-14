@@ -2,7 +2,7 @@
 import sqlite3
 import os
 
-db_path = r'd:\saloon app project\saloonbackend\instance\saloon.db'
+db_path = r'e:\projects\Saloon_webapp\saloonbackend\instance\saloon.db'
 
 def migrate():
     if not os.path.exists(db_path):
