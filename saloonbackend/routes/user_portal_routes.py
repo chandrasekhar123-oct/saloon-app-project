@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
 from models import db, User, Salon, Service, Booking, Worker, Offer, Review, Notification, OTPVerification
+from sqlalchemy import func
 from utils.sms_service import SMSService
 from datetime import datetime, timedelta
 import random
@@ -173,12 +174,13 @@ def home():
     active_offers = [o for o in raw_offers if o.salon and o.salon.is_open]
     recent_bookings = Booking.query.filter_by(user_id=user.id).order_by(Booking.slot_time.desc()).limit(3).all()
     
-    # Fetch specialists with rating > 4
-    all_workers = Worker.query.filter_by(is_approved=True, is_active=True).all()
-    top_workers = [w for w in all_workers if w.rating >= 4.5] # Filtering by rating
-    # Shuffle or limit if needed
+    # Fetch top-rated workers using a SQL filter — avoids loading ALL workers into RAM
+    top_workers = Worker.query.filter(
+        Worker.is_approved == True,
+        Worker.is_active == True,
+        Worker.rating >= 4.5
+    ).limit(15).all()
     random.shuffle(top_workers)
-    # Safely take the first 10 items
     top_workers = top_workers[:10]
 
     return render_template('user_portal/home.html',
@@ -303,7 +305,13 @@ def profile():
     user = get_current_user()
     total_bookings = Booking.query.filter_by(user_id=user.id).count()
     completed = Booking.query.filter_by(user_id=user.id, status='completed').count()
-    total_spent = sum(b.service.price for b in Booking.query.filter_by(user_id=user.id, status='completed').all() if b.service)
+    # Use func.sum() to avoid loading all bookings into RAM
+    total_spent = db.session.query(
+        func.coalesce(func.sum(Service.price), 0)
+    ).join(Booking, Service.id == Booking.service_id).filter(
+        Booking.user_id == user.id,
+        Booking.status == 'completed'
+    ).scalar()
     return render_template('user_portal/profile.html',
                            user=user, total_bookings=total_bookings,
                            completed=completed, total_spent=total_spent,

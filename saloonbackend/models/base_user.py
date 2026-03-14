@@ -12,5 +12,7 @@ class BaseUserMixin:
     google_id = db.Column(db.String(100), unique=True, nullable=True)
     gender = db.Column(db.String(10), nullable=True)
     is_active = db.Column(db.Boolean, default=True)
+    # Secure password reset token (replaces the insecure ID-based reset URL)
+    reset_token = db.Column(db.String(100), unique=True, nullable=True)
     # Most user types use profile_image. Worker overrides this behavior using image_url currently.
     profile_image = db.Column(db.String(500), nullable=True)

@@ -3,6 +3,13 @@ from flask_cors import CORS
 from extensions import db, login_manager
 from config import Config
 import os
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -99,5 +106,7 @@ if __name__ == '__main__':
     # We now use Flask-Migrate instead of db.create_all()
     # To apply schema changes, use `flask db upgrade` in the terminal.
     
-    # Run server - accessible in network via host='0.0.0.0'
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Run server - debug mode is controlled by FLASK_DEBUG env variable
+    # NEVER set FLASK_DEBUG=true in production
+    debug_mode = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
+    app.run(host='0.0.0.0', port=5000, debug=debug_mode)
