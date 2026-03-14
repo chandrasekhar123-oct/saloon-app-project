@@ -140,6 +140,22 @@
             color: var(--primary);
         }
 
+        .toggle-password {
+            position: absolute;
+            right: 1.1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #475569;
+            z-index: 10;
+            padding: 8px;
+            transition: 0.2s;
+        }
+
+        .toggle-password:hover {
+            color: var(--primary);
+        }
+
         button {
             width: 100%;
             padding: 1.1rem;
@@ -213,8 +229,9 @@
                 <i class="fas fa-user-shield"></i>
             </div>
             <div class="input-group">
-                <input type="password" name="password" placeholder="Access Password" required>
+                <input type="password" name="password" id="passwordField" placeholder="Access Password" required>
                 <i class="fas fa-lock"></i>
+                <i class="fas fa-eye-slash toggle-password" id="togglePass"></i>
             </div>
             <button type="submit">Unlock Dashboard <i class="fas fa-chevron-right" style="font-size: 0.8rem; margin-left: 5px;"></i></button>
         </form>
@@ -223,6 +240,15 @@
             &copy; 2026 Saloon Essy Infrastructure
         </div>
     </div>
+    <script>
+        document.getElementById('togglePass').addEventListener('click', function() {
+            const passwordField = document.getElementById('passwordField');
+            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordField.setAttribute('type', type);
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+    </script>
 </body>
 
 </html>

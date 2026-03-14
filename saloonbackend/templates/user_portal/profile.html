@@ -16,12 +16,21 @@
             {% endif %}
         </div>
         <h2 style="font-weight: 900; font-size: 1.5rem; margin-bottom: 0.5rem;">{{ user.name }}</h2>
-        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 0.5rem;">
             <div style="background: var(--bg-main); border: 1px solid var(--glass-border); padding: 10px 20px; border-radius: 50px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow-sm); font-weight: 850; font-size: 1.1rem; color: var(--text-main); width: fit-content;">
+                {% if user.phone %}
                 <img src="https://flagcdn.com/w40/in.png" style="width: 24px; border-radius: 3px;" alt="India">
                 <span>{{ user.phone }}</span>
+                {% else %}
+                <i class="fas fa-envelope" style="color: var(--primary);"></i>
+                <span style="font-size: 0.95rem;">{{ user.email }}</span>
+                {% endif %}
             </div>
         </div>
+        {% if user.google_id %}
+        <span style="display: inline-block; margin-top: 1rem; background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 6px 16px; border-radius: 50px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">
+            <i class="fab fa-google"></i> Google Verified Account
+        </span>
+        {% endif %}
         <span style="display: inline-block; margin-top: 1rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 6px 16px; border-radius: 50px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">
             Premium Member 🌟
         </span>

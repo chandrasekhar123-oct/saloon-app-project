@@ -37,10 +37,10 @@ def create_app(config_class=Config):
         # We use a prefixed id to handle multiple tables (e.g., "owner:1")
         if ":" in user_id:
             role, id = user_id.split(":")
-            if role == "user": return User.query.get(int(id))
-            if role == "worker": return Worker.query.get(int(id))
-            if role == "owner": return Owner.query.get(int(id))
-            if role == "admin": return SuperAdmin.query.get(int(id))
+            if role == "user": return db.session.get(User, int(id))
+            if role == "worker": return db.session.get(Worker, int(id))
+            if role == "owner": return db.session.get(Owner, int(id))
+            if role == "admin": return db.session.get(SuperAdmin, int(id))
         return None
 
     # Register Blueprints

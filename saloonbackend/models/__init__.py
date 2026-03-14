@@ -7,3 +7,4 @@ from .review_model import Review
 from .notification_model import Notification
 from .gallery_model import SalonGallery
 from .complaint_model import Complaint
+from .otp_model import OTPVerification

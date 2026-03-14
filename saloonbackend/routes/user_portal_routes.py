@@ -1,10 +1,14 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
-from models import db, User, Salon, Service, Booking, Worker, Offer, Review, Notification
+from models import db, User, Salon, Service, Booking, Worker, Offer, Review, Notification, OTPVerification
+from utils.sms_service import SMSService
 from datetime import datetime, timedelta
 import random
 import string
 from functools import wraps
+from google.oauth2 import id_token
+from google.auth.transport import requests
+from config import Config
 
 user_portal_bp = Blueprint('user_portal', __name__, url_prefix='/user-portal')
 
@@ -16,7 +20,7 @@ def user_login_required(f):
             flash('Please login to continue.', 'danger')
             return redirect(url_for('user_portal.login'))
         
-        user = User.query.get(session['portal_user_id'])
+        user = db.session.get(User, session['portal_user_id'])
         if not user or not user.is_active:
             session.pop('portal_user_id', None)
             flash('Your account has been suspended. Please contact support.', 'danger')
@@ -26,7 +30,7 @@ def user_login_required(f):
     return decorated
 
 def get_current_user():
-    return User.query.get(session.get('portal_user_id'))
+    return db.session.get(User, session.get('portal_user_id'))
 
 def generate_otp():
     return ''.join(random.choices(string.digits, k=6))
@@ -49,6 +53,88 @@ def login():
             return redirect(url_for('user_portal.home'))
         flash('Invalid phone or password.', 'danger')
     return render_template('user_portal/login.html')
+
+@user_portal_bp.route('/google-login', methods=['POST'])
+def google_login():
+    token = request.json.get('credential')
+    if not token:
+        return jsonify({'success': False, 'message': 'No token provided'}), 400
+
+    try:
+        # Verify the token
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(), Config.GOOGLE_CLIENT_ID)
+        
+        # Get user info from token
+        google_id = idinfo['sub']
+        email = idinfo['email']
+        name = idinfo.get('name', 'Google User')
+        picture = idinfo.get('picture')
+
+        # Check if user exists
+        user = User.query.filter_by(google_id=google_id).first()
+        if not user:
+            # Check by email
+            user = User.query.filter_by(email=email).first()
+            if user:
+                user.google_id = google_id
+                if not user.profile_image:
+                    user.profile_image = picture
+            else:
+                # Create new user
+                user = User(
+                    name=name,
+                    email=email,
+                    google_id=google_id,
+                    profile_image=picture,
+                    is_active=True
+                )
+                db.session.add(user)
+            db.session.commit()
+
+        # Login the user
+        if not user.is_active:
+            return jsonify({'success': False, 'message': 'Account suspended.'}), 403
+        
+        session['portal_user_id'] = user.id
+        return jsonify({'success': True, 'message': 'Login successful'})
+
+    except ValueError:
+        return jsonify({'success': False, 'message': 'Invalid token'}), 400
+
+# ─── OTP Login Routes ───────────────────────────────────────────────────────
+@user_portal_bp.route('/send-login-otp', methods=['POST'])
+def send_login_otp():
+    phone = request.form.get('phone')
+    if not phone:
+        return jsonify({'success': False, 'message': 'Phone number required'}), 400
+    
+    # Check if user exists
+    user = User.query.filter_by(phone=phone).first()
+    if not user:
+        return jsonify({'success': False, 'message': 'Account not found. Please register first.'}), 404
+        
+    otp_record = OTPVerification(phone=phone, purpose='login')
+    db.session.add(otp_record)
+    db.session.commit()
+    
+    # Send via SMSService
+    success, msg = SMSService.send_otp(phone, otp_record.otp, "Saloon Essy Login")
+    if success:
+        return jsonify({'success': True, 'message': 'OTP sent successfully'})
+    return jsonify({'success': False, 'message': f'Failed to send OTP: {msg}'}), 500
+
+@user_portal_bp.route('/verify-login-otp', methods=['POST'])
+def verify_login_otp():
+    phone = request.form.get('phone')
+    otp = request.form.get('otp')
+    
+    if OTPVerification.verify_otp(phone, otp, purpose='login'):
+        user = User.query.filter_by(phone=phone).first()
+        if user and user.is_active:
+            session['portal_user_id'] = user.id
+            return jsonify({'success': True, 'message': 'Login successful'})
+        return jsonify({'success': False, 'message': 'User account issue'}), 403
+    return jsonify({'success': False, 'message': 'Invalid or expired OTP'}), 401
 
 # ─── Register ────────────────────────────────────────────────────────────────
 @user_portal_bp.route('/register', methods=['GET', 'POST'])
@@ -92,6 +178,7 @@ def home():
     top_workers = [w for w in all_workers if w.rating >= 4.5] # Filtering by rating
     # Shuffle or limit if needed
     random.shuffle(top_workers)
+    # Safely take the first 10 items
     top_workers = top_workers[:10]
 
     return render_template('user_portal/home.html',
@@ -108,7 +195,10 @@ def home():
 @user_login_required
 def salon_detail(salon_id):
     user = get_current_user()
-    salon = Salon.query.get_or_404(salon_id)
+    salon = db.session.get(Salon, salon_id)
+    if not salon:
+        from flask import abort
+        abort(404)
     services = Service.query.filter_by(salon_id=salon_id).all()
     workers = Worker.query.filter_by(salon_id=salon_id, is_approved=True).all()
     today = datetime.utcnow().strftime('%Y-%m-%d')
@@ -133,17 +223,32 @@ def book_service():
 
     slot_datetime = datetime.strptime(f"{slot_date} {slot_time_val}", "%Y-%m-%d %H:%M")
 
+    # NEW: Prevent double booking for the same worker
+    if worker_id:
+        existing_booking = Booking.query.filter_by(
+            worker_id=int(worker_id),
+            slot_time=slot_datetime
+        ).filter(Booking.status.in_(['pending', 'accepted'])).first()
+        
+        if existing_booking:
+            flash('This specialist is already booked for this time. Please choose another slot.', 'warning')
+            return redirect(request.referrer or url_for('user_portal.home'))
+
     # If no worker selected, pick one automatically from the salon
     if not worker_id or worker_id == "":
         potential_workers = Worker.query.filter_by(salon_id=int(salon_id), is_approved=True, is_active=True).all()
-        if not potential_workers:
-            potential_workers = Worker.query.filter_by(salon_id=int(salon_id), is_approved=True).all()
+        # Filter out busy workers
+        available_workers = []
+        for w in potential_workers:
+            busy = Booking.query.filter_by(worker_id=w.id, slot_time=slot_datetime).filter(Booking.status.in_(['pending', 'accepted'])).first()
+            if not busy:
+                available_workers.append(w)
         
-        if potential_workers:
-            selected_worker = random.choice(potential_workers)
+        if available_workers:
+            selected_worker = random.choice(available_workers)
             worker_id = selected_worker.id
         else:
-            flash('This salon has no available specialists at the moment. Please try again later.', 'danger')
+            flash('No specialists available at this exact time. Try a different slot.', 'warning')
             return redirect(request.referrer or url_for('user_portal.home'))
 
     booking = Booking(
@@ -208,7 +313,10 @@ def profile():
 @user_portal_bp.route('/bookings/<int:id>/cancel', methods=['POST'])
 @user_login_required
 def cancel_booking(id):
-    booking = Booking.query.get_or_404(id)
+    booking = db.session.get(Booking, id)
+    if not booking:
+        from flask import abort
+        abort(404)
     if booking.user_id != session.get('portal_user_id'):
         flash('Unauthorized.', 'danger')
         return redirect(url_for('user_portal.my_bookings'))
@@ -223,7 +331,10 @@ def cancel_booking(id):
 @user_portal_bp.route('/bookings/<int:id>/payment', methods=['POST'])
 @user_login_required
 def update_payment(id):
-    booking = Booking.query.get_or_404(id)
+    booking = db.session.get(Booking, id)
+    if not booking:
+        from flask import abort
+        abort(404)
     if booking.user_id != session.get('portal_user_id'):
         flash('Unauthorized.', 'danger')
         return redirect(url_for('user_portal.my_bookings'))
@@ -254,7 +365,10 @@ def notifications():
 @user_portal_bp.route('/bookings/<int:id>/rate', methods=['GET', 'POST'])
 @user_login_required
 def rate_booking(id):
-    booking = Booking.query.get_or_404(id)
+    booking = db.session.get(Booking, id)
+    if not booking:
+        from flask import abort
+        abort(404)
     if booking.user_id != session.get('portal_user_id'):
         flash('Unauthorized.', 'danger')
         return redirect(url_for('user_portal.my_bookings'))
@@ -283,11 +397,12 @@ def rate_booking(id):
         db.session.add(review)
         
         # Update Salon Rating (simplified average)
-        salon = Salon.query.get(booking.salon_id)
+        salon = db.session.get(Salon, booking.salon_id)
         all_reviews = Review.query.filter_by(salon_id=salon.id).all()
         total_rating = sum(r.rating for r in all_reviews) + int(rating)
         count = len(all_reviews) + 1
-        salon.rating = round(total_rating / count, 1)
+        # Explicitly round to 1 decimal place
+        salon.rating = float(round(total_rating / count, ndigits=1))
 
         db.session.commit()
         flash('Thank you for your feedback! ⭐', 'success')
@@ -302,7 +417,13 @@ def settings():
     user = get_current_user()
     if request.method == 'POST':
         user.name = request.form.get('name')
-        user.phone = request.form.get('phone')
+        # Only update email if not a Google user (Google users have fixed emails)
+        if not user.google_id:
+            user.email = request.form.get('email')
+        
+        new_phone = request.form.get('phone')
+        if new_phone:
+            user.phone = new_phone
         
         # Handle Profile Image Upload
         file = request.files.get('profile_image_file')

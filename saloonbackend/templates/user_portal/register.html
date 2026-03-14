@@ -8,6 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@21.0.8/build/css/intlTelInput.css">
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         :root {
             --primary: #6366f1;
@@ -282,7 +284,7 @@
             </div>
 
             <div class="social-btns">
-                <div class="social-icon" onclick="simulateSocialLogin('Google')"><i class="fab fa-google" style="color: #ea4335;"></i></div>
+                <div class="social-icon" id="googleBtn" onclick="loginWithGoogle()"><i class="fab fa-google" style="color: #ea4335;"></i></div>
                 <div class="social-icon" onclick="simulateSocialLogin('Apple')"><i class="fab fa-apple" style="color: #000000;"></i></div>
                 <div class="social-icon" onclick="simulateSocialLogin('Facebook')"><i class="fab fa-facebook-f" style="color: #1877f2;"></i></div>
             </div>
@@ -425,7 +427,45 @@
             });
 
             window.onclick = (e) => { if (!e.target.closest('.lang-switcher-top')) document.getElementById('langDropdown').style.display = 'none'; };
+            
+            // Initialize Google Identity Services
+            google.accounts.id.initialize({
+                client_id: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
+                callback: handleGoogleCredentialResponse,
+                auto_select: false,
+                cancel_on_tap_outside: true
+            });
         });
+
+        function loginWithGoogle() {
+            // This will show the account picker
+            google.accounts.id.prompt();
+        }
+
+        function handleGoogleCredentialResponse(response) {
+            console.log("Encoded JWT ID token: " + response.credential);
+            
+            // Send the token to your backend
+            fetch('/user/google-login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ credential: response.credential })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.href = "{{ url_for('user_portal.home') }}";
+                } else {
+                    alert('Login failed: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred during Google Login.');
+            });
+        }
 
         function simulateSocialLogin(platform) { alert(platform + " Login requested. Coming soon!"); }
     </script>

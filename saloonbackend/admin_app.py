@@ -28,7 +28,7 @@ def create_admin_app(config_class=Config):
         if ":" in user_id:
             role, id = user_id.split(":")
             if role == "admin": 
-                return SuperAdmin.query.get(int(id))
+                return db.session.get(SuperAdmin, int(id))
         return None
 
     # Register ONLY Admin Blueprint

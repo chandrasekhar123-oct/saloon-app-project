@@ -9,6 +9,7 @@
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='owner/css/style.css') }}">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         :root {
             --primary-premium: #6366f1;
@@ -224,6 +225,25 @@
                 transform: translateY(0);
             }
         }
+        /* Flash Messages */
+        .flash-message {
+            padding: 1rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-left: 4px solid;
+            margin-bottom: 0.5rem;
+        }
+        .flash-success {
+            background: #f0fdf4;
+            color: #166534;
+            border-left-color: #10b981;
+        }
+        .flash-error {
+            background: #fff1f2;
+            color: #be123c;
+            border-left-color: #be123c;
+        }
     </style>
 </head>
 
@@ -257,13 +277,8 @@
             {% if messages %}
             <div style="position: relative; z-index: 1; margin-bottom: 2rem;">
                 {% for category, message in messages %}
-                {% set bg_color = '#f0fdf4' if category == 'success' else '#fff1f2' %}
-                {% set text_color = '#166534' if category == 'success' else '#be123c' %}
-                {% set border_color = '#10b981' if category == 'success' else '#be123c' %}
-                {% set icon = 'fa-check-circle' if category == 'success' else 'fa-exclamation-circle' %}
-                <div
-                    style="padding: 1rem; border-radius: 15px; background: {{ bg_color }}; color: {{ text_color }}; font-size: 0.9rem; font-weight: 600; border-left: 4px solid {{ border_color }}; margin-bottom: 0.5rem;">
-                    <i class="fas {{ icon }}" style="margin-right: 8px;"></i> {{ message }}
+                <div class="flash-message {{ 'flash-success' if category == 'success' else 'flash-error' }}">
+                    <i class="fas {{ 'fa-check-circle' if category == 'success' else 'fa-exclamation-circle' }}" style="margin-right: 8px;"></i> {{ message }}
                 </div>
                 {% endfor %}
             </div>
@@ -301,12 +316,9 @@
                     style="text-transform: uppercase; font-size: 0.7rem; letter-spacing: 2px; font-weight: 800; color: var(--text-slate); opacity: 0.8;">
                     Or Login With</p>
                 <div class="social-btns">
-                    <div class="social-icon" style="color: #ea4335;" onclick="simulateSocialLogin('Google')"><i
-                            class="fab fa-google"></i></div>
-                    <div class="social-icon" style="color: #000000;" onclick="simulateSocialLogin('Apple')"><i
-                            class="fab fa-apple"></i></div>
-                    <div class="social-icon" style="color: #1877f2;" onclick="simulateSocialLogin('Facebook')"><i
-                            class="fab fa-facebook-f"></i></div>
+                    <div class="social-icon" style="color: #ea4335;" onclick="loginWithGoogle()"><i class="fab fa-google"></i></div>
+                    <div class="social-icon" style="color: #000000;" onclick="simulateSocialLogin('Apple')"><i class="fab fa-apple"></i></div>
+                    <div class="social-icon" style="color: #1877f2;" onclick="simulateSocialLogin('Facebook')"><i class="fab fa-facebook-f"></i></div>
                 </div>
             </div>
 
@@ -338,6 +350,71 @@
     </div>
 
     <script>
+        function loginWithGoogle() {
+            const overlay = document.getElementById('authOverlay');
+            overlay.style.display = 'flex';
+            document.getElementById('authStatus').innerText = "Connecting to Google...";
+            
+            google.accounts.id.prompt((notification) => {
+                if (notification.isNotDisplayed()) {
+                    console.warn("One Tap prompt not displayed:", notification.getNotDisplayedReason());
+                    overlay.style.display = 'none';
+                    alert("Google Sign-In prompt was blocked or could not be shown. Please check your browser settings or try again.");
+                }
+                if (notification.isSkippedMoment()) {
+                    console.warn("One Tap prompt skipped:", notification.getSkippedReason());
+                    overlay.style.display = 'none';
+                }
+                if (notification.isDismissMoment()) {
+                    console.warn("One Tap prompt dismissed:", notification.getDismissReason());
+                    overlay.style.display = 'none';
+                }
+            });
+        }
+
+        function handleGoogleCredentialResponse(response) {
+            const overlay = document.getElementById('authOverlay');
+            const status = document.getElementById('authStatus');
+            const detail = document.getElementById('authDetail');
+            
+            status.innerText = "Authenticating Session...";
+            detail.innerText = "Verifying Google credentials with secure backend.";
+
+            fetch("{{ url_for('owner.google_login') }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ credential: response.credential })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('loader').style.display = 'none';
+                    status.innerHTML = `<i class="fas fa-check-circle" style="color: #10b981; font-size: 3rem; margin-bottom: 1rem; display: block;"></i> Verified!`;
+                    detail.innerText = "Welcome back! Redirecting to dashboard...";
+                    setTimeout(() => {
+                        window.location.href = "{{ url_for('owner.dashboard') }}";
+                    }, 1000);
+                } else {
+                    overlay.style.display = 'none';
+                    alert(data.message || "Google Login failed");
+                }
+            })
+            .catch(err => {
+                overlay.style.display = 'none';
+                console.error("Error:", err);
+                alert("An error occurred during verification.");
+            });
+        }
+
+        window.onload = function () {
+            google.accounts.id.initialize({
+                client_id: "788448575031-r7f781j9o2291iv2769p74h8d23u9idm.apps.googleusercontent.com",
+                callback: handleGoogleCredentialResponse,
+                auto_select: false,
+                cancel_on_tap_outside: true
+            });
+        };
+
         function togglePassword() {
             const field = document.getElementById('passwordField');
             const icon = document.querySelector('.toggle-pass');

@@ -4,6 +4,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, Owner, Salon, Service, Worker, Booking, Offer
 from datetime import datetime, time, timedelta
 import os
+from google.oauth2 import id_token
+from google.auth.transport import requests
+from config import Config
 
 owner_bp = Blueprint('owner', __name__)
 
@@ -102,6 +105,53 @@ def login():
             flash('Invalid email or password', 'danger')
     
     return render_template('owner/login.html')
+
+@owner_bp.route('/google-login', methods=['POST'])
+def google_login():
+    token = request.json.get('credential')
+    if not token:
+        return jsonify({'success': False, 'message': 'No token provided'}), 400
+
+    try:
+        # Verify the token
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(), Config.GOOGLE_CLIENT_ID)
+        
+        # Get owner info from token
+        google_id = idinfo['sub']
+        email = idinfo['email']
+        name = idinfo.get('name', 'Google Owner')
+        picture = idinfo.get('picture')
+
+        # Check if owner exists
+        owner = Owner.query.filter_by(google_id=google_id).first()
+        if not owner:
+            # Check by email
+            owner = Owner.query.filter_by(email=email).first()
+            if owner:
+                owner.google_id = google_id
+                if not owner.profile_image:
+                    owner.profile_image = picture
+            else:
+                # Create new owner (Without a salon initially)
+                owner = Owner(
+                    name=name,
+                    email=email,
+                    google_id=google_id,
+                    profile_image=picture,
+                    is_active=True
+                )
+                db.session.add(owner)
+            db.session.commit()
+
+        # Login the owner
+        if not owner.is_active:
+            return jsonify({'success': False, 'message': 'Account suspended.'}), 403
+        
+        login_user(owner)
+        return jsonify({'success': True, 'message': 'Login successful'})
+
+    except ValueError:
+        return jsonify({'success': False, 'message': 'Invalid token'}), 400
 
 @owner_bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -211,15 +261,15 @@ def dashboard():
         for b in bookings_list:
             if b.status == 'completed' and b.service and b.slot_time.date() == target_date.date():
                 if b.commission_applied:
-                    day_total += b.owner_share
+                    day_total += float(b.owner_share or 0.0)
                 elif b.worker and b.worker.is_owner:
-                    day_total += b.service.price
+                    day_total += float(b.service.price or 0.0)
                 else:
-                    day_total += (b.service.price * 0.5)
+                    day_total += (float(b.service.price or 0.0) * 0.5)
         
         revenue_trend.append({
             'day': days_short[target_date.weekday()],
-            'amount': round(day_total, 2)
+            'amount': float(round(float(day_total), ndigits=2))
         })
 
     # 3. Top Popular Services
@@ -507,7 +557,7 @@ def manage_workers():
             total_working_today += 1
             
         # Revenue is the owner's net share
-        revenue = sum(b.owner_share if b.commission_applied else (b.service.price * 0.5) 
+        revenue = sum(float(b.owner_share or 0.0) if b.commission_applied else (float(b.service.price or 0.0) * 0.5) 
                       for b in completed_bookings if b.service)
         
         # Total shop intake from this worker
@@ -701,8 +751,19 @@ def settings():
     if request.method == 'POST':
         # 1. Update Owner Profile
         current_user.name = request.form.get('name')
-        current_user.email = request.form.get('email')
-        current_user.phone = request.form.get('phone')
+        
+        # Only update email if not a Google user
+        if not current_user.google_id:
+            email = request.form.get('email')
+            if email:
+                current_user.email = email
+            
+        phone = request.form.get('phone')
+        if phone:
+            current_user.phone = phone
+        elif current_user.google_id:
+            # Phone is optional for Google owners
+            pass
         
         # Determine if a file was uploaded or a URL was pasted
         file = request.files.get('profile_image_file')
@@ -887,7 +948,10 @@ def manage_offers():
 @owner_bp.route('/offers/delete/<int:id>', methods=['POST'])
 @login_required
 def delete_offer(id):
-    offer = Offer.query.get_or_404(id)
+    offer = db.session.get(Offer, id)
+    if not offer:
+        from flask import abort
+        abort(404)
     salon = Salon.query.filter_by(owner_id=current_user.id).first()
     if offer.salon_id != salon.id:
         flash('Unauthorized action.', 'danger')
