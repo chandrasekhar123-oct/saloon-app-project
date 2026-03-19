@@ -54,17 +54,18 @@ def seed_data():
 
         for salon, name, price, dur, desc in services_data:
             db.session.add(Service(salon_id=salon.id, name=name, price=price, duration=dur, description=desc))
+        db.session.commit()
 
         # 4. Create Workers
         worker_pwd = generate_password_hash('worker123')
-        w1 = Worker(salon_id=s1.id, name="Raj Kumar", phone="7766554433", password=worker_pwd, skill="Expert Stylist", experience=8, status="online", image_url="https://i.pravatar.cc/300?img=11")
-        w2 = Worker(salon_id=s1.id, name="Amit Singh", phone="8877665544", password=worker_pwd, skill="Beard Specialist", experience=5, status="online", image_url="https://i.pravatar.cc/300?img=12")
-        w3 = Worker(salon_id=s3.id, name="Priya Das", phone="9988776611", password=worker_pwd, skill="Spa Therapist", experience=6, status="online", image_url="https://i.pravatar.cc/300?img=32")
+        w1 = Worker(salon_id=s1.id, name="Raj Kumar", phone="+917766554433", password=worker_pwd, skill="Expert Stylist", experience=8, status="online", image_url="https://i.pravatar.cc/300?img=11")
+        w2 = Worker(salon_id=s1.id, name="Amit Singh", phone="+918877665544", password=worker_pwd, skill="Beard Specialist", experience=5, status="online", image_url="https://i.pravatar.cc/300?img=12")
+        w3 = Worker(salon_id=s3.id, name="Priya Das", phone="+919988776611", password=worker_pwd, skill="Spa Therapist", experience=6, status="online", image_url="https://i.pravatar.cc/300?img=32")
         db.session.add_all([w1, w2, w3])
 
         # 5. Create Sample User
         user_pwd = generate_password_hash('user123')
-        user = User(name="Test User", phone="9000012345", password=user_pwd)
+        user = User(name="Test User", phone="+919000012345", password=user_pwd)
         db.session.add(user)
 
         db.session.commit()

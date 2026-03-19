@@ -1,0 +1,469 @@
+================================================================================
+                          TEST CASES DOCUMENT
+================================================================================
+Project:        E-Commerce / Marketplace Web Application
+Stage:          Early Development
+Prepared For:   Quality Assurance Team
+Format:         Detailed Step-by-Step
+Testing Types:  Functional | Regression | Performance | Security
+================================================================================
+
+
+1. DOCUMENT OVERVIEW
+================================================================================
+Application Type : Web Application
+Domain           : E-Commerce / Marketplace
+Dev Stage        : Early Development
+Test Coverage    : Functional, Regression, Performance, Security
+Modules Covered  : Auth, Payments, Search, APIs, Forms, Dashboard
+Document Version : v1.0
+
+
+================================================================================
+2. MODULE 1 — USER AUTHENTICATION & LOGIN
+================================================================================
+
+--------------------------------------------------------------------------------
+TC-AUTH-001: Successful Login with Valid Credentials
+--------------------------------------------------------------------------------
+Test Case ID  : TC-AUTH-001
+Title         : Successful login with valid credentials
+Type          : Functional
+Priority      : High
+Preconditions : User account exists; app is accessible
+
+Steps:
+  1. Navigate to https://[app-url]/login
+  2. Enter a registered email address in the Email field
+  3. Enter the correct password in the Password field
+  4. Click the Login button
+
+Expected Result:
+  User is redirected to the dashboard. A session token is generated and
+  stored securely.
+
+--------------------------------------------------------------------------------
+TC-AUTH-002: Login with Invalid Credentials
+--------------------------------------------------------------------------------
+Test Case ID  : TC-AUTH-002
+Title         : Login attempt with incorrect password
+Type          : Functional + Security
+Priority      : High
+Preconditions : User account exists
+
+Steps:
+  1. Navigate to /login
+  2. Enter a valid registered email
+  3. Enter an incorrect password
+  4. Click the Login button
+
+Expected Result:
+  Error message displayed: "Invalid email or password."
+  No session token created. Account not locked on first attempt.
+
+--------------------------------------------------------------------------------
+TC-AUTH-003: Brute Force / Account Lockout
+--------------------------------------------------------------------------------
+Test Case ID  : TC-AUTH-003
+Title         : Account lockout after repeated failed login attempts
+Type          : Security
+Priority      : Critical
+Preconditions : User account exists; lockout policy configured
+
+Steps:
+  1. Navigate to /login
+  2. Enter a valid email and incorrect password
+  3. Repeat Step 2 five consecutive times
+  4. Attempt login a sixth time with correct credentials
+
+Expected Result:
+  Account is temporarily locked. User receives a lockout notification.
+  Correct credentials do not bypass the lock.
+
+--------------------------------------------------------------------------------
+TC-AUTH-004: Regression — Login After Password Reset
+--------------------------------------------------------------------------------
+Test Case ID  : TC-AUTH-004
+Title         : User can login successfully after a password reset
+Type          : Regression
+Priority      : High
+Preconditions : User has completed password reset flow
+
+Steps:
+  1. Complete password reset via email link
+  2. Navigate to /login
+  3. Enter email and the new password
+  4. Click Login
+
+Expected Result:
+  User logs in successfully. Old password no longer works.
+
+
+================================================================================
+3. MODULE 2 — PAYMENTS & CHECKOUT
+================================================================================
+
+--------------------------------------------------------------------------------
+TC-PAY-001: Successful Checkout with Valid Card
+--------------------------------------------------------------------------------
+Test Case ID  : TC-PAY-001
+Title         : Complete checkout with a valid credit card
+Type          : Functional
+Priority      : Critical
+Preconditions : User is logged in; cart has at least one item;
+                payment gateway is in test mode
+
+Steps:
+  1. Add a product to the cart
+  2. Navigate to /checkout
+  3. Fill in shipping address form with valid data
+  4. Enter test card number: 4242 4242 4242 4242, expiry 12/26, CVV 123
+  5. Click Place Order
+
+Expected Result:
+  Order confirmation page displayed. Order ID generated. Confirmation email
+  triggered. Payment captured successfully in gateway.
+
+--------------------------------------------------------------------------------
+TC-PAY-002: Checkout with Expired Card
+--------------------------------------------------------------------------------
+Test Case ID  : TC-PAY-002
+Title         : Payment failure with an expired card
+Type          : Functional
+Priority      : High
+Preconditions : User is logged in; cart is not empty
+
+Steps:
+  1. Navigate to /checkout
+  2. Fill in valid shipping details
+  3. Enter expired card number with a past expiry date
+  4. Click Place Order
+
+Expected Result:
+  Payment declined. Error message: "Your card has expired. Please use a
+  different payment method." Order is NOT placed.
+
+--------------------------------------------------------------------------------
+TC-PAY-003: SQL Injection in Payment Form
+--------------------------------------------------------------------------------
+Test Case ID  : TC-PAY-003
+Title         : Security — SQL injection attempt on payment form fields
+Type          : Security
+Priority      : Critical
+Preconditions : User is on the checkout page
+
+Steps:
+  1. Navigate to /checkout
+  2. In the Cardholder Name field, enter: '; DROP TABLE orders;--
+  3. Fill in other fields with valid test data
+  4. Click Place Order
+
+Expected Result:
+  Input is sanitized. No database error exposed. Appropriate validation
+  error shown to user. Database tables remain intact.
+
+--------------------------------------------------------------------------------
+TC-PAY-004: Performance — Checkout Under Load
+--------------------------------------------------------------------------------
+Test Case ID  : TC-PAY-004
+Title         : Checkout page response time under 200 concurrent users
+Type          : Performance
+Priority      : High
+Preconditions : Load testing tool configured (e.g., JMeter / k6)
+
+Steps:
+  1. Simulate 200 concurrent users navigating to /checkout
+  2. Each user adds one item to cart and initiates checkout
+  3. Record response times and error rates over a 5-minute window
+
+Expected Result:
+  Average response time <= 2 seconds. Error rate < 1%.
+  No server crashes or timeouts.
+
+
+================================================================================
+4. MODULE 3 — SEARCH & FILTERS
+================================================================================
+
+--------------------------------------------------------------------------------
+TC-SRCH-001: Search by Product Keyword
+--------------------------------------------------------------------------------
+Test Case ID  : TC-SRCH-001
+Title         : Search returns relevant results for a valid keyword
+Type          : Functional
+Priority      : High
+Preconditions : Product catalog is populated
+
+Steps:
+  1. Navigate to the homepage
+  2. Click the Search bar
+  3. Type "running shoes" and press Enter
+  4. Review the displayed results
+
+Expected Result:
+  Results page shows products matching "running shoes". Results are ranked
+  by relevance. Pagination is functional.
+
+--------------------------------------------------------------------------------
+TC-SRCH-002: Apply Price Filter
+--------------------------------------------------------------------------------
+Test Case ID  : TC-SRCH-002
+Title         : Filter search results by price range
+Type          : Functional
+Priority      : Medium
+Preconditions : Search results are displayed
+
+Steps:
+  1. Perform a search for "laptop"
+  2. On the results page, locate the Price Filter
+  3. Set range: Rs.20,000 - Rs.50,000
+  4. Apply the filter
+
+Expected Result:
+  Only products within the Rs.20,000-Rs.50,000 range are displayed.
+  Filter state persists on page refresh.
+
+--------------------------------------------------------------------------------
+TC-SRCH-003: Search with XSS Payload
+--------------------------------------------------------------------------------
+Test Case ID  : TC-SRCH-003
+Title         : Security — XSS attempt via search bar
+Type          : Security
+Priority      : Critical
+Preconditions : User is on the homepage
+
+Steps:
+  1. Click on the Search bar
+  2. Enter: <script>alert('XSS')</script>
+  3. Press Enter
+
+Expected Result:
+  Script is not executed. Input is escaped and displayed as plain text or
+  rejected. No alert box appears.
+
+
+================================================================================
+5. MODULE 4 — APIs & INTEGRATIONS
+================================================================================
+
+--------------------------------------------------------------------------------
+TC-API-001: GET Products API — Valid Request
+--------------------------------------------------------------------------------
+Test Case ID  : TC-API-001
+Title         : Fetch product list via API with valid auth token
+Type          : Functional
+Priority      : High
+Preconditions : API server is running; valid bearer token available
+
+Steps:
+  1. Open API testing tool (e.g., Postman)
+  2. Send GET /api/v1/products
+  3. Include header: Authorization: Bearer <valid_token>
+  4. Review response
+
+Expected Result:
+  HTTP 200 OK. Response body contains a paginated JSON array of products
+  with correct schema.
+
+--------------------------------------------------------------------------------
+TC-API-002: API Request Without Auth Token
+--------------------------------------------------------------------------------
+Test Case ID  : TC-API-002
+Title         : API returns 401 for unauthenticated request
+Type          : Security
+Priority      : Critical
+Preconditions : API server is running
+
+Steps:
+  1. Send GET /api/v1/products WITHOUT any Authorization header
+  2. Review the response status and body
+
+Expected Result:
+  HTTP 401 Unauthorized.
+  Response body: {"error": "Authentication required"}
+  No product data is returned.
+
+--------------------------------------------------------------------------------
+TC-API-003: API Performance Under Load
+--------------------------------------------------------------------------------
+Test Case ID  : TC-API-003
+Title         : Product listing API response time under 500 requests/sec
+Type          : Performance
+Priority      : High
+Preconditions : Load test tool configured
+
+Steps:
+  1. Use k6 or JMeter to send 500 requests/second to GET /api/v1/products
+  2. Run for 3 minutes
+  3. Monitor response times, throughput, and error rates
+
+Expected Result:
+  P95 response time <= 500ms. Error rate < 0.5%.
+  No memory leaks or server crashes detected.
+
+
+================================================================================
+6. MODULE 5 — FORMS & DATA ENTRY
+================================================================================
+
+--------------------------------------------------------------------------------
+TC-FORM-001: Valid Product Listing Form Submission
+--------------------------------------------------------------------------------
+Test Case ID  : TC-FORM-001
+Title         : Seller successfully submits a new product listing
+Type          : Functional
+Priority      : High
+Preconditions : User is logged in as a Seller
+
+Steps:
+  1. Navigate to /seller/add-product
+  2. Fill in: Product Name, Description, Price, Category, and upload an image
+  3. Click Submit Listing
+
+Expected Result:
+  Product is saved to the database. Success message shown. Product appears
+  in the catalog within 60 seconds.
+
+--------------------------------------------------------------------------------
+TC-FORM-002: Form Submission with Missing Required Fields
+--------------------------------------------------------------------------------
+Test Case ID  : TC-FORM-002
+Title         : Validation error on incomplete form submission
+Type          : Functional
+Priority      : Medium
+Preconditions : User is on the product listing form
+
+Steps:
+  1. Navigate to /seller/add-product
+  2. Leave Price and Category fields empty
+  3. Click Submit Listing
+
+Expected Result:
+  Form is NOT submitted. Inline validation errors displayed next to each
+  empty required field. Page does not reload.
+
+--------------------------------------------------------------------------------
+TC-FORM-003: Boundary Value — Maximum Characters in Product Description
+--------------------------------------------------------------------------------
+Test Case ID  : TC-FORM-003
+Title         : Boundary value test on Product Description field
+Type          : Functional
+Priority      : Medium
+Preconditions : Max character limit is defined (e.g., 2000 chars)
+
+Steps:
+  1. Navigate to /seller/add-product
+  2. In the Description field, paste exactly 2000 characters
+  3. Submit the form
+  4. Repeat with 2001 characters
+
+Expected Result:
+  2000 chars  — form submits successfully.
+  2001 chars  — validation error: "Description cannot exceed 2000 characters."
+
+
+================================================================================
+7. MODULE 6 — DASHBOARD & REPORTS
+================================================================================
+
+--------------------------------------------------------------------------------
+TC-DASH-001: Sales Dashboard Loads Correct Data
+--------------------------------------------------------------------------------
+Test Case ID  : TC-DASH-001
+Title         : Dashboard displays accurate sales metrics
+Type          : Functional
+Priority      : High
+Preconditions : Admin/Seller is logged in; test orders exist in DB
+
+Steps:
+  1. Log in as Admin or Seller
+  2. Navigate to /dashboard
+  3. Review the Total Sales, Orders Today, and Revenue This Month widgets
+  4. Cross-verify figures against the database
+
+Expected Result:
+  All metrics match database records. Data refreshes every 60 seconds
+  or on page reload.
+
+--------------------------------------------------------------------------------
+TC-DASH-002: Export Sales Report as CSV
+--------------------------------------------------------------------------------
+Test Case ID  : TC-DASH-002
+Title         : Export monthly sales report to CSV
+Type          : Functional
+Priority      : Medium
+Preconditions : Admin logged in; orders exist for selected month
+
+Steps:
+  1. Navigate to /dashboard/reports
+  2. Select date range: last 30 days
+  3. Click Export as CSV
+  4. Open the downloaded file
+
+Expected Result:
+  CSV file downloads successfully. File contains correct headers and data
+  rows matching the dashboard view. No data loss or corruption.
+
+--------------------------------------------------------------------------------
+TC-DASH-003: Dashboard Performance for High Data Volume
+--------------------------------------------------------------------------------
+Test Case ID  : TC-DASH-003
+Title         : Dashboard load time with 100,000+ orders in DB
+Type          : Performance
+Priority      : High
+Preconditions : DB seeded with 100,000+ order records
+
+Steps:
+  1. Seed the database with 100,000 orders
+  2. Log in as Admin
+  3. Navigate to /dashboard
+  4. Measure time until all widgets fully render
+
+Expected Result:
+  Dashboard fully loads within 3 seconds.
+  No UI freezing or broken widgets observed.
+
+
+================================================================================
+8. REGRESSION TEST SUITE SUMMARY
+================================================================================
+
+  Test Case ID  | Module     | Trigger Condition
+  --------------|------------|--------------------------------------------
+  TC-AUTH-004   | Auth       | After any auth-related code change
+  TC-PAY-001    | Payments   | After every deployment to staging
+  TC-SRCH-001   | Search     | After search indexing changes
+  TC-API-001    | APIs       | After any API version update
+  TC-FORM-001   | Forms      | After UI/form component changes
+  TC-DASH-001   | Dashboard  | After DB schema or query changes
+
+
+================================================================================
+9. TEST COVERAGE MATRIX
+================================================================================
+
+  Module      | Functional | Security | Performance | Regression
+  ------------|------------|----------|-------------|------------
+  User Auth   | YES        | YES      | NO          | YES
+  Payments    | YES        | YES      | YES         | YES
+  Search      | YES        | YES      | NO          | YES
+  APIs        | YES        | YES      | YES         | YES
+  Forms       | YES        | NO       | NO          | YES
+  Dashboard   | YES        | NO       | YES         | YES
+
+
+================================================================================
+10. DEFECT SEVERITY GUIDE
+================================================================================
+
+  Severity  | Description                        | Example
+  ----------|------------------------------------|-----------------------------
+  Critical  | System crash or security breach    | SQL Injection, payment fail
+  High      | Major feature broken               | Login failure, order not placed
+  Medium    | Feature works but incorrectly      | Wrong filter results
+  Low       | Minor UI/UX issue                  | Misaligned button
+
+
+================================================================================
+                          END OF DOCUMENT — v1.0
+================================================================================

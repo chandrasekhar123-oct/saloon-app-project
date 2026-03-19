@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, StatusBar, TouchableOpacity, Text, SafeAreaView, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, StatusBar, TouchableOpacity, Text, SafeAreaView, ActivityIndicator, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SHADOW } from './src/constants/theme';
 import { API_BASE_URL } from './src/constants/api';
@@ -134,10 +134,11 @@ export default function App() {
           end={{ x: 1.0, y: 1.0 }}
         >
           <View style={styles.splashLogoContainer}>
-            <Ionicons name="cut" size={60} color={COLORS.white} />
+            <Image
+              source={require('./assets/logo.png')}
+              style={{ width: 140, height: 140, objectFit: 'contain' }}
+            />
           </View>
-          <Text style={styles.splashTitle}>SALOON ESSY</Text>
-          <Text style={styles.splashTagline}>Book Top Salons Near You</Text>
           <View style={{ position: 'absolute', bottom: 100 }}>
             <ActivityIndicator size="large" color={COLORS.white} />
           </View>
