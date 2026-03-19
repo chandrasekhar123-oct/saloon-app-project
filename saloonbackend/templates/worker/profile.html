@@ -154,6 +154,7 @@
 
         <form action="{{ url_for('worker_panel.settings') }}" method="POST" enctype="multipart/form-data"
             style="display: flex; flex-direction: column; gap: 1.25rem;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
             <!-- Photo Upload -->
             <div style="text-align: center; margin-bottom: 1rem;">

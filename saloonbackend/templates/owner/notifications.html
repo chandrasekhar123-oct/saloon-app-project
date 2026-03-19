@@ -44,6 +44,7 @@
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
                         <form action="{{ url_for('owner.approve_worker', worker_id=w.id) }}" method="POST"
                             style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <button type="submit" class="btn btn-sm"
                                 style="background: #10b981; color: white; border-radius: 6px; font-weight: 700; padding: 0.4rem 1.25rem;">
                                 <i class="fas fa-check"></i> Accept
@@ -51,6 +52,7 @@
                         </form>
                         <form action="{{ url_for('owner.reject_worker', worker_id=w.id) }}" method="POST"
                             style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <button type="submit" class="btn btn-sm"
                                 style="background: #f8fafc; color: var(--danger); border-radius: 6px; font-weight: 700; padding: 0.4rem 1.25rem;">
                                 <i class="fas fa-times"></i> Reject

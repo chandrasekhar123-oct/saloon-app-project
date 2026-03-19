@@ -3,18 +3,39 @@ from flask_cors import CORS
 from extensions import db, login_manager
 from config import Config
 import os
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
     app.jinja_env.add_extension('jinja2.ext.do')
 
-    # Enable CORS for cross-origin requests from mobile apps
-    CORS(app)
+    # Restrict CORS to only allow known mobile app origins.
+    # This prevents malicious websites from making cross-origin requests to the backend.
+    allowed_origins = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,capacitor://localhost').split(',')
+    CORS(app, resources={r"/user/*": {"origins": allowed_origins}, r"/worker/*": {"origins": allowed_origins}, r"/auth/*": {"origins": allowed_origins}})
 
     db.init_app(app)
     login_manager.init_app(app)
     login_manager.login_message_category = 'info'
+    
+    from extensions import limiter, csrf
+    limiter.init_app(app)
+    csrf.init_app(app)
+    
+    # Disable CSRF for external JSON APIs (React Native Mobile Apps)
+    # The mobile apps authenticate via headers/tokens, not browser cookies, making CSRF N/A for them.
+    app.config['WTF_CSRF_EXCLUDED_VIEWS'] = [
+        'user.register', 'user.login', 'user.google_login', 'user.create_booking', 'user.raise_complaint',
+        'worker.register', 'worker.login', 'worker.accept_booking', 'worker.reject_booking', 'worker.verify_otp', 'worker.upload_photo', 'worker.update_worker', 'worker.toggle_status',
+        'auth.send_otp', 'auth.verify_otp_login', 'auth.login'
+    ]
 
     @login_manager.unauthorized_handler
     def unauthorized():
@@ -58,6 +79,9 @@ def create_app(config_class=Config):
     app.register_blueprint(worker_panel_bp)
     app.register_blueprint(user_portal_bp)
 
+    from flask_migrate import Migrate
+    Migrate(app, db, render_as_batch=True)
+
     @app.context_processor
     def utility_processor():
         from flask_login import current_user
@@ -79,10 +103,10 @@ def create_app(config_class=Config):
 app = create_app()
 
 if __name__ == '__main__':
-    with app.app_context():
-        # Ensure all models are registered and tables created
-        from models import User, Worker, Owner, Salon, Service, Booking, SuperAdmin, Review
-        db.create_all()
+    # We now use Flask-Migrate instead of db.create_all()
+    # To apply schema changes, use `flask db upgrade` in the terminal.
     
-    # Run server - accesible in network via host='0.0.0.0'
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Run server - debug mode is controlled by FLASK_DEBUG env variable
+    # NEVER set FLASK_DEBUG=true in production
+    debug_mode = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
+    app.run(host='0.0.0.0', port=5000, debug=debug_mode)

@@ -39,12 +39,17 @@ class SMSService:
         from_number = current_app.config.get('TWILIO_PHONE_NUMBER')
 
         if not client or not from_number or from_number == 'YOUR_TWILIO_PHONE_NUMBER':
-            print("\n" + "="*50)
-            print("📱 [MOCK SMS SERVICE - TWILIO NOT CONFIGURED]")
-            print(f"TO: {phone}")
-            print(f"MESSAGE: {body}")
-            print("="*50 + "\n")
-            return True, "Mock SMS sent to console"
+            if current_app.config.get('DEBUG'):
+                print("\n" + "="*50)
+                print("📱 [MOCK SMS SERVICE - TWILIO NOT CONFIGURED]")
+                print("⚠️  WARNING: Running in development mode. Secrets printed to console.")
+                print(f"TO: {phone}")
+                print(f"MESSAGE: {body}")
+                print("="*50 + "\n")
+                return True, "Mock SMS sent to console"
+            else:
+                print("❌ Twilio SMS Error: SMS Service is not configured for production environment.")
+                return False, "SMS Service is not configured. Please contact support."
 
         try:
             # Ensure phone number is in E.164 format (starts with +)

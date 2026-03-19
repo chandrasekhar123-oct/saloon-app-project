@@ -176,6 +176,7 @@
         <div style="margin-top: 1rem; background: #f8fafc; border-radius: 20px; padding: 1rem; border: 1px solid #e2e8f0;">
             <p style="font-size: 0.7rem; font-weight: 850; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">Accept with Message (Optional)</p>
             <form method="POST" action="{{ url_for('worker_panel.accept_booking', id=b.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <input type="text" name="message" placeholder="e.g. Please come in 10 mins, I am ready!" 
                        style="width: 100%; padding: 0.8rem; border-radius: 12px; border: 1px solid #cbd5e1; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.75rem; outline: none; transition: border 0.3s;"
                        onfocus="this.style.borderColor='var(--primary)'">
@@ -186,7 +187,8 @@
                         style="flex: 1; padding: 0.8rem; background: #fff1f2; color: #e11d48; border: none; border-radius: 14px; font-weight: 900; font-size: 0.85rem; cursor: pointer;">Decline</button>
                 </div>
             </form>
-            <form id="reject-form-{{b.id}}" method="POST" action="{{ url_for('worker_panel.reject_booking', id=b.id) }}" style="display: none;"></form>
+            <form id="reject-form-{{b.id}}" method="POST" action="{{ url_for('worker_panel.reject_booking', id=b.id) }}" style="display: none;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/></form>
         </div>
         {% elif b.status == 'accepted' %}
         <!-- Active Job Flow -->
@@ -199,6 +201,7 @@
                 I'm available!"] %}
                 {% for m in msgs %}
                 <form action="{{ url_for('worker_panel.send_message', id=b.id) }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <input type="hidden" name="message" value="{{ m }}">
                     <button type="submit"
                         style="white-space: nowrap; padding: 0.6rem 1rem; background: white; border: 1px solid #bfdbfe; border-radius: 12px; font-size: 0.7rem; font-weight: 800; color: #1e40af; cursor: pointer;">{{
@@ -208,6 +211,7 @@
             </div>
 
             <form method="POST" action="{{ url_for('worker_panel.verify_otp', id=b.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div style="display: flex; gap: 0.6rem; margin-bottom: 0.8rem;">
                     <select name="payment_method" style="flex: 0.8; padding: 0.8rem; border: 1px solid #bfdbfe; border-radius: 14px; font-weight: 800; color: #1e40af; background: white;">
                         <option value="Cash">Cash Payment</option>

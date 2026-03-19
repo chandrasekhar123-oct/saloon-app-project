@@ -38,6 +38,7 @@
         <p style="color: var(--text-muted); font-size: 0.95rem; font-weight: 600;" data-i18n="feedback_help">Your feedback helps us improve!</p>
 
         <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <input type="hidden" name="rating" id="rating-val" value="5">
             <div class="stars">
                 <i class="fas fa-star active" data-val="1"></i>

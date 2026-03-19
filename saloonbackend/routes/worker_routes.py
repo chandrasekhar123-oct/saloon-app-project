@@ -1,11 +1,17 @@
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, url_for
 from models import db, Worker, Booking, Salon
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import os
 from datetime import datetime
+from extensions import limiter
 
 worker_bp = Blueprint('worker', __name__)
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp', 'gif'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @worker_bp.route('/register', methods=['POST'])
 def register():
@@ -39,13 +45,15 @@ def register():
     # Handle photo upload during registration
     if 'photo' in request.files:
         file = request.files['photo']
-        if file and file.filename != '':
+        if file and file.filename != '' and allowed_file(file.filename):
             filename = secure_filename(f"worker_reg_{phone}_{int(datetime.now().timestamp())}_{file.filename}")
             upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
             os.makedirs(upload_folder, exist_ok=True)
             file_path = os.path.join(upload_folder, filename)
             file.save(file_path)
             worker.image_url = request.host_url.rstrip('/') + url_for('static', filename=f"uploads/{filename}")
+        elif file and file.filename != '':
+            return jsonify({"message": "Invalid file type. Allowed: png, jpg, jpeg, webp, gif", "status": "error"}), 400
 
     db.session.add(worker)
     db.session.commit()
@@ -91,6 +99,7 @@ def get_bookings(id):
     return jsonify(result)
 
 @worker_bp.route('/booking/<int:id>/accept', methods=['POST'])
+@limiter.limit("30 per hour")
 def accept_booking(id):
     booking = Booking.query.get(id)
     if not booking:
@@ -110,6 +119,7 @@ def accept_booking(id):
     })
 
 @worker_bp.route('/booking/<int:id>/reject', methods=['POST'])
+@limiter.limit("30 per hour")
 def reject_booking(id):
     booking = Booking.query.get(id)
     if not booking:
@@ -119,6 +129,7 @@ def reject_booking(id):
     return jsonify({"message": "Booking rejected", "status": "success"})
 
 @worker_bp.route('/booking/<int:id>/verify-otp', methods=['POST'])
+@limiter.limit("10 per hour", error_message="Too many failed OTP attempts for this booking.")
 def verify_otp(id):
     data = request.json
     otp = data.get('otp')
@@ -196,8 +207,8 @@ def upload_photo(id):
         return jsonify({"message": "No file part", "status": "error"}), 400
         
     file = request.files['photo']
-    if file.filename == '':
-        return jsonify({"message": "No selected file", "status": "error"}), 400
+    if file.filename == '' or not allowed_file(file.filename):
+        return jsonify({"message": "Invalid file or no selected file", "status": "error"}), 400
         
     if file:
         filename = secure_filename(f"worker_{id}_{int(datetime.now().timestamp())}_{file.filename}")
@@ -207,7 +218,7 @@ def upload_photo(id):
         file_path = os.path.join(upload_folder, filename)
         file.save(file_path)
         
-        worker.image_url = request.host_url + 'static/uploads/' + filename
+        worker.image_url = request.host_url.rstrip('/') + url_for('static', filename=f"uploads/{filename}")
         db.session.commit()
         
         return jsonify({
@@ -233,46 +244,51 @@ def toggle_status(id):
 @worker_bp.route('/earnings/<int:id>', methods=['GET'])
 def get_earnings(id):
     from datetime import datetime, timedelta
+    from sqlalchemy import func
+    from models import db, Worker, Booking, Service
+
     worker = db.session.get(Worker, id)
     if not worker:
         return jsonify({"message": "Worker not found", "status": "error"}), 404
-
-    completed = Booking.query.filter_by(worker_id=id, status='completed').all()
 
     now = datetime.utcnow()
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     week_start = today_start - timedelta(days=now.weekday())
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
-    def booking_amount(b):
-        try:
-            return b.service.price if b.service else 0
-        except Exception:
-            return 0
+    # Base query for joined Booking and Service calculation
+    base_query = db.session.query(func.coalesce(func.sum(Service.price), 0)).select_from(Booking).join(
+        Service, Booking.service_id == Service.id
+    ).filter(
+        Booking.worker_id == id,
+        Booking.status == 'completed'
+    )
 
-    today_earnings = sum(booking_amount(b) for b in completed if b.created_at and b.created_at >= today_start)
-    week_earnings  = sum(booking_amount(b) for b in completed if b.created_at and b.created_at >= week_start)
-    month_earnings = sum(booking_amount(b) for b in completed if b.created_at and b.created_at >= month_start)
-    total_earnings = sum(booking_amount(b) for b in completed)
+    completed_jobs = Booking.query.filter_by(worker_id=id, status='completed').count()
+
+    total_earnings = base_query.scalar()
+    today_earnings = base_query.filter(Booking.created_at >= today_start).scalar()
+    week_earnings = base_query.filter(Booking.created_at >= week_start).scalar()
+    month_earnings = base_query.filter(Booking.created_at >= month_start).scalar()
 
     # Build last 7 days chart data
     daily_data = []
     for i in range(6, -1, -1):
         day = today_start - timedelta(days=i)
         day_end = day + timedelta(days=1)
-        day_total = sum(booking_amount(b) for b in completed if b.created_at and day <= b.created_at < day_end)
+        day_total = base_query.filter(Booking.created_at >= day, Booking.created_at < day_end).scalar()
         daily_data.append({
             "day": day.strftime('%a'),  # Mon, Tue, etc.
-            "amount": day_total
+            "amount": float(day_total)
         })
 
     return jsonify({
         "status": "success",
-        "today": today_earnings,
-        "this_week": week_earnings,
-        "this_month": month_earnings,
-        "total": total_earnings,
-        "completed_jobs": len(completed),
+        "today": float(today_earnings),
+        "this_week": float(week_earnings),
+        "this_month": float(month_earnings),
+        "total": float(total_earnings),
+        "completed_jobs": completed_jobs,
         "daily_chart": daily_data,
         "worker_status": worker.status
     })

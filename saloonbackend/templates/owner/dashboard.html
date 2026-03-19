@@ -211,6 +211,7 @@
                         <td style="padding: 1.25rem 2rem;">
                             {% if apt.status == 'pending' %}
                             <form action="{{ url_for('owner.accept_booking', id=apt.id) }}" method="POST" style="margin: 0;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                 <button type="submit" style="background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Accept</button>
                             </form>
                             {% else %}

@@ -344,6 +344,7 @@
                 {% endwith %}
 
                 <form action="{{ url_for('owner.register') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
                     <!-- Section 1: Identity -->
                     <div class="section-group">

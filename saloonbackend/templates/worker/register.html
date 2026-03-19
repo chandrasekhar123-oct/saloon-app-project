@@ -335,6 +335,7 @@
                 {% endwith %}
 
                 <form method="POST" id="registerForm" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <!-- Section: Professional Profile -->
                     <div class="section-group">
                         <div class="section-header">

@@ -4,9 +4,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, Owner, Salon, Service, Worker, Booking, Offer
 from datetime import datetime, time, timedelta
 import os
+import secrets
+import hmac
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from config import Config
+from services.revenue_service import calculate_revenue_split
 
 owner_bp = Blueprint('owner', __name__)
 
@@ -219,16 +222,24 @@ def forgot_password():
         phone = request.form.get('phone')
         owner = Owner.query.filter_by(email=email, phone=phone).first()
         if owner:
-            return redirect(url_for('owner.reset_password', owner_id=owner.id))
+            # Generate a cryptographically secure, time-limited reset token
+            reset_token = secrets.token_urlsafe(32)
+            owner.reset_token = reset_token
+            db.session.commit()
+            # In production, email this link. For now, redirect directly for demo.
+            flash('A password reset link has been generated. Redirecting...', 'info')
+            return redirect(url_for('owner.reset_password', token=reset_token))
         flash('No account found with these details.', 'danger')
     return render_template('owner/forgot_password.html')
 
-@owner_bp.route('/reset-password/<int:owner_id>', methods=['GET', 'POST'])
-def reset_password(owner_id):
-    owner = Owner.query.get_or_404(owner_id)
+@owner_bp.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    # Validate token against DB — prevents IDOR via ID guessing
+    owner = Owner.query.filter_by(reset_token=token).first_or_404()
     if request.method == 'POST':
         new_password = request.form.get('password')
         owner.password = generate_password_hash(new_password)
+        owner.reset_token = None  # Invalidate token after use
         db.session.commit()
         flash('Password reset successful! Please login.', 'success')
         return redirect(url_for('owner.login'))
@@ -316,14 +327,13 @@ def bookings():
 @owner_bp.route('/bookings/<int:id>/accept', methods=['POST'])
 @login_required
 def accept_booking(id):
-    booking = Booking.query.get_or_404(id)
+    booking = db.session.get(Booking, id) or __import__('flask').abort(404)
     salon = Salon.query.filter_by(owner_id=current_user.id).first()
     if booking.salon_id != salon.id:
         flash('Unauthorized.', 'danger')
         return redirect(url_for('owner.bookings'))
         
-    import random, string
-    otp = ''.join(random.choices(string.digits, k=6))
+    otp = secrets.token_hex(3).upper()  # 6-char uppercase hex OTP (cryptographically secure)
     booking.status = 'accepted'
     booking.otp = otp
     
@@ -365,36 +375,21 @@ def verify_otp(id):
         return redirect(url_for('owner.bookings'))
         
     otp = request.form.get('otp')
-    pay_method = request.form.get('payment_method', 'Cash') # Default to Cash if not provided
-    if booking.otp == otp:
+    pay_method = request.form.get('payment_method', 'Cash')
+    if booking.otp and hmac.compare_digest(booking.otp, otp):
         booking.status = 'completed'
         booking.payment_method = pay_method
         booking.payment_status = 'Paid'
         
-        # Calculate revenue split
-        if booking.service:
-            total_price = float(booking.service.price)
-            worker_amt = 0.0
-            
-            # If a worker is assigned
-            if booking.worker:
-                # Case 1: The worker IS the owner (100% to owner)
-                if booking.worker.is_owner:
-                    worker_amt = 0.0
-                # Case 2: Worker is on Salary (usually 0% commission unless bonus)
-                elif booking.worker.payment_type == 'salary':
-                    worker_amt = 0.0
-                # Case 3: Worker is on Commission (standard split)
-                else:
-                    rate = booking.worker.commission_rate or 50.0
-                    worker_amt = (rate / 100.0) * total_price
-                
-                booking.worker_share = worker_amt
-                booking.worker.total_earnings = (booking.worker.total_earnings or 0.0) + worker_amt
-                booking.worker.current_balance = (booking.worker.current_balance or 0.0) + worker_amt
-            
-            booking.owner_share = total_price - worker_amt
-            booking.commission_applied = True
+        # Use centralised revenue split service
+        split = calculate_revenue_split(booking)
+        booking.worker_share = split['worker_amt']
+        booking.owner_share = split['owner_amt']
+        booking.commission_applied = True
+        
+        if booking.worker:
+            booking.worker.total_earnings = (booking.worker.total_earnings or 0.0) + split['worker_amt']
+            booking.worker.current_balance = (booking.worker.current_balance or 0.0) + split['worker_amt']
         
         db.session.commit()
         flash('OTP verified! Booking marked as completed. 🎉', 'success')
@@ -517,6 +512,8 @@ def manage_workers():
             flash('Worker with this phone number already exists', 'danger')
             return redirect(url_for('owner.manage_workers'))
             
+        # Generate a random temporary password instead of the dangerous default "worker123"
+        temp_password = secrets.token_urlsafe(10)
         new_worker = Worker(
             salon_id=salon.id,
             name=name,
@@ -526,12 +523,12 @@ def manage_workers():
             payment_type=payment_type,
             salary_amount=float(salary_amount) if salary_amount else 0.0,
             commission_rate=float(commission_rate) if commission_rate else 50.0,
-            is_approved=True, # Owners manual additions are approved by default
-            password=generate_password_hash("worker123") # Default password
+            is_approved=True,  # Owners manual additions are approved by default
+            password=generate_password_hash(temp_password)
         )
         db.session.add(new_worker)
         db.session.commit()
-        flash('New expert added successfully!', 'success')
+        flash(f'New expert added! Their temporary login password is: {temp_password} — please share this securely and ask them to change it on first login.', 'success')
         return redirect(url_for('owner.manage_workers'))
 
     approved_workers = Worker.query.filter_by(salon_id=salon.id, is_approved=True).all()

@@ -224,6 +224,7 @@
         {% endwith %}
 
         <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="input-group">
                 <input type="text" name="username" placeholder="Admin Username" required autocomplete="off">
                 <i class="fas fa-user-shield"></i>

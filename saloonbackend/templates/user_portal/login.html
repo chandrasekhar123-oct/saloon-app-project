@@ -251,6 +251,7 @@
 
             <div id="passwordLoginSection">
                 <form method="POST" id="loginForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <div class="form-item">
                         <label data-i18n="phone_label">Phone Number</label>
                         <div class="input-wrapper">

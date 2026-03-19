@@ -121,6 +121,7 @@
         {% if b.status == 'pending' %}
         <div style="display: flex; gap: 0.5rem; padding-top: 0.75rem; border-top: 1px solid var(--glass-border);">
             <form action="{{ url_for('owner.accept_booking', id=b.id) }}" method="POST" style="margin: 0;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <button type="submit"
                     style="background: var(--primary); color: white; border: none; padding: 0.4rem 1rem; border-radius: 10px; font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: background 0.2s;"
                     onmouseover="this.style.background='#4f46e5'" onmouseout="this.style.background='var(--primary)'">
@@ -129,6 +130,7 @@
             </form>
             <form action="{{ url_for('owner.reject_booking', id=b.id) }}" method="POST" style="margin: 0;"
                 onsubmit="return confirm('Are you sure you want to reject this booking?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <button type="submit"
                     style="background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); padding: 0.4rem 1rem; border-radius: 10px; font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: background 0.2s;"
                     onmouseover="this.style.background='rgba(239,68,68,0.2)'"
@@ -146,6 +148,7 @@
             </div>
             <form action="{{ url_for('owner.verify_otp', id=b.id) }}" method="POST"
                 style="display: flex; flex-direction: column; gap: 0.6rem; margin: 0;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div style="display: flex; gap: 0.5rem;">
                     <select name="payment_method" style="flex: 0.8; padding: 0.4rem 0.6rem; border-radius: 10px; border: 1px solid var(--glass-border); font-size: 0.8rem; font-weight: 700; color: var(--text-main);">
                         <option value="Cash">Cash</option>

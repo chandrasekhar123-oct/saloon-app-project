@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, jsonify, abort
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from models import db, Worker, Booking, Salon, Review, Notification
@@ -7,9 +7,17 @@ from functools import wraps
 import os
 import random
 import string
+import secrets
+import hmac
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from config import Config
+from services.revenue_service import calculate_revenue_split
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp', 'gif'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 worker_panel_bp = Blueprint('worker_panel', __name__, url_prefix='/worker-panel')
 
@@ -186,16 +194,21 @@ def forgot_password():
         phone = request.form.get('phone')
         worker = Worker.query.filter_by(phone=phone).first()
         if worker:
-            return redirect(url_for('worker_panel.reset_password', worker_id=worker.id))
+            reset_token = secrets.token_urlsafe(32)
+            worker.reset_token = reset_token
+            db.session.commit()
+            flash('A password reset link has been generated. Redirecting...', 'info')
+            return redirect(url_for('worker_panel.reset_password', token=reset_token))
         flash('No worker found with this phone number.', 'danger')
     return render_template('worker/forgot_password.html')
 
-@worker_panel_bp.route('/reset-password/<int:worker_id>', methods=['GET', 'POST'])
-def reset_password(worker_id):
-    worker = Worker.query.get_or_404(worker_id)
+@worker_panel_bp.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    worker = Worker.query.filter_by(reset_token=token).first_or_404()
     if request.method == 'POST':
         new_password = request.form.get('password')
         worker.password = generate_password_hash(new_password)
+        worker.reset_token = None  # Invalidate token after use
         db.session.commit()
         flash('Password reset successful! Please login.', 'success')
         return redirect(url_for('worker_panel.login'))
@@ -357,9 +370,12 @@ def insights():
 @worker_login_required
 def accept_booking(id):
     booking = Booking.query.get_or_404(id)
-    otp = ''.join(random.choices(string.digits, k=6))
+    # IDOR check: ensure this booking belongs to the current worker
+    if booking.worker_id != session.get('worker_id'):
+        abort(403)
+    otp = secrets.token_hex(3).upper()  # Cryptographically secure 6-char hex OTP
     booking.status = 'accepted'
-    booking.otp = otp  # Generate OTP only when worker accepts
+    booking.otp = otp
 
     # Allow custom message from worker
     custom_msg = request.form.get('message')
@@ -400,6 +416,9 @@ def accept_booking(id):
 @worker_login_required
 def reject_booking(id):
     booking = Booking.query.get_or_404(id)
+    # IDOR check
+    if booking.worker_id != session.get('worker_id'):
+        abort(403)
     booking.status = 'rejected'
     db.session.commit()
 
@@ -420,37 +439,25 @@ def reject_booking(id):
 @worker_login_required
 def verify_otp(id):
     booking = Booking.query.get_or_404(id)
+    # IDOR check
+    if booking.worker_id != session.get('worker_id'):
+        abort(403)
     otp = request.form.get('otp')
-    pay_method = request.form.get('payment_method', 'Cash') # Default to Cash
-    if booking.otp == otp:
+    pay_method = request.form.get('payment_method', 'Cash')
+    if booking.otp and hmac.compare_digest(booking.otp, otp):
         booking.status = 'completed'
         booking.payment_method = pay_method
         booking.payment_status = 'Paid'
         
-        # Calculate Revenue Split
-        if booking.service:
-            total_price = float(booking.service.price)
-            worker_amt = 0.0
-            
-            # If a worker is assigned (should be the case here since it's worker panel)
-            if booking.worker:
-                # Case 1: The worker IS the owner (100% to owner)
-                if booking.worker.is_owner:
-                    worker_amt = 0.0
-                # Case 2: Worker is on Salary (usually 0% commission unless bonus)
-                elif booking.worker.payment_type == 'salary':
-                    worker_amt = 0.0
-                # Case 3: Worker is on Commission (standard split)
-                else:
-                    rate = booking.worker.commission_rate or 50.0
-                    worker_amt = (rate / 100.0) * total_price
-                
-                booking.worker_share = worker_amt
-                booking.worker.total_earnings = (booking.worker.total_earnings or 0.0) + worker_amt
-                booking.worker.current_balance = (booking.worker.current_balance or 0.0) + worker_amt
-            
-            booking.owner_share = total_price - worker_amt
-            booking.commission_applied = True
+        # Use centralised revenue split service
+        split = calculate_revenue_split(booking)
+        booking.worker_share = split['worker_amt']
+        booking.owner_share = split['owner_amt']
+        booking.commission_applied = True
+        
+        if booking.worker:
+            booking.worker.total_earnings = (booking.worker.total_earnings or 0.0) + split['worker_amt']
+            booking.worker.current_balance = (booking.worker.current_balance or 0.0) + split['worker_amt']
             
         db.session.commit()
         flash('OTP verified! Service marked as completed. 🎉', 'success')
@@ -522,6 +529,9 @@ def settings():
         if 'photo' in request.files:
             file = request.files['photo']
             if file and file.filename != '':
+                if not allowed_file(file.filename):
+                    flash('Invalid file type. Allowed: png, jpg, jpeg, webp, gif', 'danger')
+                    return redirect(url_for('worker_panel.settings'))
                 filename = secure_filename(f"worker_{worker.id}_{int(datetime.now().timestamp())}_{file.filename}")
                 upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
                 os.makedirs(upload_folder, exist_ok=True)
